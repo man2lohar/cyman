@@ -1,0 +1,288 @@
+
+/* User Profile in Header */
+.user-profile {
+    display: flex;
+    align-items: center;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s, box-shadow 0.3s;
+}
+
+.user-profile:hover {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.user-profile::after {
+    content: '\25BC'; /* Downward arrow for dropdown */
+    font-size: 0.8rem;
+    margin-left: 10px;
+}
+
+/* User Options Dropdown */
+.user-options {
+    display: none;
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+    min-width: 200px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.user-options.active {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.user-options a {
+    display: flex;
+    align-items: center;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    transition: background 0.3s;
+}
+
+.user-options a img {
+    width: 25px;
+    margin-right: 10px;
+}
+
+.user-options a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+
+/* Navigation Menu */
+nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative; /* Ensure dropdowns are positioned correctly */
+}
+
+/* Menu Links */
+header ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    position: relative; /* Enable absolute positioning for dropdowns */
+}
+
+header ul li {
+    position: relative; /* For absolute positioning of dropdown */
+}
+
+header ul li a {
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    text-decoration: none;
+    color: #e0e0e0; /* Light gray text */
+    padding: 12px 20px;
+    display: block;
+    font-size: 1.2rem;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Transition for smooth effect */
+}
+
+header ul li a:hover {
+    color: rgb(0, 153, 255);
+}
+
+/* Dropdown Arrow */
+header ul li.has-dropdown > a::after {
+    content: '';
+    display: inline-block;
+    margin-left: 10px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #e0e0e0; /* Light gray arrow */
+    transition: transform 0.3s ease;
+}
+
+nav ul li ul ul{
+    display: block;
+    margin: 5px;
+}
+nav ul li ul ul h4{
+    text-align: center;
+    color: #b3a151;
+}
+
+/* Dropdown Menu */
+.dropdown-content {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Position below the parent */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(27, 27, 27, 0.9); /* Dark transparent background */
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8); /* Deep shadow */
+    padding: 5px;
+    min-width: 100px; /* Minimum width of dropdown */
+    z-index: 99; /* Ensure it is above other elements */
+    border: 0.5px solid rgb(182, 182, 182)
+}
+
+/* Dropdown Item Styles */
+.dropdown-content a {
+    color: #e0e0e0; /* Light gray text */
+    display: flex; /* Ensure items are block level */
+    font-size: 1rem;
+    padding: 10px ;
+    transition: background-color 0.1s ease; /* Transition for background */
+    font-family: 'Calibri';
+}
+
+.dropdown-content a:hover {
+    color: rgb(0, 153, 255);
+    cursor: pointer;
+}
+
+/* Show Dropdown on Hover */
+ul li.has-dropdown:hover .dropdown-content {
+    display: block; /* Show dropdown when hovering */
+}
+
+/* Arrow Rotation */
+ul li.has-dropdown:hover > a::after {
+    transform: rotate(180deg); /* Rotate arrow on hover */
+}
+
+/* Triangle for Dropdown */
+.dropdown-content::before {
+    content: "";
+    position: absolute;
+    top: -8px; /* Position above dropdown */
+    left: 50%; /* Align it with dropdown */
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid rgb(182, 182, 182)
+}
+
+/* Triangle for Submenu */
+.submenu-content::before {
+    content: "";
+    position: absolute;
+    top: 20px; /* Adjust vertical alignment */
+    right: 100%; /* Position it to the left of the submenu content */
+    margin-right: 0; /* Space between the triangle and submenu */
+    border-top: 8px solid transparent; /* Transparent top */
+    border-bottom: 8px solid transparent; /* Transparent bottom */
+    border-left: 8px solid rgb(182, 182, 182); /* Triangle color */
+    transform: translateY(-50%) rotate(180deg); /* Rotate the triangle */
+}
+
+.dropdown-content li a {
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Center vertically */
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflow if necessary */
+    text-overflow: ellipsis; /* Optional: Show ellipsis for overflow */
+    padding: 10px 15px; /* Padding for each item */
+    color: #e0e0e0; /* Text color */
+    transition: background-color 0.3s ease; /* Smooth background transition */
+}
+
+/* Arrow symbol in menu a */
+.hover-symbol {
+    position: relative;
+}
+
+.hover-symbol::after {
+    content: "🡕"; /* Unicode for 'arrow forward' in Material Icons */
+    opacity: 0; /* Hidden initially */
+    margin-left: 10px; /* Space between text and symbol */
+    transition: opacity 0.3s ease; /* Smooth transition */
+}
+
+.hover-symbol:hover::after {
+    opacity: 1; /* Show the arrow on hover */
+}
+
+/* Sub Menu */
+.submenu-content {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 0;
+    left:100%;
+    /* transform: translateX(-50%); */
+    background-color: rgba(22, 22, 22, 0.979); /* Dark transparent background */
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8); /* Deep shadow */
+    padding: 5px;
+    min-width: 200px; /* Minimum width of dropdown */
+    z-index: 100; /* Ensure it is above other elements */
+    border: 0.5px solid rgb(182, 182, 182)
+}
+
+/* Dropdown Item Styles */
+.submenu-content a {
+    color: #e0e0e0; /* Light gray text */
+    display: block; /* Ensure items are block level */
+    font-size: 1rem;
+    padding: 10px;
+    transition: background-color 0.1s ease; /* Transition for background */
+    font-family: 'Calibri';
+}
+
+/* Show Dropdown on Hover */
+.submenu:hover .submenu-content {
+    display: block; /* Show dropdown when hovering */
+}
+
+/* Auth Options (Login/Signup) */
+.auth-options {
+    display: flex;
+    gap: 10px;
+}
+
+.auth-options button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+}
+
+.auth-options .login-btn {
+    background-color: rgb(0, 153, 255);
+    color: #0d1117;
+}
+
+.auth-options .login-btn:hover {
+    background-color: rgb(0, 132, 219);
+    color: white;
+}
+
+.auth-options .signup-btn {
+    background-color: transparent;
+    color: rgb(0, 153, 255);
+    border: 2px solid rgb(0, 153, 255);
+}
+
+.auth-options .signup-btn:hover {
+    background-color: rgb(0, 153, 255);
+    color: #ffffff;
+}
+
+
+
+

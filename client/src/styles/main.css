@@ -1,0 +1,52 @@
+/* General Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+@font-face {
+    font-family: 'Akaya Kanadaka'; /* Font name to be used in CSS */
+    src: url('../../public/assets/fonts/Akaya-Kanadaka.ttf') format('truetype'); /* Path to your local font file */
+}
+body {
+    overflow-x: hidden;
+    background: #0d1117;
+    color: #e0e0e0;
+    scroll-behavior: smooth;
+}
+/* Header Styles */
+header {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.151); /* Frosted glass effect */
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: background 0.3s, box-shadow 0.3s;
+}
+header:hover {
+    background: rgba(107, 106, 106, 0.37);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+/* Company name in Header */
+.logo-container h2{
+    color: white;
+    font-family: Akaya Kanadaka;
+    font-weight: 1rem;
+}
+
+.cyman{
+    font-family: Akaya Kanadaka;
+}
+
+

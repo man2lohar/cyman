@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Extraction | Floor Area</title>
+    <link rel="icon" href="..\..\assets\images\logo.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Akaya+Kanadaka&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="..\..\..\src\styles\data_extraction_kmc\style_kmc.css">
+    <link rel="stylesheet" href="..\..\..\src/styles/bubble.css">
+</head>
+<body>
+    <div class="particles"></div>
+    <div class="main-container">
+        <div class="header-section">
+            <div class="logo-container">
+                <a href="index_kmc.html" style="display: flex; align-items: center; text-decoration: none;">
+                    <img src="../../assets/images/logo.png" alt="Homepage Logo" style="width:40px; height:auto; margin-right: 10px;">
+                    <h2>CyManSquare</h2>
+                </a>
+            </div>
+            <h1>Floor Area Table</h1>
+            <button id="back-button" class="back-button">Back</button>
+            <button id="parking-button" class="back-button">Parkings</button>
+        </div>
+        <div class="container" id="main-table-container">            
+            <h2>Floor Area For F.A.R. Calculation</h2>
+            <table id="filtered-table">
+                <thead>
+                    <tr>
+                        <th>Floor</th>
+                        <th>Total Floor Area</th>
+                        <th>Stair Well</th>
+                        <th>Lift Well</th>
+                        <th>Duct/Cutout</th>
+                        <th>Effective Floor Area</th>
+                        <th>Stairway</th>
+                        <th>Lift Lobby</th>
+                        <th>Net Floor Area</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Filtered Data Rows Go Here -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>Total</td>
+                        <td id="total-floor-area">0.000</td>
+                        <td id="total-stair-well">0.000</td>
+                        <td id="total-lift-well">0.000</td>
+                        <td id="total-duct-cutout">0.000</td>
+                        <td id="total-effective-floor-area">0.000</td>
+                        <td id="total-stairway">0.000</td>
+                        <td id="total-lift-lobby">0.000</td>
+                        <td id="total-net-floor-area">0.000</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="sub-container" id="compare-table-container">
+                <h2>Comparative Table</h2>
+                <h4>Below Comparative Area Statement for Residential Use-Group Only*</h4>
+                <h5>(If You Have Another Use-Group, Please Calculate it manually)</h5>
+                <table id="compare-table">
+                    <thead>
+                        <tr>
+                            <th>Floor</th>
+                            <th>Gross Floor Area of Residential</th>
+                            <th>Gross of Common Area, Parking Area & Tenement Area</th>
+                            <th>Difference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Filtered Data Rows Go Here -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>Total</td>
+                            <td id="total-floor-area-seocndary">0.000</td>
+                            <td id="total-common-parking-tenements">0.000</td>
+                            <td id="Difference">0.000</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div> 
+        </div>     
+    </div>
+    <script src="..\..\..\src\js\data_extraction_kmc\sanction.js"></script>
+    <script src="..\..\..\src\js\data_extraction_kmc\check.js"></script>
+    <script src="..\..\..\src\js\block.js"></script>
+    <script src="..\..\..\src\js\index.js"></script>
+</body>
+</html>
+
+

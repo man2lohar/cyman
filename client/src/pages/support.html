@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Page</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 120px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #4a90e2;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .faq-item {
+            margin: 10px 0;
+        }
+        .faq-question {
+            cursor: pointer;
+            padding: 10px;
+            background: #4a90e2;
+            color: #fff;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        .faq-question:hover {
+            background: #357ab8;
+        }
+        .faq-answer {
+            display: none;
+            padding: 10px;
+            margin-top: 5px;
+            border-left: 4px solid #4a90e2;
+            background: #f3f4f6;
+            border-radius: 4px;
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, textarea, button {
+            width: 100%;
+            max-width: 875px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #4a90e2;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #357ab8;
+        }
+        .help-links a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+        .help-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Enhanced Modal Styles */
+        #customModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content {
+            position: relative;
+            margin: 15% auto;
+            padding: 30px;
+            width: 80%;
+            max-width: 450px;
+            background: #ffffff;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.4s ease;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        h2 {
+            font-size: 22px;
+            color: #4a90e2;
+            margin-bottom: 15px;
+        }
+
+        .modal-ok-btn {
+            display: inline-block;
+            background: #4a90e2;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .modal-ok-btn:hover {
+            background: #357ab8;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Support Page</h1>
+
+        <!-- Contact Form Section -->
+        <div class="section">
+            <h2>Contact Us</h2>
+            <form id="support-form">
+                <label for="name">Your Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required>
+
+                <label for="email">Your Email:</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+
+                <label for="message">Your Message:</label>
+                <textarea id="message" name="message" rows="5" placeholder="Enter your message" required></textarea>
+
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="section">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">What is your response time?</div>
+                <div class="faq-answer">
+                    <p>We aim to respond to all queries within 24-48 hours, depending on the volume of requests.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">How can I reset my password?</div>
+                <div class="faq-answer">
+                    <p>You can reset your password by clicking on the 'Forgot Password' link on the login page and following the instructions.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">Do you offer live support?</div>
+                <div class="faq-answer">
+                    <p>Unfortunately not, we will offer live support during business hours. You can access it through the chat icon on our website.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Helpful Links Section -->
+        <div class="section help-links">
+            <h2>Helpful Links</h2>
+            <p><a href="terms.html">Terms of Service</a></p>
+            <p><a href="privacy.html">Privacy Policy</a></p>
+            <p><a href="contact.html">Contact Page</a></p>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="customModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <h2>Thank You!</h2>
+            <p>Your message has been successfully submitted. We will get back to you shortly!</p>
+            <button class="modal-ok-btn" id="okButton">OK</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleFaq(element) {
+            const answer = element.nextElementSibling;
+            answer.style.display = answer.style.display === "block" ? "none" : "block";
+        }
+
+        // Modal and Form Submission Logic
+        const modal = document.getElementById('customModal');
+        const closeModal = document.getElementById('closeModal');
+        const okButton = document.getElementById('okButton');
+        const form = document.getElementById('support-form');
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            modal.style.display = 'block';
+        });
+
+        closeModal.addEventListener('click', function () {
+            modal.style.display = 'none';
+        });
+
+        okButton.addEventListener('click', function () {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

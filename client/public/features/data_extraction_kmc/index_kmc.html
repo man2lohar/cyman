@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Extraction</title>
+    <link rel="icon" href="..\..\assets\images\logo.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+      <!-- Akaya Kanadaka font -->
+    <link href="https://fonts.googleapis.com/css2?family=Akaya+Kanadaka&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../src/styles/data_extraction_kmc/style_kmc.css">
+    <link rel="stylesheet" href="../../../src/styles/welcome.css">
+    <link rel="stylesheet" href="../../../src/styles/bubble.css">
+    <link rel="stylesheet" href="../../../src/styles/pop-up.css">
+</head>
+<body>
+    <div class="particles"></div>
+    <div class="main-container">
+        <div class="header-section">
+            <div class="logo-container">
+                <a href="index_kmc.html" style="display: flex; align-items: center; text-decoration: none;">
+                    <img src="../../assets/images/logo.png" alt="Homepage Logo" style="width:40px; height:auto; margin-right: 10px;">
+                    <h2>CyManSquare</h2>
+                </a>
+            </div>
+            <h1>Data Table</h1>
+            <!-- Clear Storage Button -->
+            <button id="clearStorageBtn" class="clear-button" style="display: none;">Clear All Data</button>
+            <!-- Choose File Button -->
+            <label for="file-input" id="chooseFileBtn" class="custom-file-upload" style="display: none;">
+                Choose File
+            </label>
+            <input type="file" id="file-input" accept=".xls,.xlsx,.csv">
+            <button id="generate-tables" class="back-button">Generate Tables</button>
+            <button id="calculate" class="back-button">Calculate</button>
+            <button id="instruction" class="back-button">Instruction</button>
+        </div>
+
+        <!-- Information container (visible when no local data) -->
+        <div id="info-container">
+            <div class="welcome-container">
+                <div class="animated-background"></div>
+                <div class="welcome-content">
+                    <h1>Calculate area for Sanction of a single block.</h1>
+                    <p>Your trusted platform for accurate area calculations for single block building. Upload your file to generate precise area calculations for your architectural drawing.</p>
+                    <h2>Please read carefully our <a href="../../../src/pages/privacy_policy.html">Privacy Policy</a> & 
+                        <a href="../../../src/pages/terms_of_service.html">Terms of Service</a> before use.</h2>
+                </div>
+            </div>
+        </div>
+        <div id="main-container" class="container">
+            <div id="description-container"></div>
+            <table id="data-table">
+                <thead>
+                    <tr id="table-header">
+                        <!-- Headers will be dynamically inserted here -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data Rows Go Here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+     <!-- Errors show here -->
+     <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <div class="icon-container">
+                <img src="https://img.icons8.com/ios-filled/50/ff0000/error.png" alt="Alert Icon" class="alert-icon">
+                <h3>Error Messages</h3>
+                <img src="https://img.icons8.com/ios-filled/50/ff0000/error.png" alt="Alert Icon" class="alert-icon">
+                <span id="modalClose" class="close">&times;</span>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>  
+    
+    <script src="..\..\..\src\library\xlsx.full.min.js"></script>
+    <script src="..\..\..\src\js\data_extraction_kmc\index_kmc.js"></script>
+    <script src="..\..\..\src\js\index.js"></script>
+    <script src="..\..\..\src\js\block.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const clearStorageBtn = document.getElementById('clearStorageBtn');
+            const chooseFileBtn = document.getElementById('chooseFileBtn');
+            const infoContainer = document.getElementById('info-container');
+            const mainContainer = document.getElementById('main-container');
+            const fileInput = document.getElementById('file-input');
+
+            // Check if localStorage has any data
+            if (localStorage.length > 0) {
+                clearStorageBtn.style.display = 'block';
+                chooseFileBtn.style.display = 'none';
+                infoContainer.style.display = 'none'; // Hide info container
+                mainContainer.style.display = 'block'; // Show info container
+            } else {
+                chooseFileBtn.style.display = 'inline-block';
+                clearStorageBtn.style.display = 'none';
+                infoContainer.style.display = 'block'; // Show info container
+                mainContainer.style.display = 'none'; // Hide info container
+            }
+
+            // Add click event to clear storage
+            clearStorageBtn.addEventListener('click', function () {
+                localStorage.clear();
+                alert('Data has been cleared!');
+                location.reload(); // Refresh page to update button visibility
+            });
+
+            // Handle file upload
+            fileInput.addEventListener('change', function () {
+                const file = fileInput.files[0];
+                if (file) {
+                    // Hide info container and display buttons after file upload
+                    infoContainer.style.display = 'none';
+                    clearStorageBtn.style.display = 'block';
+                    chooseFileBtn.style.display = 'none';
+                    mainContainer.style.display = 'block';
+
+                    // Add logic here to handle the uploaded file (e.g., parse CSV or Excel)
+                    console.log(`File uploaded: ${file.name}`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

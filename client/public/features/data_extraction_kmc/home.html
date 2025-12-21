@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Extraction | KMC</title>
+    <link rel="icon" href="..\..\assets\images\logo.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+      <!-- Akaya Kanadaka font -->
+     <link href="https://fonts.googleapis.com/css2?family=Akaya+Kanadaka&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../src/styles/bubble.css">
+    <link rel="stylesheet" href="../../../src/styles/main.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .welcome-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: rgb(255, 255, 255);
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .welcome-content {
+            max-width: 1000px;
+            background: linear-gradient(to right, #b8d7fa73, #1f7cf588);
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+        .welcome-content h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .welcome-content p {
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+
+        /* Parent container for hover interaction */
+        .card-container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .card-container p {
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: large;
+            margin-top: 10px;
+            color: rgba(0, 0, 0, 0.644);
+        }
+
+        .card-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .main-card {
+            background-color: rgba(255, 255, 255, 0.8);
+            color: black;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 240px;
+            z-index: 2;
+        }
+
+        .main-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Hidden Cards Popup */
+        .hidden-cards {
+            position: absolute;
+            top: -80%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 20px;
+            z-index: 100;
+            flex-direction: row;
+        }
+
+        .card-wrapper:hover .hidden-cards {
+            display: flex;
+        }
+
+        .card {
+            background-color: rgb(233, 233, 233);
+            color: black;
+            padding: 10px;
+            border-radius: 12px;
+            width: 210px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.555);
+            background: #ffffff;
+        }
+
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ff6f61;
+        }
+
+        .card h3 {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .card p {
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 1em;
+            line-height: 1.5;
+            color: rgba(0, 0, 0, 0.555);
+        }
+    </style>
+</head>
+<body>
+    <div class="particles"></div>
+    <div class="welcome-container">
+        <div class="welcome-content">
+
+            <p>Select the type of calculation you want to perform for Sanction or Completion.</p>
+            
+            <!-- Card Container -->
+            <div class="card-container">
+                <!-- Sanction Card -->
+                <div class="card-wrapper">
+                    <div class="main-card" id="sanctionCard">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/approval.png" alt="Sanction Icon" class="card-icon" />
+                        <h3>Sanction</h3>
+                        <p>Hover to see options for sanction-related calculations.</p>
+                    </div>
+
+                    <!-- Hidden Cards for Sanction -->
+                    <div class="hidden-cards">
+                        <!-- Single Building Card -->
+                        <div class="card" id="sanctionSingleBuilding">
+                            <img src="https://img.icons8.com/ios-filled/50/000000/building.png" alt="Single Building Icon" class="card-icon" />
+                            <h3>Single Building</h3>
+                            <p>Calculate area for a single building (Sanction).</p>
+                        </div>
+
+                        <!-- Multiple Buildings Card -->
+                        <div class="card" id="sanctionMultipleBuildings">
+                            <img src="https://img.icons8.com/ios-filled/50/000000/city.png" alt="Multiple Buildings Icon" class="card-icon" />
+                            <h3>Multiple Buildings</h3>
+                            <p>Calculate area for multiple buildings (Sanction).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Completion Card -->
+                <div class="card-wrapper">
+                    <div class="main-card" id="completionCard">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/checkmark.png" alt="Completion Icon" class="card-icon" />
+                        <h3>Completion</h3>
+                        <p>Hover to see options for completion-related calculations.</p>
+                    </div>
+
+                    <!-- Hidden Cards for Completion -->
+                    <div class="hidden-cards">
+                        <!-- Single Building Card -->
+                        <div class="card" id="completionSingleBuilding">
+                            <img src="https://img.icons8.com/ios-filled/50/000000/building.png" alt="Single Building Icon" class="card-icon" />
+                            <h3>Single Building</h3>
+                            <p>Calculate area for a single building (Completion).</p>
+                        </div>
+
+                        <!-- Multiple Buildings Card -->
+                        <div class="card" id="completionMultipleBuildings">
+                            <img src="https://img.icons8.com/ios-filled/50/000000/city.png" alt="Multiple Buildings Icon" class="card-icon" />
+                            <h3>Multiple Buildings</h3>
+                            <p>Calculate area for multiple buildings (Completion).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Sanction functionality
+        document.getElementById('sanctionSingleBuilding').addEventListener('click', () => {
+            window.location.href = "index_kmc.html";
+        });
+
+        document.getElementById('sanctionMultipleBuildings').addEventListener('click', () => {
+            window.location.href = "../../../src/pages/coming-soon.html";
+        });
+
+        // Completion functionality
+        document.getElementById('completionSingleBuilding').addEventListener('click', () => {
+            window.location.href = "../../../src/pages/coming-soon.html";
+        });
+
+        document.getElementById('completionMultipleBuildings').addEventListener('click', () => {
+            window.location.href = "../../../src/pages/coming-soon.html";
+        });
+    </script>
+    <script src="../../../src/js/index.js"></script>
+</body>
+</html>
