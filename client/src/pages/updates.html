@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Updates | CyManSquare</title>
+  <link rel="icon" href="../../public/assets/images/cymansquare_logo.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Akaya+Kanadaka&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/legal.css">
+  <style>
+    .update-list { display:flex; flex-direction:column; gap:0; max-width:720px; margin:0 auto 60px; }
+    .update-item { display:flex; gap:24px; padding:28px 0; border-bottom:1px solid var(--border); }
+    .update-item:last-child { border-bottom:none; }
+    .update-timeline { display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:80px; padding-top:4px; }
+    .update-dot { width:14px; height:14px; border-radius:50%; background:var(--orange); flex-shrink:0; box-shadow:0 0 0 4px rgba(45,152,253,.15); }
+    .update-line { width:2px; flex:1; min-height:40px; background:linear-gradient(to bottom,var(--orange),transparent); margin-top:6px; opacity:.25; }
+    .update-item:last-child .update-line { display:none; }
+    .update-date  { font-size:.7rem; font-weight:800; color:var(--orange); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+    .update-body  { flex:1; }
+    .update-title { font-size:1rem; font-weight:800; letter-spacing:-.3px; margin-bottom:8px; color:var(--brown); }
+    .update-desc  { font-size:.85rem; color:var(--muted); margin-bottom:12px; line-height:1.65; }
+    .update-tags  { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+    .tag { font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:100px; letter-spacing:.5px; text-transform:uppercase; }
+    .tag-feature  { background:rgba(45,152,253,.1);  color:var(--orange); }
+    .tag-fix      { background:rgba(82,196,26,.1);   color:#52c41a; }
+    .tag-security { background:rgba(250,173,20,.1);  color:#d48806; }
+    .tag-perf     { background:rgba(168,85,247,.1);  color:#a855f7; }
+    .tag-ux       { background:rgba(6,182,212,.1);   color:#06b6d4; }
+    .cl { margin:0; padding:0; list-style:none; }
+    .cl li { display:flex; align-items:flex-start; gap:8px; font-size:.82rem; color:var(--muted); margin-bottom:4px; }
+    .cl li::before { content:'→'; color:var(--orange); flex-shrink:0; }
+  </style>
+</head>
+<body class="legal-page">
+  <header class="legal-header">
+    <a href="../../index.html" class="legal-brand">
+      <img src="../../public/assets/images/cymansquare_logo.svg" alt="CyManSquare" style="height:26px">
+      <span style="font-family:'Akaya Kanadaka',cursive;font-weight:100;color:#2d98fd;font-size:1.2rem">CyManSquare</span>
+    </a>
+    <nav class="legal-nav">
+      <a href="../../../index.html">Home</a>
+      <a href="support.html">Support</a>
+      <a href="privacy_policy.html">Privacy</a>
+    </nav>
+    <button class="legal-dark-toggle" onclick="toggleDark()">🌙</button>
+  </header>
+
+  <main class="legal-main">
+    <div class="legal-container" style="max-width:780px">
+      <div class="legal-hero">
+        <div class="legal-icon">📦</div>
+        <h1>Product Updates</h1>
+        <p class="legal-date">A running changelog of everything shipped — latest first.</p>
+      </div>
+
+      <div class="update-list">
+
+        <div class="update-item">
+          <div class="update-timeline"><div class="update-dot"></div><div class="update-line"></div></div>
+          <div class="update-body">
+            <div class="update-date">November 02, 2025</div>
+            <div class="update-title">Project Management System Launch</div>
+            <div class="update-desc">Launched a fully-integrated Project Management feature powered by Firebase Realtime Database. Teams can now track tasks, milestones, and project progress directly inside CyManSquare.</div>
+            <div class="update-tags"><span class="tag tag-feature">New Feature</span><span class="tag tag-ux">Dashboard</span></div>
+            <ul class="cl">
+              <li>Add projects and assign tasks with target dates and priority levels</li>
+              <li>Interactive calendar view showing all task deadlines</li>
+              <li>Assessment dashboard with KPI cards, charts, and filtering</li>
+              <li>Timeline view with milestone tracking and Firebase sync</li>
+              <li>Import/export tasks as CSV</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="update-item">
+          <div class="update-timeline"><div class="update-dot"></div><div class="update-line"></div></div>
+          <div class="update-body">
+            <div class="update-date">November 28, 2024</div>
+            <div class="update-title">Major Bug Fixes &amp; KMC Improvements</div>
+            <div class="update-desc">Stability release addressing user-reported issues and improving the KMC Data Extraction workflow.</div>
+            <div class="update-tags"><span class="tag tag-fix">Bug Fix</span><span class="tag tag-perf">Performance</span></div>
+            <ul class="cl">
+              <li>Fixed broken navigation links across all pages</li>
+              <li>Resolved KMC data extraction parsing errors on certain Excel formats</li>
+              <li>Added "Clear All Data" button to KMC main page</li>
+              <li>Improved localStorage handling — no stale data between sessions</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="update-item">
+          <div class="update-timeline"><div class="update-dot"></div><div class="update-line"></div></div>
+          <div class="update-body">
+            <div class="update-date">July 27, 2024</div>
+            <div class="update-title">New Feature Launch &amp; Help Guide</div>
+            <div class="update-desc">Shipped enhancements to the KMC tool alongside a new instruction page to help new users get started.</div>
+            <div class="update-tags"><span class="tag tag-feature">Enhancement</span><span class="tag tag-ux">UX</span></div>
+            <ul class="cl">
+              <li>KMC floor area calculation accuracy improvements</li>
+              <li>Fixed login timeout — users no longer get unexpectedly signed out</li>
+              <li>New Instruction page with step-by-step guide and .dxe file download</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="update-item">
+          <div class="update-timeline"><div class="update-dot"></div><div class="update-line"></div></div>
+          <div class="update-body">
+            <div class="update-date">July 14, 2024</div>
+            <div class="update-title">Performance &amp; Mobile Improvements</div>
+            <div class="update-desc">Backend optimisations and mobile responsiveness improvements based on early user feedback.</div>
+            <div class="update-tags"><span class="tag tag-perf">Performance</span><span class="tag tag-ux">Mobile</span></div>
+            <ul class="cl">
+              <li>Optimised backend data processing — significantly faster table generation</li>
+              <li>Contact form now fully responsive on mobile devices</li>
+              <li>User feedback survey distributed to beta users</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="update-item">
+          <div class="update-timeline"><div class="update-dot"></div><div class="update-line"></div></div>
+          <div class="update-body">
+            <div class="update-date">June 21, 2024</div>
+            <div class="update-title">Security Updates &amp; Maintenance</div>
+            <div class="update-desc">Security hardening and zero-downtime maintenance window.</div>
+            <div class="update-tags"><span class="tag tag-security">Security</span><span class="tag tag-fix">Maintenance</span></div>
+            <ul class="cl">
+              <li>Firebase Authentication security rules implemented</li>
+              <li>Resolved minor issues from customer support reports</li>
+              <li>Server maintenance completed with zero downtime</li>
+              <li>Firebase Database rules tightened — user data restricted to owner</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="info-card" style="text-align:center;margin-bottom:40px">
+        <p style="font-size:.88rem;margin-bottom:4px">📬 Want update notifications?</p>
+        <p style="font-size:.8rem;color:var(--muted)">Email <a href="mailto:cymansquare@outlook.com">cymansquare@outlook.com</a> with subject <strong>"Subscribe to Updates"</strong>.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="legal-footer-inner">
+      <span>© 2026 CyManSquare. All rights reserved.</span>
+      <div class="legal-footer-links">
+        <a href="../../index.html">Home</a>
+        <a href="privacy_policy.html">Privacy Policy</a>
+        <a href="terms_of_service.html">Terms of Service</a>
+        <a href="cookie_policy.html">Cookie Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleDark() {
+      const on = localStorage.getItem('cymDark') !== '1';
+      localStorage.setItem('cymDark', on ? '1' : '0');
+      document.body.classList.toggle('dark-mode', on);
+      document.querySelector('.legal-dark-toggle').textContent = on ? '☀️' : '🌙';
+    }
+    if (localStorage.getItem('cymDark') === '1') {
+      document.body.classList.add('dark-mode');
+      document.querySelector('.legal-dark-toggle').textContent = '☀️';
+    }
+  </script>
+</body>
+</html>
