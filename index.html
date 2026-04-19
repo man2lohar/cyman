@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CyManSquare — The future of architectural workflow. KMC data extraction, AI architecture tools, and project management for modern firms.">
+  <title>CyMan² | Home</title>
+  <link rel="icon" href="client/public/assets/images/cymansquare_logo.svg" type="image/svg+xml">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Akaya+Kanadaka&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- EmailJS (for support form) -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init('2PcJndSv8HJv7XpuH');</script>
+  <!-- ↑ Replace YOUR_EMAILJS_PUBLIC_KEY after signing up at https://emailjs.com -->
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="client/src/styles/main.css">
+</head>
+<body id="body">
+
+<!-- ── Animated SVG background ── -->
+<div class="bg-vector">
+  <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+    <ellipse class="blob b1" cx="25%" cy="35%" rx="320" ry="220"/>
+    <ellipse class="blob b2" cx="75%" cy="65%" rx="280" ry="200"/>
+    <g id="gridLines"></g>
+    <g id="geoShapes"></g>
+  </svg>
+</div>
+
+<!-- ── Theme toggle ── -->
+<button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+</button>
+
+<!-- ══════════════════════════════════════════════════════════════
+     AUTH MODAL
+══════════════════════════════════════════════════════════════ -->
+<div class="overlay" id="authOverlay" role="dialog" aria-label="Sign in">
+  <div class="modal">
+    <!-- Left branding panel -->
+    <div class="modal-left">
+      <div class="modal-left-inner">
+        <div class="modal-brand">
+          <div class="modal-logo-ring">
+            <img src="client/public/assets/images/cymansquare_logo.svg" alt="CyManSquare" style="height:24px">
+          </div>
+          <span style="font-family:'Akaya Kanadaka',cursive;font-size:1.1rem;font-weight:100">CyMan²</span>
+        </div>
+        <h2 class="modal-tagline">The future of<br><em>architectural</em><br>workflow.</h2>
+        <div class="modal-stats">
+          <div class="modal-stat"><span class="stat-num">2.4k+</span><span class="stat-label">Projects</span></div>
+          <div class="modal-stat"><span class="stat-num">98%</span><span class="stat-label">Accuracy</span></div>
+          <div class="modal-stat"><span class="stat-num">24/7</span><span class="stat-label">Support</span></div>
+        </div>
+        <div class="modal-shapes">
+          <div class="ms ms1"></div><div class="ms ms2"></div><div class="ms ms3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="modal-right">
+      <button class="modal-close" onclick="toggleModal()" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div id="authView">
+        <div class="form-header">
+          <h2 id="modalTitle">Welcome back</h2>
+          <p id="modalSubtitle" class="form-sub">Sign in to your workspace</p>
+        </div>
+
+        <div class="error-banner" id="errorDisplay" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+          <span>Incorrect credentials. Please try again.</span>
+        </div>
+
+        <form id="authForm" autocomplete="on">
+          <div class="field-group" id="nameGroup" style="display:none">
+            <label>Full Name</label>
+            <div class="input-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="nameField" name="name" placeholder="Your full name">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>Email</label>
+            <div class="input-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>Password</label>
+            <div class="input-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" class="eye-btn" onclick="togglePassword()" aria-label="Show password">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div style="text-align:right;margin:-4px 0 14px">
+            <a href="#" id="forgotPasswordLink" style="font-size:.75rem;color:var(--orange);font-weight:600">Forgot password?</a>
+          </div>
+
+          <button type="submit" id="submitBtn" class="primary-btn" style="width:100%;justify-content:center">
+            <span id="btnText">Continue</span>
+            <div class="btn-loader" id="btnLoader"></div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="btnArrow"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+
+        <div class="divider"><span>or</span></div>
+        <p class="switch-link" id="switchAuth">Don't have an account? <span>Register</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     DASHBOARD OVERLAY
+══════════════════════════════════════════════════════════════ -->
+<div class="dashboard-overlay" id="dashboardOverlay" role="dialog" aria-label="Dashboard">
+  <div class="dashboard">
+
+    <!-- Sidebar -->
+    <aside class="dash-sidebar">
+      <div class="dash-brand">
+        <img src="client/public/assets/images/cymansquare_logo.svg" alt="CyManSquare" style="height:22px">
+        <span style="font-family:'Akaya Kanadaka',cursive;font-weight:100">CyMan²</span>
+      </div>
+
+      <div class="dash-nav-label">Dashboard</div>
+      <nav class="dash-nav">
+        <a class="dash-nav-item active" data-tab="overview">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          Overview
+        </a>
+        <a class="dash-nav-item" data-tab="uploads">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          KMC Uploads
+          <span class="nav-badge" id="uploadBadge" style="display:none">0</span>
+        </a>
+        <div class="dash-nav-divider"></div>
+        <a class="dash-nav-item" data-tab="profile">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          My Profile
+        </a>
+      </nav>
+
+      <!-- User block -->
+      <div class="dash-user">
+        <div class="dash-avatar" id="dashAvatar">U</div>
+        <div class="dash-user-info">
+          <div class="dash-user-name" id="dashUserEmail">user</div>
+          <div class="dash-user-role" id="dashUserRole">Member</div>
+        </div>
+        <button class="dash-logout" onclick="handleLogout()" title="Sign Out">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="dash-main">
+      <!-- Topbar -->
+      <div class="dash-topbar">
+        <div>
+          <h1 class="dash-greeting" id="dashGreeting">Welcome 👋</h1>
+          <p class="dash-sub">Your CyMan² workspace</p>
+        </div>
+        <button class="dash-close-btn" onclick="closeDashboard()" aria-label="Close dashboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- ── Tab: Overview ── -->
+      <div class="dash-tab active" id="tab-overview">
+        <!-- Stat cards -->
+        <div class="dash-stats-row">
+          <div class="dash-stat-card">
+            <div class="dsc-icon" style="background:rgba(45,152,253,.12)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d98fd" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div>
+              <div class="dsc-val" id="stat-uploads">—</div>
+              <div class="dsc-lbl">Active Uploads</div>
+            </div>
+          </div>
+          <div class="dash-stat-card">
+            <div class="dsc-icon" style="background:rgba(250,173,20,.12)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#faad14" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div>
+              <div class="dsc-val" id="stat-expiring">—</div>
+              <div class="dsc-lbl">Expiring in 7 days</div>
+            </div>
+          </div>
+          <div class="dash-stat-card">
+            <div class="dsc-icon" style="background:rgba(82,196,26,.12)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#52c41a" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <div>
+              <div class="dsc-val" id="stat-total">—</div>
+              <div class="dsc-lbl">Total Uploads</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h3>Quick Actions</h3>
+          </div>
+          <div class="quick-actions">
+            <button class="qa-btn" onclick="window.open('client/public/features/data_extraction_kmc/home.html','_blank')">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              KMC Data Extraction
+            </button>
+            <button class="qa-btn" onclick="window.open('client/public/features/project_management/index.html','_blank')">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Project Management
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent uploads -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h3>Recent KMC Uploads</h3>
+            <button class="panel-link" onclick="window.switchTab('uploads')">View all →</button>
+          </div>
+          <div id="recentUploadsList">
+            <div class="dash-empty" style="padding:20px;text-align:center;opacity:.4;font-size:.82rem">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab: KMC Uploads ── -->
+      <div class="dash-tab" id="tab-uploads">
+        <div class="dash-panel" style="padding:24px">
+          <div class="panel-header" style="margin-bottom:20px">
+            <div>
+              <h3>KMC Upload History</h3>
+              <p style="font-size:.76rem;opacity:.42;margin-top:3px">Files are automatically deleted after 30 days.</p>
+            </div>
+            <button class="dash-new-btn" onclick="window.open('client/public/features/data_extraction_kmc/home.html','_blank')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Upload
+            </button>
+          </div>
+          <div id="uploadsLoading" style="text-align:center;padding:32px;opacity:.38">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            <div style="font-size:.8rem;margin-top:8px">Loading…</div>
+          </div>
+          <div id="uploadsEmpty" style="display:none;text-align:center;padding:40px">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.2" opacity=".3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div style="font-size:.88rem;font-weight:700;margin:12px 0 6px">No uploads yet</div>
+            <div style="font-size:.75rem;opacity:.42">Open KMC Data Extraction to upload your first file.</div>
+            <button class="primary-btn sm" style="margin-top:16px;width:auto" onclick="window.open('client/public/features/data_extraction_kmc/home.html','_blank')">Open KMC →</button>
+          </div>
+          <div id="uploadsList" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- ── Tab: Profile ── -->
+      <div class="dash-tab" id="tab-profile">
+        <div class="dash-grid-2">
+          <!-- Profile info card -->
+          <div class="dash-panel" style="padding:28px">
+            <h3 style="margin-bottom:22px">Profile Information</h3>
+
+            <div id="profileMsg" class="profile-msg" style="display:none"></div>
+
+            <!-- Photo -->
+            <div class="profile-photo-row">
+              <div class="profile-photo-wrap">
+                <img id="profilePhotoPreview" src="" alt="Profile Photo" style="display:none">
+                <span id="profilePhotoInitial">U</span>
+              </div>
+              <div>
+                <label class="primary-btn sm" for="profilePhotoFile" style="cursor:pointer">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload Photo
+                </label>
+                <input type="file" id="profilePhotoFile" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+                <p style="font-size:.7rem;opacity:.42;margin-top:6px">JPG, PNG, WebP · max 2 MB</p>
+              </div>
+            </div>
+
+            <!-- Fields -->
+            <div class="field-group" style="margin-top:20px">
+              <label>Display Name</label>
+              <div class="input-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="profileDisplayName" placeholder="Your display name">
+              </div>
+            </div>
+            <div class="field-group">
+              <label>Email <span style="opacity:.4;font-size:.65rem">(cannot be changed)</span></label>
+              <div class="input-wrap" style="opacity:.55">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <input type="email" id="profileEmail" disabled>
+              </div>
+            </div>
+            <button class="primary-btn" style="width:100%;justify-content:center;margin-top:8px" onclick="saveProfile()">
+              Save Changes
+            </button>
+          </div>
+
+          <!-- Password card -->
+          <div class="dash-panel" style="padding:28px">
+            <h3 style="margin-bottom:22px">Change Password</h3>
+            <div class="field-group">
+              <label>Current Password</label>
+              <div class="input-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="currentPassword" placeholder="Enter current password">
+              </div>
+            </div>
+            <div class="field-group">
+              <label>New Password</label>
+              <div class="input-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="newPassword" placeholder="Min. 6 characters">
+              </div>
+            </div>
+            <div class="field-group">
+              <label>Confirm New Password</label>
+              <div class="input-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="confirmPassword" placeholder="Repeat new password">
+              </div>
+            </div>
+            <button class="primary-btn" style="width:100%;justify-content:center;margin-top:8px;background:linear-gradient(135deg,#52c41a,#389e0d)" onclick="changePassword()">
+              Update Password
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="brand" onclick="slideTo(0)" style="cursor:pointer">
+    <img src="client/public/assets/images/cymansquare_logo.svg" alt="CyManSquare" style="height:28px">
+    <span style="font-family:'Akaya Kanadaka',cursive;font-size:1.2rem;font-weight:100;color:var(--orange)">CyMan²</span>
+  </div>
+  <nav>
+    <a href="#" onclick="slideTo(1,this)">Features</a>
+    <a href="#" onclick="slideTo(2,this)">Services</a>
+    <a href="#" onclick="slideTo(3,this)">Updates</a>
+    <a href="#" onclick="slideTo(4,this)">Support</a>
+    <a href="#" onclick="slideTo(5,this)">Pricing</a>
+  </nav>
+  <div class="auth-group" id="authGroup">
+    <a class="auth-link" onclick="toggleModal()">Log In</a>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════
+     VIEWPORT SLIDES
+══════════════════════════════════════════════════════════════ -->
+<div class="viewport" id="viewport">
+
+  <!-- 01 Home -->
+  <section>
+    <div class="card">
+      <div class="slide-label">01 / Home</div>
+      <h1>Welcome to <span style="font-family:'Akaya Kanadaka',cursive;font-weight:100;color:var(--orange)">CyMan²</span></h1>
+      <p>The home of architectural innovation — from KMC data extraction to AI-powered design tools.</p>
+      <div class="typing-box">
+        <span id="typingText"></span><span class="cursor"></span>
+      </div>
+      <div class="slide-cta">
+        <button class="primary-btn sm" onclick="slideTo(1,document.querySelector('nav a'))">Explore Features</button>
+        <button class="ghost-sm" onclick="getStarted()">Get Started →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 Features -->
+  <section>
+    <div class="card">
+      <div class="slide-label">02 / Features</div>
+      <h1>Features</h1>
+      <p>Modular tools built for architectural professionals and firms.</p>
+      <div class="feature-chips">
+        <span class="chip chip-live"
+              onclick="openFeature('KMC Data Extraction','client/public/features/data_extraction_kmc/home.html')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          KMC Data Extraction
+        </span>
+        <span class="chip chip-live"
+              onclick="openFeature('Project Management','client/public/features/project_management/index.html')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Project Management
+        </span>
+        <span class="chip chip-soon">AI Architecture <span class="soon-tag">soon</span></span>
+        <span class="chip chip-soon">AR / VR <span class="soon-tag">soon</span></span>
+        <span class="chip chip-soon">Presentations <span class="soon-tag">soon</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 Services -->
+  <section>
+    <div class="card">
+      <div class="slide-label">03 / Services</div>
+      <h1>Services</h1>
+      <p>Engineering meets elegant design — tailored for your firm.</p>
+      <div class="service-list">
+        <div class="service-item"><span class="s-dot"></span>Consultancy</div>
+        <div class="service-item"><span class="s-dot"></span>Cloud Solutions</div>
+        <div class="service-item"><span class="s-dot"></span>Blockchain Expertise</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 Updates -->
+  <section>
+    <div class="card">
+      <div class="slide-label">04 / Updates</div>
+      <h1>Updates</h1>
+      <p>Continuous improvements, shipped every week.</p>
+      <div class="update-ticker">
+        <div class="ticker-item"><span class="ticker-date">Nov 2025</span>Project Management system launched</div>
+        <div class="ticker-item"><span class="ticker-date">Nov 2024</span>Major bug fixes &amp; KMC improvements</div>
+        <div class="ticker-item"><span class="ticker-date">Jul 2024</span>New features &amp; FAQ section added</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 Support -->
+  <section>
+    <div class="card">
+      <div class="slide-label">05 / Support</div>
+      <div class="contact-wrapper">
+        <div class="contact-left">
+          <h2>Send Us a Message</h2>
+          <p>Please let us know if you have any Feedback, bugs, or suggestions on <strong>CyMan²</strong> — we respond within 24 hour.</p>
+          <p style="margin:10px 0 10px 0;">We'd love to hear your thoughts!</p>
+          <p>Please feel free to connect with us through:</p>
+          <div class="social">
+            <a href="https://wa.me/8282061314" target="_blank" title="WhatsApp" style="text-decoration:none">
+              <div><i class="bi bi-whatsapp" style="color:#25d366;font-size:1.1rem"></i></div>
+            </a>
+            <a href="https://linkedin.com/in/cymansquare" target="_blank" title="LinkedIn" style="text-decoration:none">
+              <div><i class="bi bi-linkedin" style="color:#0a66c2;font-size:1.1rem"></i></div>
+            </a>
+            <a href="https://facebook.com/cymansquare" target="_blank" title="Facebook" style="text-decoration:none">
+              <div><i class="bi bi-facebook" style="color:#1877f2;font-size:1.1rem"></i></div>
+            </a>
+            <a href="https://instagram.com/cymansquare" target="_blank" title="Instagram" style="text-decoration:none">
+              <div><i class="bi bi-instagram" style="color:#e4405f;font-size:1.1rem"></i></div>
+            </a>
+            <a href="https://twitter.com/cymansquare" target="_blank" title="Twitter" style="text-decoration:none">
+              <div><i class="bi bi-twitter-x" style="color:#000;font-size:1.1rem"></i></div>
+            </a>
+            <a href="https://youtube.com/cymansquare" target="_blank" title="YouTube" style="text-decoration:none">
+              <div><i class="bi bi-youtube" style="color:#ff0000;font-size:1.1rem"></i></div>
+            </a>
+            <a href="https://github.com/cymansquare" target="_blank" title="GitHub" style="text-decoration:none">
+              <div><i class="bi bi-github" style="color:#333;font-size:1.1rem"></i></div>
+            </a>
+            <a href="mailto:your@email.com" title="Email" style="text-decoration:none">
+              <div><i class="bi bi-envelope-fill" style="color:#ff6b6b;font-size:1.1rem"></i></div>
+            </a>
+          </div>
+        </div>
+        <div class="contact-right">
+          <form id="supportFormMain">
+            <div class="row">
+              <div class="form-group">
+                <label>First name *</label>
+                <input type="text" name="first_name" placeholder="First name" required>
+              </div>
+              <div class="form-group">
+                <label>Last name *</label>
+                <input type="text" name="last_name" placeholder="Last name" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" name="email" placeholder="your@email.com" required>
+            </div>
+            <div class="form-group">
+              <label>Category *</label>
+              <select name="category" required>
+                <option value="">Select…</option>
+                <option>General inquiry</option>
+                <option>Bug report</option>
+                <option>Feature request</option>
+                <option>Billing</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Message *</label>
+              <textarea name="message" rows="3" placeholder="Describe your issue…" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 Pricing -->
+  <section>
+    <div class="card">
+      <div class="slide-label">06 / Pricing</div>
+      <h1>Pricing</h1>
+      <p>Start free. Upgrade when you're ready. All plans include core features.</p>
+      <div class="price-row">
+        <div class="price-card">
+          <div class="price-name">Basic</div>
+          <div class="price-val">₹499<span>/mo</span></div>
+          <div class="price-feat">10 GB · Email Support</div>
+        </div>
+        <div class="price-card featured-pc">
+          <div class="price-name">Standard</div>
+          <div class="price-val">₹999<span>/mo</span></div>
+          <div class="price-feat">50 GB · Priority Support</div>
+          <div class="popular-badge">Popular</div>
+        </div>
+        <div class="price-card">
+          <div class="price-name">Premium</div>
+          <div class="price-val">₹1499<span>/mo</span></div>
+          <div class="price-feat">Unlimited · 24/7 Support</div>
+        </div>
+      </div>
+      <p style="font-size:.72rem;opacity:.38;margin-top:14px">
+        💳 Payment integration coming soon. All features currently free for early adopters.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<!-- Progress bar -->
+<div class="progress-container"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- Footer -->
+<footer>
+  © 2026 CyMan² &nbsp;·&nbsp;
+  <a href="client/src/pages/privacy_policy.html">Privacy Policy</a> &nbsp;|&nbsp;
+  <a href="client/src/pages/terms_of_service.html">Terms of Service</a> &nbsp;|&nbsp;
+  <a href="client/src/pages/cookie_policy.html">Cookie Policy</a>
+</footer>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════════════════════════ -->
+<script type="module" src="client/src/js/main.js"></script>
+<script type="module" src="client/src/js/dashboard.js"></script>
+
+</body>
+</html>
