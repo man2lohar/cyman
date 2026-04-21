@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>KMC Data Extraction | CyManSquare</title>
+  <link rel="icon" href="../../assets/images/cymansquare_logo.svg" type="image/svg+xml"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../../../src/styles/data_extraction_kmc/style_kmc_index.css">
+</head>
+<body>
+
+  <!-- ── SVG Background ── -->
+  <div class="bg-vector">
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <ellipse class="blob b1" cx="25%" cy="35%" rx="320" ry="220"/>
+      <ellipse class="blob b2" cx="75%" cy="65%" rx="280" ry="200"/>
+      <g id="gridLines"></g>
+      <g id="geoShapes"></g>
+    </svg>
+  </div>
+
+  <!-- ── Firebase SDKs ── -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="../../../src/js/feature-shell.js"
+          data-feature="KMC Data Extraction"
+          data-login="login.html"
+          data-home="../../../../index.html">
+  </script>
+
+  <div class="app-wrapper">
+
+    <!-- ══════════════════════════
+         TOP BAR
+    ══════════════════════════ -->
+    <div class="topbar">
+      <div class="logo">
+        <span class="sub">Calculate area for Sanction of a <span>SINGLE BLOCK BUILDING.</span></span>
+      </div>
+      <div class="topbar-right">
+        <div class="status-bar" style="margin:0">
+          <div class="status-dot" id="status-dot"></div>
+          <span id="status-text">No file loaded — upload to begin</span>
+        </div>
+        <button id="clearStorageBtn" class="btn btn-danger" style="display:none">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Clear Data
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         MENU BAR
+    ══════════════════════════ -->
+    <nav class="tab-bar" id="mainTabBar">
+
+      <!-- Home tab -->
+      <button class="tab-btn active" data-tab="section-home">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/>
+        </svg>
+        Home
+      </button>
+
+      <!-- Layer Tables tab -->
+      <button class="tab-btn" id="tabLayerTables" data-tab="section-tables" style="display:none">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/>
+        </svg>
+        Layer Tables
+      </button>
+
+      <!-- Filtered Tables tab -->
+      <button class="tab-btn" id="filteredTables" data-tab="section-filtered" style="display:none">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        Filtered Tables
+      </button>
+
+      <!-- Floor Area Table tab -->
+      <button class="tab-btn" id="sanctionTab" data-tab="section-sanction" style="display:none">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        Floor Area Table
+      </button>
+
+      <!-- Parking Calculation tab -->
+      <button class="tab-btn" id="parkingTab" data-tab="section-parking" style="display:none">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+        Parking
+      </button>
+
+      <!-- Occupancy tab -->
+      <button class="tab-btn" id="occupancyTab" data-tab="section-occupancy" style="display:none">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Occupancy
+      </button>
+
+      <!-- Final Summary tab -->
+      <button class="tab-btn" id="masterTab" data-tab="section-master" style="display:none">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        </svg>
+        Final Summary
+      </button>
+
+    </nav>
+
+
+    <!-- ══════════════════════════════════════════
+         SECTION 1 — HOME / UPLOAD
+    ══════════════════════════════════════════ -->
+    <div id="section-home" class="tab-section active">
+      <div class="page">
+
+        <div id="info-container">
+
+          <!-- Upload hero -->
+          <div class="upload-hero">
+            <input type="file" id="file-input" accept=".xls,.xlsx,.csv"/>
+            <label for="file-input" id="chooseFileBtn" style="display:none"></label>
+            <div id="uploadZone" class="upload-zone-hero">
+              <div class="upload-zone-inner">
+                <div class="upload-excel-icon">
+                  <svg viewBox="0 0 48 48" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="2" width="30" height="44" rx="3" fill="#217346"/>
+                    <rect x="18" y="8" width="28" height="32" rx="3" fill="#1e5c38"/>
+                    <path fill="#fff" d="M8 16l4 8-4 8h4l2-4 2 4h4l-4-8 4-8h-4l-2 4-2-4z"/>
+                  </svg>
+                </div>
+                <div class="upload-text">
+                  <h3>Drop your KMC Excel file here</h3>
+                  <p>or <span class="upload-browse">click to browse</span></p>
+                  <div class="upload-formats">
+                    <span>.xls</span><span>.xlsx</span><span>.csv</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Steps row -->
+          <div class="steps-row">
+            <div class="step-card">
+              <div class="step-card-num">01</div>
+              <div class="step-card-text">Download the <b>.dxe</b> file and run it in AutoCAD to extract data</div>
+            </div>
+            <div class="step-card">
+              <div class="step-card-num">02</div>
+              <div class="step-card-text">Save <b>all sheets</b> (MASTER, A) together in one Excel file</div>
+            </div>
+            <div class="step-card">
+              <div class="step-card-num">03</div>
+              <div class="step-card-text">Upload the file above — then use the menu tabs to run calculations</div>
+            </div>
+            <div class="step-card">
+              <div class="step-card-num">04</div>
+              <div class="step-card-text">
+                <button class="open-btn" style="margin:0" onclick="document.getElementById('instrOverlay').classList.add('active')">
+                  📋 Full Instructions
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Extracted data (shown after upload) -->
+        <div id="main-container" class="data-card" style="display:none">
+          <div class="data-card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <span>
+              <svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+              Extracted Data — <span id="loaded-filename" style="font-weight:500;color:var(--accent);font-size:.9em;font-family:var(--font-mono);"></span>
+            </span>
+            <button id="checkErrorsBtn" class="btn" style="font-size:.75rem;padding:6px 14px;gap:5px;">
+              <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Check Errors
+            </button>
+          </div>
+          <div id="description-container" style="text-align:center;font-size:.82rem;margin:8px 0 10px;color:var(--muted);">
+            <span style="color:#d4501a;font-weight:700;">'Orange'</span> color text denotes duplicate data &nbsp;|&nbsp;
+            <span style="color:#e74c3c;font-weight:700;">'Red'</span> color text denotes wrong data
+          </div>
+          <div class="table-wrap">
+            <table id="data-table">
+              <thead><tr id="table-header"></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error modal -->
+      <div id="errorModal">
+        <div class="error-modal-box">
+          <button class="modal-close-x" id="modalClose">&times;</button>
+          <div class="icon-container">
+            <img src="https://img.icons8.com/ios-filled/50/ff0000/error.png" alt="Error" class="alert-icon">
+            <h3>Error Messages</h3>
+          </div>
+          <div id="modalBody"></div>
+        </div>
+      </div>
+    </div><!-- /section-home -->
+
+
+    <!-- ══════════════════════════════════════════
+         SECTION 2 — LAYER TABLES
+    ══════════════════════════════════════════ -->
+    <div id="section-tables" class="tab-section">
+      <div class="page">
+        <div class="section-header">
+          <span class="section-title">
+            <svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+            Every <span>Layer</span> Tables
+          </span>
+          <div class="section-actions">
+            <button class="btn" onclick="generateTables()">
+              <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+        <div id="tables-container"></div>
+      </div>
+    </div><!-- /section-tables -->
+
+
+    <!-- ══════════════════════════════════════════
+         SECTION 3 — FILTERED TABLES
+    ══════════════════════════════════════════ -->
+    <div id="section-filtered" class="tab-section">
+      <div class="page">
+        <div class="section-header">
+          <span class="section-title">
+            <svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            <span>Filtered</span> Tables
+          </span>
+          <div class="section-actions">
+            <button class="btn" onclick="generateFilteredTables()">
+              <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+        <div id="filtered-section-container"></div>
+      </div>
+
+      <!-- Filtered alert modal -->
+      <div id="filteredAlertModal" class="filtered-alert-overlay">
+        <div class="filtered-alert-box">
+          <button class="modal-close-x" id="filteredAlertClose">&times;</button>
+          <div class="icon-container">
+            <img src="https://img.icons8.com/?size=100&id=523&format=png&color=228BE6" alt="Alert" class="alert-icon">
+            <h3>Please Check Below Parameters!</h3>
+          </div>
+          <div id="filteredAlertBody" style="text-align:left;max-height:260px;overflow-y:auto;font-size:.85rem;line-height:1.6;margin-top:10px;color:#e74c3c;"></div>
+          <div style="text-align:right;margin-top:16px;">
+            <button class="close-btn" id="filteredAlertCloseBtn">Close</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /section-filtered -->
+
+
+    <!-- ══════════════════════════════════════════
+         SECTION 4 — FLOOR AREA TABLE
+    ══════════════════════════════════════════ -->
+    <div id="section-sanction" class="tab-section">
+      <div class="page">
+
+        <div class="section-header">
+          <span class="section-title">
+            <svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Floor Area For <span>F.A.R.</span> Calculation
+          </span>
+          <div class="section-actions">
+            <button class="btn" onclick="generateSanctionTables()">
+              <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title">
+            <svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+            Floor Area For F.A.R. Calculation
+          </div>
+          <div class="table-wrap">
+            <table id="sanction-floor-table">
+              <thead>
+                <tr>
+                  <th>Floor</th>
+                  <th>Total Floor Area</th>
+                  <th>Stair Well</th>
+                  <th>Lift Well</th>
+                  <th>Duct / Cutout</th>
+                  <th>Effective Floor Area</th>
+                  <th>Stairway</th>
+                  <th>Lift Lobby</th>
+                  <th>Net Floor Area</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr>
+                  <td>Total</td>
+                  <td id="s-total-floor-area">0.000</td>
+                  <td id="s-total-stair-well">0.000</td>
+                  <td id="s-total-lift-well">0.000</td>
+                  <td id="s-total-duct-cutout">0.000</td>
+                  <td id="s-total-effective-floor-area">0.000</td>
+                  <td id="s-total-stairway">0.000</td>
+                  <td id="s-total-lift-lobby">0.000</td>
+                  <td id="s-total-net-floor-area">0.000</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="data-card" id="sanction-compare-container" style="display:none;">
+          <div class="data-card-title">
+            <svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Comparative Table
+          </div>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:4px;">Below Comparative Area Statement for Residential Use-Group Only*</p>
+          <p style="font-size:.74rem;color:var(--muted2);margin-bottom:12px;">(If You Have Another Use-Group, Please Calculate it manually)</p>
+          <div class="table-wrap">
+            <table id="sanction-compare-table">
+              <thead>
+                <tr>
+                  <th>Floor</th>
+                  <th>Gross Floor Area of Residential</th>
+                  <th>Gross of Common Area, Parking Area &amp; Tenement Area</th>
+                  <th>Difference</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr>
+                  <td>Total</td>
+                  <td id="s-total-floor-area-secondary">0.000</td>
+                  <td id="s-total-common-parking-tenements">0.000</td>
+                  <td id="s-difference">0.000</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div class="warn-strip" id="sanction-warn-strip" style="display:none;margin-top:14px;">
+            <svg style="width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Total residential area is not equal to total common area, parking area &amp; tenements area. There may be a layer mismatch — please verify.
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /section-sanction -->
+
+
+    <!-- ══════════════════════════════════════════
+         SECTION 5 — PARKING CALCULATION
+    ══════════════════════════════════════════ -->
+    <div id="section-parking" class="tab-section">
+      <div class="page">
+
+        <div class="section-header">
+          <span class="section-title">
+            <svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <span>Parking</span> Calculation
+          </span>
+          <div class="section-actions">
+            <button class="btn" onclick="generateParkingTables()">
+              <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title">
+            <svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Parking Required For Tenements
+          </div>
+          <p style="font-size:.76rem;color:var(--muted);margin-bottom:12px;">(In flat names: A, B, … for 0.15, 0.20, … &amp; 1, 2, … for 1st floor, 2nd floor, …)</p>
+          <div class="table-wrap" style="margin-bottom:16px;">
+            <table id="p-tenement-table">
+              <thead><tr id="p-tenement-header"></tr></thead>
+              <tbody></tbody>
+              <tfoot></tfoot>
+            </table>
+          </div>
+          <div class="table-wrap" id="p-common-area-wrap" style="display:none;">
+            <table id="p-common-area-table">
+              <thead>
+                <tr id="p-common-area-header">
+                  <th>Floor</th><th>Total Area</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title">
+            <svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+            Parking Required For Other Use-Groups
+          </div>
+          <div id="p-other-layers-container"></div>
+        </div>
+
+        <div class="data-card">
+          <div class="data-card-title">
+            <svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+            Provided Parking
+          </div>
+          <div class="table-wrap">
+            <table id="p-parking-provided-table">
+              <thead><tr id="p-parking-provided-header"></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr id="p-parking-provided-footer"></tr></tfoot>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /section-parking -->
+
+
+    <!-- ══════════════════════════════════════════
+         SECTION 6 — OCCUPANCY
+    ══════════════════════════════════════════ -->
+    <div id="section-occupancy" class="tab-section">
+      <div class="page">
+
+        <div class="section-header">
+          <span class="section-title">
+            <svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Occupancy</span> Data
+          </span>
+          <div class="section-actions">
+            <button class="btn" onclick="if(typeof initOccupancy==='function') initOccupancy()">
+              <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <div class="data-card-title">
+            <svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Occupancy Table
+          </div>
+          <div class="table-wrap">
+            <table id="occ-table">
+              <thead>
+                <tr>
+                  <th>Layer</th>
+                  <th>Total Floor Area</th>
+                  <th>Deducted Area</th>
+                  <th>Net Area</th>
+                  <th>Percentage</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr>
+                  <th>Total</th>
+                  <th id="occ-total-floor-area">0.000</th>
+                  <th id="occ-total-deducted-area">0.000</th>
+                  <th id="occ-total-net-area">0.000</th>
+                  <th id="occ-total-percentage">100%</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Proceed to Final Summary button -->
+          <div style="margin-top:20px;text-align:right;">
+            <button class="btn" id="occ-proceed-btn" onclick="proceedToMaster()">
+              <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              Proceed to Final Summary
+            </button>
+          </div>
+        </div>
+
+        <!-- Occupancy alert modal -->
+        <div id="occ-alert-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:none;align-items:center;justify-content:center;">
+          <div style="background:var(--card-bg,#1a1f2e);border-radius:12px;padding:28px 32px;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.5);">
+            <img src="https://img.icons8.com/ios-filled/50/ff0000/error.png" alt="Alert" style="width:40px;margin-bottom:12px;">
+            <p id="occ-alert-message" style="color:var(--text,#e2e8f0);margin-bottom:18px;font-size:.9rem;"></p>
+            <button id="occ-alert-close" class="btn btn-danger" style="padding:8px 22px;">Close</button>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /section-occupancy -->
+
+
+    <!-- ══════════════════════════════════════════
+         SECTION 7 — FINAL SUMMARY (MASTER)
+    ══════════════════════════════════════════ -->
+    <div id="section-master" class="tab-section">
+      <div class="page">
+
+        <div class="section-header">
+          <span class="section-title">
+            <svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>Final</span> Summary
+          </span>
+          <div class="section-actions">
+            <button class="btn" id="master-update-btn" onclick="document.getElementById('master-popup').style.display='flex'">
+              <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Update Values
+            </button>
+          </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title">Comparison Table</div>
+          <div class="table-wrap">
+            <table id="master-table">
+              <thead>
+                <tr>
+                  <th>Particulars</th><th>Data</th>
+                  <th>Particulars</th><th>Data</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="head">Road Width</td>
+                  <td id="roadwidth">0.00</td>
+                  <td class="head">Building Use - Group</td>
+                  <td id="usegroup">No data available</td>
+                </tr>
+                <tr>
+                  <td class="head">Land Area as per Boundary Declaration</td>
+                  <td id="land-area">0.000</td>
+                  <td class="head">Land Area as per Document (min.)</td>
+                  <td id="land-area-doc">0.000</td>
+                </tr>
+                <tr>
+                  <td class="head">Permissible Ground Coverage</td>
+                  <td id="per-ground-coverage">0.000</td>
+                  <td class="head">Proposed Ground Coverage</td>
+                  <td id="pro-ground-coverage">0.000</td>
+                </tr>
+                <tr>
+                  <td class="head">Permissible F.A.R.</td>
+                  <td id="per-far">0.000</td>
+                  <td class="head">Proposed F.A.R</td>
+                  <td id="pro-far">0.000</td>
+                </tr>
+                <tr>
+                  <td class="head">Permissible Height</td>
+                  <td id="per-height">0.000</td>
+                  <td class="head">Proposed Height</td>
+                  <td id="pro-height">0.000</td>
+                </tr>
+                <tr>
+                  <td class="head">Required Tree Cover Area</td>
+                  <td id="per-tree">0.000</td>
+                  <td class="head">Proposed Tree Cover Area</td>
+                  <td id="pro-tree">0.000</td>
+                </tr>
+                <tr>
+                  <td class="head">Permissible C.B./Loft/Ledge Area</td>
+                  <td id="per-cb">0.000</td>
+                  <td class="head">Proposed C.B./Loft/Ledge Area</td>
+                  <td id="pro-cb">0.000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Open Spaces -->
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title">Open Spaces</div>
+          <div class="table-wrap">
+            <table id="master-open-spaces">
+              <thead>
+                <tr><th>Open Spaces</th><th>Required</th><th>Proposed</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="head">Front</td><td id="per-front">0.000</td><td id="pro-front">0.000</td></tr>
+                <tr><td class="head">Side 1</td><td id="per-side1">0.000</td><td id="pro-side1">0.000</td></tr>
+                <tr><td class="head">Side 2</td><td id="per-side2">0.000</td><td id="pro-side2">0.000</td></tr>
+                <tr><td class="head">Rear</td><td id="per-rear">0.000</td><td id="pro-rear">0.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Car Parking -->
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title">Car Parking</div>
+          <div class="table-wrap">
+            <table id="master-parking">
+              <thead>
+                <tr><th>Particulars</th><th>Required</th><th>Proposed</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="head">Nos. of Car Parking</td><td id="per-car">0</td><td id="pro-car">0</td></tr>
+                <tr><td class="head">Car Parking Area</td><td id="per-park-area">0.000</td><td id="pro-park-area">0.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Feesable Floor Area -->
+        <div class="data-card">
+          <div class="data-card-title">Feesable Floor Area</div>
+          <div class="table-wrap">
+            <table id="master-fees">
+              <thead>
+                <tr>
+                  <th>Total Floor Area</th>
+                  <th>Total Additional Floor Area</th>
+                  <th>Total Floor Area For Fees</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td id="total-floor">0.000</td>
+                  <td id="additional-floor">0.000</td>
+                  <td id="total-fees-area">0.000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /section-master -->
+
+
+    <!-- ── Master Update Popup ── -->
+    <div id="master-popup">
+      <div class="master-popup-box">
+
+        <div class="master-popup-header">
+          <div>
+            <div class="master-popup-title">Update Values</div>
+            <div class="master-popup-sub">Override auto-calculated fields if needed</div>
+          </div>
+          <button class="master-popup-close" onclick="document.getElementById('master-popup').style.display='none'" aria-label="Close">&times;</button>
+        </div>
+
+        <div class="master-popup-body">
+
+          <div class="master-popup-field">
+            <label class="master-popup-label">
+              Land Area as per Document (min.)
+              <span class="req">*</span>
+            </label>
+            <input class="master-popup-input" type="number" id="manual-land-area" step="0.01"
+                   placeholder="Enter value if different from Boundary Area">
+          </div>
+
+          <div class="master-popup-field">
+            <label class="master-popup-label">Permissible F.A.R.</label>
+            <input class="master-popup-input" type="number" id="manual-far" step="0.01"
+                   placeholder="Enter value if different from F.A.R. Table-3">
+          </div>
+
+          <div class="master-popup-field">
+            <label class="master-popup-label">Car Parking Bonus</label>
+            <input class="master-popup-input" type="number" id="manual-parking-area" step="0.01"
+                   placeholder="Enter car parking bonus area">
+          </div>
+
+        </div>
+
+        <div class="master-popup-footer">
+          <button class="btn" id="master-update-confirm">
+            <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Update
+          </button>
+          <button class="btn btn-danger" onclick="document.getElementById('master-popup').style.display='none'">
+            Cancel
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ── Instruction overlay ── -->
+    <div class="overlay" id="instrOverlay" onclick="handleOverlayClick(event)">
+      <div class="instr-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="modalTitle">Follow The Steps</div>
+            <div class="modal-subtitle">Complete guide to extract &amp; process AutoCAD data</div>
+          </div>
+          <button class="modal-close-btn" onclick="document.getElementById('instrOverlay').classList.remove('active')" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="step">
+            <div class="step-line"><div class="step-num">1</div><div class="step-connector"></div></div>
+            <div class="step-content">
+              <div class="step-title">Download the .dxe File</div>
+              <div class="step-desc">Download the <strong>.dxe</strong> file to extract data from AutoCAD.</div>
+              <a class="dl-link" href="..\..\..\src\docs\data extraction_kmc.dxe" download>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download File
+              </a>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-num">2</div><div class="step-connector"></div></div>
+            <div class="step-content">
+              <div class="step-title">Save Extracted Data in Correct Format</div>
+              <div class="step-desc">All sheets — MASTER SHEET, A — must be saved together in a <strong>single Excel file</strong> using one of these formats:</div>
+              <div class="format-pills"><span class="pill">.xls</span><span class="pill">.xlsx</span><span class="pill">.csv</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-num">3</div><div class="step-connector"></div></div>
+            <div class="step-content">
+              <div class="step-title">Upload the Excel File</div>
+              <div class="step-desc">Click the upload zone or <strong>"Browse"</strong> and select the prepared Excel file to upload it.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-line"><div class="step-num">4</div></div>
+            <div class="step-content">
+              <div class="step-title">Run Your Calculations</div>
+              <div class="step-desc">Use the menu tabs to run calculations based on the uploaded data.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-divider"></div>
+        <div class="modal-footer">
+          <button class="got-it-btn" onclick="document.getElementById('instrOverlay').classList.remove('active')">Got It ✓</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app-wrapper -->
+
+
+  <!-- ══════════════════════════════════════════
+       ALWAYS-LOADED SCRIPTS
+  ══════════════════════════════════════════ -->
+  <script src="../../../src/library/xlsx.full.min.js"></script>
+  <script src="../../../src/js/data_extraction_kmc/index_kmc.js"></script>
+  <script src="../../../src/js/data_extraction_kmc/kmc-upload-tracker.js"></script>
+  <script src="../../../src/js/data_extraction_kmc/kmc_core.js"></script>
+
+  <!-- Kick off Home tab immediately -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof loadScriptsSequential === 'function') {
+        loadScriptsSequential(
+          ['../../../src/js/data_extraction_kmc/kmc_home.js'],
+          null
+        );
+      }
+    });
+  </script>
+
+  <!-- ── SCROLL TO TOP BUTTON ── -->
+  <button id="scrollTopBtn" title="Back to top" aria-label="Scroll to top">
+    <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+  </button>
+
+</body>
+</html>

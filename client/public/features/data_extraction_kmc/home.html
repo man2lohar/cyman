@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KMC Data Extraction | CyManSquare</title>
+  <link rel="icon" href="../../assets/images/cymansquare_logo.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Akaya+Kanadaka&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --orange: #2d98fd; --orange2: #1a7edf;
+      --bg: #F9F7F2; --card: #ffffff; --brown: #1c1f2e;
+      --input: #f3f4f8; --border: rgba(0,0,0,0.07); --muted: #6b7499;
+    }
+    [data-dark="1"] {
+      --bg:#0f1117; --card:#181b27; --brown:#e8eaf6; --input:#1e2130;
+      --border:rgba(255,255,255,0.06); --muted:#8892b0;
+    }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; font-family:'Plus Jakarta Sans',sans-serif; }
+    body { background:var(--bg); color:var(--brown); min-height:100vh; transition:background .4s,color .4s; }
+
+    /* Hero section */
+    .kmc-hero {
+      display:flex; align-items:center; justify-content:center;
+      min-height:calc(100vh - 110px); padding:40px 24px;
+    }
+    .kmc-content {
+      max-width:720px; width:100%; text-align:center;
+    }
+    .kmc-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(45,152,253,.1); color:var(--orange);
+      border:1px solid rgba(45,152,253,.2); padding:6px 16px;
+      border-radius:100px; font-size:.75rem; font-weight:700;
+      text-transform:uppercase; letter-spacing:1px; margin-bottom:24px;
+    }
+    .kmc-content h1 {
+      font-size:clamp(2rem,5vw,3rem); font-weight:800; letter-spacing:-1.5px;
+      line-height:1.15; margin-bottom:16px; color:var(--brown);
+    }
+    .kmc-content h1 span { color:var(--orange); }
+    .kmc-content p { font-size:.95rem; color:var(--muted); max-width:480px; margin:0 auto 36px; line-height:1.7; }
+
+    /* Type cards */
+    .type-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:20px;
+      max-width:600px; margin:0 auto;
+    }
+    .type-card {
+      background:var(--card); border:1.5px solid var(--border);
+      border-radius:18px; padding:28px 24px; cursor:pointer;
+      transition:all .25s; text-align:left; position:relative; overflow:hidden;
+    }
+    .type-card::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(135deg,rgba(45,152,253,.05) 0%,transparent 60%);
+      opacity:0; transition:opacity .25s;
+    }
+    .type-card:hover { border-color:var(--orange); transform:translateY(-4px); box-shadow:0 16px 40px rgba(45,152,253,.15); }
+    .type-card:hover::before { opacity:1; }
+    .type-card .tc-icon { font-size:2rem; margin-bottom:12px; }
+    .type-card h3 { font-size:1rem; font-weight:800; letter-spacing:-.3px; margin-bottom:8px; color:var(--brown); }
+    .type-card p { font-size:.8rem; color:var(--muted); line-height:1.55; }
+
+    /* Sub-options (shown on hover/click) */
+    .sub-options {
+      display:none; position:absolute; inset:0; background:var(--card);
+      border-radius:18px; padding:20px; flex-direction:column; gap:10px;
+      animation:slideIn .25s ease;
+    }
+    @keyframes slideIn { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:scale(1)} }
+    .sub-options.show { display:flex; }
+    .sub-options h4 { font-size:.82rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+    .sub-btn {
+      display:flex; align-items:center; gap:10px; padding:12px 14px;
+      background:var(--input); border:1px solid var(--border); border-radius:11px;
+      cursor:pointer; transition:.2s; font-size:.85rem; font-weight:600; color:var(--brown);
+      text-decoration:none;
+    }
+    .sub-btn:hover { border-color:var(--orange); color:var(--orange); background:rgba(45,152,253,.06); }
+    .sub-btn svg { flex-shrink:0; }
+    .sub-btn .coming { font-size:.65rem; background:rgba(0,0,0,.06); color:var(--muted); padding:2px 7px; border-radius:100px; margin-left:auto; }
+    .back-btn { background:none; border:none; cursor:pointer; font-size:.75rem; color:var(--muted); font-weight:600; padding:4px 0; display:flex; align-items:center; gap:4px; font-family:inherit; }
+    .back-btn:hover { color:var(--orange); }
+  </style>
+</head>
+<body>
+
+  <!-- Feature shell: auth check + site header injection -->
+  <script src="../../../src/js/feature-shell.js"
+          data-feature="KMC Data Extraction"
+          data-login="login.html"
+          data-home="../../../../index.html">
+  </script>
+
+  <div class="kmc-hero">
+    <div class="kmc-content">
+      <div class="kmc-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        KMC Data Extraction
+      </div>
+      <h1>Kolkata Municipal<br><span>Corporation Data</span></h1>
+      <p>Accurate area calculations for architectural drawings submitted to KMC. Choose your calculation type below to get started.</p>
+
+      <div class="type-grid">
+        <!-- Sanction card -->
+        <div class="type-card" id="sanctionCard" onclick="showSub('sanction')">
+          <div class="tc-icon">📋</div>
+          <h3>Sanction</h3>
+          <p>Calculate areas for sanction-related architectural drawings.</p>
+
+          <div class="sub-options" id="sanction-sub">
+            <button class="back-btn" onclick="hideSub(event,'sanction')">← Back</button>
+            <h4>Sanction Type</h4>
+            <a class="sub-btn" href="index_kmc.html">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              Single Building
+            </a>
+            <a class="sub-btn" href="#" onclick="alert('Coming soon!')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="8" height="14"/><rect x="14" y="7" width="8" height="14"/><rect x="7" y="3" width="10" height="18" rx="1"/></svg>
+              Multiple Buildings
+              <span class="coming">Soon</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Completion card -->
+        <div class="type-card" id="completionCard" onclick="showSub('completion')">
+          <div class="tc-icon">✅</div>
+          <h3>Completion</h3>
+          <p>Calculate areas for completion-related architectural drawings.</p>
+
+          <div class="sub-options" id="completion-sub">
+            <button class="back-btn" onclick="hideSub(event,'completion')">← Back</button>
+            <h4>Completion Type</h4>
+            <a class="sub-btn" href="#" onclick="alert('Coming soon!')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+              Single Building
+              <span class="coming">Soon</span>
+            </a>
+            <a class="sub-btn" href="#" onclick="alert('Coming soon!')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="8" height="14"/><rect x="14" y="7" width="8" height="14"/></svg>
+              Multiple Buildings
+              <span class="coming">Soon</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showSub(type) {
+      document.getElementById(type + '-sub').classList.add('show');
+    }
+    function hideSub(e, type) {
+      e.stopPropagation();
+      document.getElementById(type + '-sub').classList.remove('show');
+    }
+  </script>
+</body>
+</html>
