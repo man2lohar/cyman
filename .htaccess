@@ -1,0 +1,36 @@
+Options -Indexes
+RewriteEngine On
+
+# ─────────────────────────────────────────────
+#  CLEAN URL REWRITES  —  cymansquare.in
+#  Maps short slugs  →  real file paths
+#  (no redirect, done silently server-side)
+# ─────────────────────────────────────────────
+
+# ── KMC Data Extraction ──────────────────────
+RewriteRule ^index_kmc/?$       client/public/features/data_extraction_kmc/index_kmc.html   [L]
+RewriteRule ^kmc/?$             client/public/features/data_extraction_kmc/home.html         [L]
+RewriteRule ^kmc/login/?$       client/public/features/data_extraction_kmc/login.html        [L]
+
+# ── Project Management ───────────────────────
+RewriteRule ^projects/?$        client/public/features/project_management/index.html         [L]
+RewriteRule ^projects/login/?$  client/public/features/project_management/login.html         [L]
+
+# ── Static / Legal pages ─────────────────────
+RewriteRule ^contact/?$         client/src/pages/contact.html                                [L]
+RewriteRule ^support/?$         client/src/pages/support.html                                [L]
+RewriteRule ^updates/?$         client/src/pages/updates.html                                [L]
+RewriteRule ^privacy/?$         client/src/pages/privacy_policy.html                         [L]
+RewriteRule ^terms/?$           client/src/pages/terms_of_service.html                       [L]
+RewriteRule ^cookies/?$         client/src/pages/cookie_policy.html                          [L]
+
+# ── Home (root already serves index.html) ────
+RewriteRule ^home/?$            index.html                                                    [L]
+
+# ─────────────────────────────────────────────
+#  ASSET PASS-THROUGH
+#  Let real files & directories serve normally
+# ─────────────────────────────────────────────
+RewriteCond %{REQUEST_FILENAME} -f  [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
