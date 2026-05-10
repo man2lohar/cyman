@@ -1,23 +1,4 @@
-// Remove previously added missing-layer errors before re-adding
-body.querySelectorAll('.missing-layer-error').forEach(function(el) {
-  el.parentNode.removeChild(el);
-});
-
-// Add separator
-var hr = document.createElement('hr');
-hr.className = 'missing-layer-error';
-hr.style.cssText = 'border:none;border-top:1px solid rgba(231,76,60,.25);margin:10px 0;';
-body.appendChild(hr);
-
-// Add heading
-var heading = document.createElement('div');
-heading.className = 'missing-layer-error';
-heading.style.cssText = 'font-weight:700;color:#e74c3c;margin-bottom:6px;';
-heading.textContent = 'Missing Required Layers:';
-body.appendChild(heading);
-
-missing.forEach(function(layer) {
-   /* ══════════════════════════════════════════
+/* ══════════════════════════════════════════
    kmc_home.js  —  Home tab logic
    Lazy-loaded on first click of the Home tab.
    Handles:
