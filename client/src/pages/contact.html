@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us | CyManSquare</title>
+  <link rel="icon" href="../../public/assets/images/cymansquare_logo.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Akaya+Kanadaka&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/legal.css">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init('YOUR_EMAILJS_PUBLIC_KEY');</script>
+  <style>
+    .contact-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:32px;margin-bottom:40px}
+    @media(max-width:680px){.contact-grid{grid-template-columns:1fr}}
+    .cic{display:flex;align-items:flex-start;gap:14px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px;transition:border-color .2s,transform .2s}
+    .cic:hover{border-color:var(--orange);transform:translateX(3px)}
+    .cic-icon{width:42px;height:42px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+    .cic-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:4px}
+    .cic-value{font-size:.88rem;font-weight:600}
+    .cic-value a{color:var(--brown);text-decoration:none;transition:color .2s}
+    .cic-value a:hover{color:var(--orange)}
+    .social-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+    .sp{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:9px;border:1px solid var(--border);color:var(--muted);font-size:.8rem;font-weight:600;text-decoration:none;transition:.2s}
+    .sp:hover{border-color:var(--orange);color:var(--orange);background:rgba(45,152,253,.06)}
+    .map-box{height:200px;background:var(--input);border-radius:14px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.88rem;color:var(--muted);margin-top:14px}
+  </style>
+</head>
+<body class="legal-page">
+  <header class="legal-header">
+    <a href="../../index.html" class="legal-brand">
+      <img src="../../public/assets/images/cymansquare_logo.svg" alt="CyManSquare" style="height:26px">
+      <span style="font-family:'Akaya Kanadaka',cursive;font-weight:100;color:#2d98fd;font-size:1.2rem">CyManSquare</span>
+    </a>
+    <nav class="legal-nav">
+      <a href="../../index.html">Home</a>
+      <a href="support.html">Support</a>
+      <a href="updates.html">Updates</a>
+    </nav>
+    <button class="legal-dark-toggle" onclick="toggleDark()">&#127769;</button>
+  </header>
+  <main class="legal-main">
+    <div class="legal-container" style="max-width:960px">
+      <div class="legal-hero">
+        <div class="legal-icon">&#128172;</div>
+        <h1>Contact Us</h1>
+        <p class="legal-date">We typically respond within 24 hours, Monday to Saturday.</p>
+      </div>
+      <div class="contact-grid">
+        <div>
+          <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:16px">Reach Us</p>
+          <div class="cic"><div class="cic-icon" style="background:rgba(45,152,253,.1)">&#128231;</div><div><div class="cic-label">General &amp; Support</div><div class="cic-value"><a href="mailto:cymansquare@outlook.com">cymansquare@outlook.com</a></div></div></div>
+          <div class="cic"><div class="cic-icon" style="background:rgba(37,211,102,.1)">&#128172;</div><div><div class="cic-label">WhatsApp (24x7)</div><div class="cic-value"><a href="https://wa.me/8282061314" target="_blank">+91 8282061314</a></div></div></div>
+          <div class="cic"><div class="cic-icon" style="background:rgba(250,173,20,.1)">&#128222;</div><div><div class="cic-label">Phone - Mon-Fri 9AM-6PM</div><div class="cic-value"><a href="tel:+917318998346">+91 7318998346</a></div></div></div>
+          <div class="cic"><div class="cic-icon" style="background:rgba(255,77,109,.1)">&#128205;</div><div><div class="cic-label">Office</div><div class="cic-value">Kolkata, West Bengal, India</div></div></div>
+          <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:20px 0 12px">Follow Us</p>
+          <div class="social-row">
+            <a class="sp" href="https://wa.me/8282061314"  target="_blank"><i class="bi bi-whatsapp"  style="color:#25d366"></i>WhatsApp</a>
+            <a class="sp" href="https://linkedin.com"      target="_blank"><i class="bi bi-linkedin"  style="color:#0a66c2"></i>LinkedIn</a>
+            <a class="sp" href="https://twitter.com"       target="_blank"><i class="bi bi-twitter-x"                       ></i>Twitter</a>
+            <a class="sp" href="https://facebook.com"      target="_blank"><i class="bi bi-facebook"  style="color:#1877f2"></i>Facebook</a>
+            <a class="sp" href="https://instagram.com"     target="_blank"><i class="bi bi-instagram" style="color:#e1306c"></i>Instagram</a>
+            <a class="sp" href="https://youtube.com"       target="_blank"><i class="bi bi-youtube"   style="color:#ff0000"></i>YouTube</a>
+          </div>
+          <div class="map-box">&#128205; Kolkata, West Bengal - Map integration coming soon</div>
+        </div>
+        <div>
+          <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:16px">Send a Message</p>
+          <div class="support-form-card">
+            <form id="contactForm">
+              <div class="support-form-row">
+                <div class="sf-field"><label>First Name *</label><input type="text" name="first_name" placeholder="First name" required></div>
+                <div class="sf-field"><label>Last Name *</label><input type="text" name="last_name" placeholder="Last name" required></div>
+              </div>
+              <div class="sf-field"><label>Email *</label><input type="email" name="email" placeholder="your@email.com" required></div>
+              <div class="sf-field"><label>Category *</label>
+                <select name="category" required>
+                  <option value="">Select...</option>
+                  <option>General inquiry</option><option>Bug report</option>
+                  <option>Feature request</option><option>KMC Data Extraction</option>
+                  <option>Project Management</option><option>Billing</option>
+                  <option>Account issues</option><option>Other</option>
+                </select>
+              </div>
+              <div class="sf-field"><label>Message *</label><textarea name="message" placeholder="Describe your issue..." required style="min-height:120px"></textarea></div>
+              <button type="submit" class="sf-submit" id="cfSubmit"><span id="cfBtnText">Send Message</span></button>
+              <div class="sf-msg" id="cfMsg"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="legal-footer">
+    <div class="legal-footer-inner">
+      <span>&#169; 2026 CyManSquare. All rights reserved.</span>
+      <div class="legal-footer-links">
+        <a href="../../index.html">Home</a>
+        <a href="privacy_policy.html">Privacy Policy</a>
+        <a href="terms_of_service.html">Terms of Service</a>
+        <a href="cookie_policy.html">Cookie Policy</a>
+      </div>
+    </div>
+  </footer>
+  <script>
+    function toggleDark(){const on=localStorage.getItem('cymDark')!=='1';localStorage.setItem('cymDark',on?'1':'0');document.body.classList.toggle('dark-mode',on);document.querySelector('.legal-dark-toggle').textContent=on?'☀️':'🌙';}
+    if(localStorage.getItem('cymDark')==='1'){document.body.classList.add('dark-mode');document.querySelector('.legal-dark-toggle').textContent='☀️';}
+    document.getElementById('contactForm').addEventListener('submit',async(e)=>{
+      e.preventDefault();
+      const btn=document.getElementById('cfSubmit'),text=document.getElementById('cfBtnText'),msg=document.getElementById('cfMsg');
+      msg.className='sf-msg';text.textContent='Sending...';btn.disabled=true;
+      const data=Object.fromEntries(new FormData(e.target).entries());
+      try{
+        await emailjs.send('service_cymansquare','template_support',{from_name:data.first_name+' '+data.last_name,from_email:data.email,category:data.category,message:data.message,to_email:'cymansquare@outlook.com'});
+        msg.textContent='Message sent! We\'ll reply within 24 hours.';msg.className='sf-msg success';e.target.reset();
+      }catch(err){
+        msg.textContent='Could not send. Please email cymansquare@outlook.com directly.';msg.className='sf-msg error';
+      }finally{text.textContent='Send Message';btn.disabled=false;}
+    });
+  </script>
+</body>
+</html>
