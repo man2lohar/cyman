@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>KMC Tool Suite | Data Extraction</title>
+  <link rel="icon" href="../../assets/images/cymansquare_logo.svg" type="image/svg+xml"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../../../src/styles/data_extraction_kmc/style_kmc.css"/>
+</head>
+<body>
+
+  <!-- SVG Background -->
+  <div class="bg-vector">
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <ellipse class="blob b1" cx="25%" cy="35%" rx="320" ry="220"/>
+      <ellipse class="blob b2" cx="75%" cy="65%" rx="280" ry="200"/>
+      <g id="gridLines"></g>
+      <g id="geoShapes"></g>
+    </svg>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="../../../src/js/feature-shell.js"
+          data-feature="KMC Data Extraction / V-2.1.0"
+          data-login="login.html"
+          data-home="../../../../index.html">
+  </script>
+
+  <!-- ══════════════════════════════════════════
+       NEW FEATURE-SPECIFIC SCRIPTS
+  ══════════════════════════════════════════ -->
+  <script src="../../../src/js/data_extraction_kmc/kmc_whats_new.js"></script>
+  <!-- ══════════════════════════════════════════
+       INJECT NAV PILLS + CONTROLS INTO EXISTING
+       #_cymShellBar  (created by feature-shell.js)
+       We do NOT create a second header here.
+  ══════════════════════════════════════════ -->
+  <script>
+  (function injectIntoShellBar() {
+    function doInject() {
+      var bar = document.getElementById('_cymShellBar');
+      if (!bar) return;
+
+      // ── 1. NAV PILLS (centre) ──────────────────────────────────
+      if (!document.getElementById('kmc-nav-pills')) {
+        var nav = document.createElement('div');
+        nav.className = 'sh-nav';
+        nav.innerHTML =
+          '<nav class="sh-nav-pills" id="kmc-nav-pills">' +
+            '<button class="sh-pill active" onclick="kmcSwitchNav(\'home\',this)">' +
+              '<svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>' +
+              'Home' +
+            '</button>' +
+            '<button class="sh-pill" onclick="kmcSwitchNav(\'guide\',this)">' +
+              '<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>' +
+              'Guide' +
+            '</button>' +
+            '<button class="sh-pill" onclick="kmcSwitchNav(\'updates\',this)">' +
+              '<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' +
+              'Updates' +
+            '</button>' +
+          '</nav>';
+        // Insert after logo (first child)
+        var firstChild = bar.firstElementChild;
+        if (firstChild && firstChild.nextSibling) {
+          bar.insertBefore(nav, firstChild.nextSibling);
+        } else {
+          bar.appendChild(nav);
+        }
+      }
+
+      // ── 2. RIGHT-SIDE GROUP (status + clear + how-it-works + theme) ──
+      if (!document.getElementById('kmc-shell-right')) {
+        var right = document.createElement('div');
+        right.id        = 'kmc-shell-right';
+        right.className = 'sh-right';
+        right.innerHTML =
+
+          /* Status bar — dot + file name */
+          '<div class="status-bar">' +
+            '<div class="status-dot" id="status-dot"></div>' +
+            '<span id="status-text">No file loaded — upload to begin</span>' +
+          '</div>' +
+
+          /* Clear Data button */
+          '<button id="clearStorageBtn" class="btn btn-danger" style="display:none">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+              '<polyline points="3 6 5 6 21 6"/>' +
+              '<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>' +
+              '<path d="M10 11v6"/><path d="M14 11v6"/>' +
+              '<path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>' +
+            '</svg>' +
+            'Clear Data' +
+          '</button>' +
+
+          /* How It Works */
+          '<a id="kmc-how-btn" class="sh-btn-how" href="https://youtu.be/S5dDn3anN0U" target="_blank" rel="noopener">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+              '<circle cx="12" cy="12" r="10"/>' +
+              '<polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>' +
+            '</svg>' +
+            '<span>How It Works</span>' +
+          '</a>';
+
+        bar.appendChild(right);
+
+        // Restore persisted state
+        if (localStorage.getItem('_tabsUnlocked') === '1') {
+          var dot  = document.getElementById('status-dot');
+          var txt  = document.getElementById('status-text');
+          var fname = localStorage.getItem('uploadedFileName') || '';
+          if (dot) dot.classList.add('green');
+          if (txt) txt.textContent = fname ? 'Uploaded — ' + fname : 'Data loaded';
+          var clearBtnRef = document.getElementById('clearStorageBtn');
+          if (clearBtnRef) clearBtnRef.style.display = 'inline-flex';
+        }
+      }
+
+      // ── 3. Ensure shell bar flex layout ───────────────────────
+      bar.style.display        = 'flex';
+      bar.style.alignItems     = 'center';
+      bar.style.justifyContent = 'space-between';
+      bar.style.flexWrap       = 'wrap';
+      bar.style.gap            = '10px';
+    }
+
+    function tryInject() {
+      if (document.getElementById('_cymShellBar')) {
+        doInject();
+      } else {
+        var tries = 0;
+        var poll = setInterval(function () {
+          tries++;
+          if (document.getElementById('_cymShellBar')) {
+            doInject();
+            clearInterval(poll);
+          } else if (tries > 60) {
+            clearInterval(poll);
+          }
+        }, 50);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', tryInject);
+    } else {
+      tryInject();
+    }
+  })();
+  </script>
+
+
+  <!-- ══════════════════════════════════════════
+       APP WRAPPER
+  ══════════════════════════════════════════ -->
+  <div class="app-wrapper">
+
+    <!-- ── Original tab-bar (unchanged) ── -->
+    <nav class="tab-bar" id="mainTabBar">
+      <button class="tab-btn active" data-tab="section-home" onclick="kmcTabClick('section-home')">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+        Home
+      </button>
+      <button class="tab-btn" id="tabLayerTables" data-tab="section-tables" style="display:none" onclick="kmcTabClick('section-tables')">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+        Layer Tables
+      </button>
+      <button class="tab-btn" id="filteredTables" data-tab="section-filtered" style="display:none" onclick="kmcTabClick('section-filtered')">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Filtered Tables
+      </button>
+      <button class="tab-btn" id="sanctionTab" data-tab="section-sanction" style="display:none" onclick="kmcTabClick('section-sanction')">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Floor Area Table
+      </button>
+      <button class="tab-btn" id="parkingTab" data-tab="section-parking" style="display:none" onclick="kmcTabClick('section-parking')">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Parking
+      </button>
+      <button class="tab-btn" id="occupancyTab" data-tab="section-occupancy" style="display:none" onclick="kmcTabClick('section-occupancy')">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Occupancy
+      </button>
+      <button class="tab-btn" id="masterTab" data-tab="section-master" style="display:none" onclick="kmcTabClick('section-master')">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Final Summary
+      </button>
+    </nav>
+
+
+    <!-- ══════════════════════════════════════════
+         SECTION 1 — HOME / UPLOAD
+    ══════════════════════════════════════════ -->
+    <div id="section-home" class="tab-section active">
+      <div class="page">
+
+        <!-- NEW: Hero text above cards -->
+        <div class="home-hero" id="home-hero">
+          <h2>Smarter Tools | Faster Workflows | Built for <span class="c-blue">KMC</span> Professionals.</h2>
+          <p>Upload, extract, and process your files with precision and ease.</p>
+        </div>
+
+        <!-- TWO COLUMN LAYOUT -->
+        <div class="home-two-col">
+
+          <!-- ════ LEFT — KMC Excel Upload ════ -->
+          <div class="home-col home-col-left">
+
+            <!-- NEW: decorative floating icon + badge (non-functional) -->
+            <div class="col-icon" aria-hidden="true">
+              <div class="col-icon-ring r-blue">
+                <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="2" width="29" height="44" rx="3" fill="#217346"/>
+                  <rect x="18" y="7" width="27" height="32" rx="2" fill="#1e5c38"/>
+                  <path fill="#fff" d="M8 15l3.5 7-3.5 7h3l1.5-3.5L15.5 29H19l-3.5-7L19 15h-3l-1.5 3.5L13 15z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="col-badge b-blue" aria-hidden="true">01</div>
+
+            <!-- NEW: card title area -->
+            <div class="col-card-title">
+              <h2>Upload <span class="c-blue">KMC Excel File</span></h2>
+              <p>Upload your KMC Excel file and run it in AutoCAD<br>to extract data with precision.</p>
+            </div>
+
+            <!-- ORIGINAL content wrapped in col-inner -->
+            <div class="col-inner">
+              <div id="info-container">
+
+                <!-- Upload hero card — original -->
+                <div class="upload-hero">
+                  <div class="upload-label-bar">
+                    <div class="upload-label-bar-title">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      Upload KMC Excel File
+                    </div>
+                  </div>
+                  <input type="file" id="file-input" accept=".xls,.xlsx,.csv"/>
+                  <label for="file-input" id="chooseFileBtn" style="display:none"></label>
+                  <div id="uploadZone" class="upload-zone-hero">
+                    <div class="upload-zone-inner">
+                      <div class="upload-excel-icon">
+                        <svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="2" y="2" width="30" height="44" rx="3" fill="#217346"/>
+                          <rect x="18" y="8" width="28" height="32" rx="3" fill="#1e5c38"/>
+                          <path fill="#fff" d="M8 16l4 8-4 8h4l2-4 2 4h4l-4-8 4-8h-4l-2 4-2-4z"/>
+                        </svg>
+                      </div>
+                      <div class="upload-text">
+                        <h3>Drop your KMC Excel file here</h3>
+                        <p>or <span class="upload-browse">click to browse</span></p>
+                        <div class="upload-formats">
+                          <span>.xls</span><span>.xlsx</span><span>.csv</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Single instruction card -->
+                <div class="steps-row steps-row-single">
+                  <div class="step-card step-card-full">
+                    <div class="step-card-text" style="text-align:center;">
+                      Read full instructions before starting calculations
+                      <br/>
+                      <button class="open-btn" style="margin-top:10px;margin-left:0" onclick="document.getElementById('instrOverlay').classList.add('active')">
+                        📋 Full Instructions
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div><!-- /info-container -->
+
+              <!-- Extracted data (shown after upload) — ORIGINAL structure -->
+              <div id="main-container" class="data-card" style="display:none">
+                <div class="data-card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                  <span>
+                    <svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+                    Extracted Data From— <span id="loaded-filename" style="font-weight:500;color:var(--accent);font-size:.9em;font-family:var(--font-mono);"></span>
+                  </span>
+                  <button id="checkErrorsBtn" class="btn" style="font-size:.75rem;padding:6px 14px;gap:5px;" onclick="kmcCheckErrors()">
+                    <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Check Errors
+                  </button>
+                </div>
+                <div id="description-container" style="text-align:center;font-size:.82rem;margin:8px 0 10px;color:var(--muted);">
+                  <span style="color:#d4501a;font-weight:700;">'Orange'</span> color text denotes duplicate data &nbsp;|&nbsp;
+                  <span style="color:#e74c3c;font-weight:700;">'Red'</span> color text denotes wrong data
+                </div>
+                <div class="table-wrap">
+                  <table id="data-table">
+                    <thead><tr id="table-header"></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+            </div><!-- /col-inner -->
+
+          </div><!-- /home-col-left -->
+
+
+          <!-- ════ RIGHT — DXF Layer Extractor ════ -->
+          <div class="home-col home-col-right" id="dxf-right-col">
+
+            <!-- NEW: decorative floating icon + badge -->
+            <div class="col-icon" aria-hidden="true">
+              <div class="col-icon-ring r-purple">
+                <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="none">
+                  <rect x="6" y="2" width="28" height="38" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+                  <path d="M26 2v10h8" fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+                  <rect x="4" y="26" width="32" height="16" rx="3" fill="#7c3aed"/>
+                  <text x="20" y="38" text-anchor="middle" fill="#fff" font-weight="800" font-size="9" font-family="monospace">DXF</text>
+                </svg>
+              </div>
+            </div>
+            <div class="col-badge b-purple" aria-hidden="true">02</div>
+
+            <!-- NEW: card title area -->
+            <div class="col-card-title">
+              <h2>AutoCAD <span class="c-purple">Layer Extractor</span></h2>
+              <p>Upload your AutoCAD DXF files to extract layers and <br>load results directly into Excel.</p>
+            </div>
+
+            <!-- ORIGINAL DXF panel — structure unchanged -->
+            <div class="col-inner">
+              <div class="dxf-panel" id="dxf-upload-panel">
+                <div class="dxf-panel-header">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  DXF Layer Extractor
+                </div>
+                <div class="dxf-panel-body">
+                  <div class="dxf-upload-row">
+                    <div class="dxf-dropzone" id="dz-master"
+                         onclick="document.getElementById('dxf-inp-master').click()"
+                         ondragover="dxfDzDrag(event,'master',true)"
+                         ondragleave="dxfDzDrag(event,'master',false)"
+                         ondrop="dxfDzDrop(event,'master')">
+                      <input type="file" id="dxf-inp-master" accept=".dxf" style="display:none"
+                             onchange="dxfFileChosen('master',this.files[0])"/>
+                      <span class="dxf-dz-icon" id="dxf-ico-master">📂</span>
+                      <div class="dxf-dz-label">Master Sheet.dxf</div>
+                      <div class="dxf-dz-hint" id="dxf-hint-master">any capitalisation</div>
+                      <div class="dxf-dz-err" id="dxf-err-master"></div>
+                    </div>
+                    <div class="dxf-dropzone" id="dz-a"
+                         onclick="document.getElementById('dxf-inp-a').click()"
+                         ondragover="dxfDzDrag(event,'a',true)"
+                         ondragleave="dxfDzDrag(event,'a',false)"
+                         ondrop="dxfDzDrop(event,'a')">
+                      <input type="file" id="dxf-inp-a" accept=".dxf" style="display:none"
+                             onchange="dxfFileChosen('a',this.files[0])"/>
+                      <span class="dxf-dz-icon" id="dxf-ico-a">📂</span>
+                      <div class="dxf-dz-label">A.dxf</div>
+                      <div class="dxf-dz-hint" id="dxf-hint-a">capital A, exact</div>
+                      <div class="dxf-dz-err" id="dxf-err-a"></div>
+                    </div>
+                  </div>
+                  <div class="dxf-divider"></div>
+                  <button class="dxf-btn-extract" id="dxf-btn-extract" disabled onclick="dxfHandleExtract()">
+                    ⚡ Extract Layers
+                  </button>
+                  <div class="dxf-info-text">
+                    Upload both .dxf files to enable extraction.<br>
+                    Results load into the same table as Excel upload.
+                  </div>
+                </div><!-- /dxf-panel-body -->
+              </div><!-- /dxf-panel -->
+            </div><!-- /col-inner -->
+
+          </div><!-- /home-col-right -->
+
+        </div><!-- /home-two-col -->
+
+      </div><!-- /page -->
+
+      <!-- Feature strip — OUTSIDE .page so it spans full width -->
+      <div class="feature-strip" id="feature-strip">
+        <div class="feature-item">
+          <div class="feature-icon-wrap fi-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <div class="feature-txt"><strong>Secure &amp; Private</strong><span>Your files are processed locally and never stored on any server.</span></div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-wrap fi-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="feature-txt"><strong>Fast Processing</strong><span>Get accurate results in seconds with our optimised engine.</span></div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-wrap fi-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+          </div>
+          <div class="feature-txt"><strong>High Accuracy</strong><span>Extract and process building data with 99.9% precision.</span></div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-wrap fi-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </div>
+          <div class="feature-txt"><strong>Easy to Use</strong><span>Simple interface designed for maximum workflow productivity.</span></div>
+        </div>
+      </div>
+      <div id="errorModal">
+        <div class="error-modal-box">
+          <button class="modal-close-x" id="modalClose">&times;</button>
+          <div class="icon-container">
+            <img src="https://img.icons8.com/ios-filled/50/ff0000/error.png" alt="Error" class="alert-icon">
+            <h3>Error Messages</h3>
+          </div>
+          <div id="modalBody"></div>
+        </div>
+      </div>
+
+      <!-- ORIGINAL DXF Validation Popup -->
+      <div id="dxf-popup" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#fff;border:1px solid #fecaca;border-radius:14px;padding:26px 30px;max-width:540px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.15);max-height:80vh;display:flex;flex-direction:column;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:22px;">⚠️</span>
+            <h3 style="color:#dc2626;font-size:15px;font-weight:700;margin:0;">Validation Errors</h3>
+          </div>
+          <p style="color:#64748b;font-size:12px;margin-bottom:12px;line-height:1.6;">Issues found in the uploaded files. Fix them or click <strong>Show anyway</strong>.</p>
+          <div id="dxf-popup-body" style="overflow-y:auto;flex:1;font-size:12px;"></div>
+          <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+            <button onclick="dxfClosePopup(true)" style="padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;cursor:pointer;font-size:12px;">Show anyway</button>
+            <button onclick="dxfClosePopup(false)" style="padding:8px 18px;border-radius:8px;border:none;background:#ef4444;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">Close</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /section-home -->
+
+
+    <!-- ══════════════════════════════════════════
+         GUIDE NAV SECTION (new — outside tabs)
+    ══════════════════════════════════════════ -->
+    <div id="kmc-guide-section" style="display:none;">
+      <div class="kmc-nav-section">
+        <div class="kns-hero"><h2>📋 Full Instructions</h2><p>Step-by-step guide for KMC Excel Upload and DXF Layer Extractor.</p></div>
+
+        <div class="kns-block">
+          <div class="kns-block-header">
+            <div class="kns-num nb">01</div>
+            <div><h3>Upload <span class="cb">KMC Excel File</span></h3><p>For extracting building area data via AutoCAD and Excel</p></div>
+          </div>
+          <div class="kns-steps">
+            <div class="kns-step"><div class="kns-snum sb">1</div><div><h4>Download the AutoCAD Script File</h4><p>Click <strong>"Download .dxf file"</strong> on the Home screen to get the <code>.dxe</code> AutoCAD script that extracts layer data.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sb">2</div><div><h4>Run the Script in AutoCAD</h4><p>Open your KMC drawing. Run the <code>.dxe</code> script via the <strong>SCRIPT</strong> command. AutoCAD extracts all layer data into an Excel file automatically.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sb">3</div><div><h4>Ensure All Sheets Are Present</h4><p>The Excel file must contain <strong>all sheets</strong> — the <code>MASTER</code> sheet and the <code>A</code> sheet — saved together in one <code>.xlsx</code> or <code>.xls</code> file.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sb">4</div><div><h4>Upload the Excel File</h4><p>Drag and drop your file into the upload zone, or click <strong>"Upload Excel File"</strong>. Accepted: <code>.xls</code>, <code>.xlsx</code>, <code>.csv</code>.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sb">5</div><div><h4>Use the Menu Tabs</h4><p>After upload the tab bar unlocks. Use <strong>Layer Tables → Filtered Tables → Floor Area → Parking → Occupancy → Final Summary</strong> in order.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sb">6</div><div><h4>Check for Errors</h4><p>Use <strong>"Check Errors"</strong>. <span style="color:#d4501a;font-weight:600;">Orange</span> = duplicate data. <span style="color:#e74c3c;font-weight:600;">Red</span> = incorrect data that must be fixed in your drawing.</p></div></div>
+            <div class="kns-tip"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span><strong>Tip:</strong> Always save all sheets together before uploading. Individual sheets cause calculation errors.</span></div>
+          </div>
+        </div>
+
+        <div class="kns-block">
+          <div class="kns-block-header">
+            <div class="kns-num np">02</div>
+            <div><h3>DXF <span class="cp">Layer Extractor</span></h3><p>For uploading DXF files to extract layers directly</p></div>
+          </div>
+          <div class="kns-steps">
+            <div class="kns-step"><div class="kns-snum sp">1</div><div><h4>Prepare Your DXF Files</h4><p>You need exactly <strong>two DXF files</strong>: <code>Master Sheet.dxf</code> (any capitalisation) and <code>A.dxf</code> — must be exactly capital A.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sp">2</div><div><h4>Upload Master Sheet.dxf</h4><p>Click or drag into the <strong>left drop zone</strong>. Case-insensitive — "master sheet.dxf", "Master Sheet.dxf" all accepted.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sp">3</div><div><h4>Upload A.dxf</h4><p>Click or drag into the <strong>right drop zone</strong>. Filename must be exactly <strong>A.dxf</strong> — capital A only.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sp">4</div><div><h4>Extract Layers</h4><p>Once both files are loaded, <strong>"⚡ Extract Layers"</strong> activates. Click it to parse both DXF files and extract all layer data.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sp">5</div><div><h4>Review Validation Warnings</h4><p>If layers are in the wrong file a popup appears. Fix the files or click <strong>"Show anyway"</strong> to continue.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sp">6</div><div><h4>Results Feed the Same Tabs</h4><p>Results load into the same data table as Excel uploads. All tabs work the same way.</p></div></div>
+            <div class="kns-tip"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span><strong>Important:</strong> <code>A.dxf</code> must be exactly capital A. Files named <em>a.dxf</em> or <em>Block A.dxf</em> will be rejected.</span></div>
+          </div>
+        </div>
+
+        <div class="kns-yt">
+          <p>Prefer a visual walkthrough?</p>
+          <a class="kns-yt-btn" href="https://youtu.be/S5dDn3anN0U" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+            Watch on YouTube
+          </a>
+        </div>
+      </div>
+    </div><!-- /guide -->
+
+
+    <!-- ══════════════════════════════════════════
+         UPDATES NAV SECTION (new)
+    ══════════════════════════════════════════ -->
+    <div id="kmc-updates-section" style="display:none;">
+      <div class="kmc-nav-section narrow">
+        <div class="kns-hero"><h2>⚡ Updates &amp; Changelog</h2><p>What's new in KMC Tool Suite.</p></div>
+        <div class="kns-timeline">
+          <div class="kns-entry">
+            <div class="kns-entry-meta"><span class="kns-badge latest">v2.1.0 — Latest</span><span class="kns-date">May 2026</span></div>
+            <h4>Redesigned Interface &amp; Guide Section</h4>
+            <ul class="kns-list">
+              <li>Full visual redesign matching KMC Tool Suite branding</li>
+              <li>New top navigation — Home, Guide, Updates</li>
+              <li>Added full step-by-step Guide for both tools</li>
+              <li>"How It Works" links to official YouTube tutorial</li>
+            </ul>
+          </div>
+          <div class="kns-entry">
+            <div class="kns-entry-meta"><span class="kns-badge">v2.0.0</span><span class="kns-date">March 2026</span></div>
+            <h4>DXF Layer Extractor — New Feature</h4>
+            <ul class="kns-list">
+              <li>Added DXF Layer Extractor panel</li>
+              <li>Full DXF parser with geometry calculations</li>
+              <li>Validation engine for layer placement and printable flags</li>
+            </ul>
+          </div>
+          <div class="kns-entry">
+            <div class="kns-entry-meta"><span class="kns-badge">v1.5.0</span><span class="kns-date">January 2026</span></div>
+            <h4>Floor Area &amp; Occupancy</h4>
+            <ul class="kns-list"><li>Floor Area Table with F.A.R. calculation</li><li>Occupancy tab added</li><li>Parking improvements</li></ul>
+          </div>
+          <div class="kns-entry">
+            <div class="kns-entry-meta"><span class="kns-badge">v1.0.0</span><span class="kns-date">October 2025</span></div>
+            <h4>Initial Release</h4>
+            <ul class="kns-list"><li>KMC Excel upload with layer extraction</li><li>Layer Tables and Filtered Tables</li></ul>
+          </div>
+        </div>
+      </div>
+    </div><!-- /updates -->
+
+
+    <!-- ══════════════════════════════════════════
+         ALL ORIGINAL INNER SECTIONS — VERBATIM
+    ══════════════════════════════════════════ -->
+
+    <div id="section-tables" class="tab-section">
+      <div class="page">
+        <div class="section-header">
+          <span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>Every <span>Layer</span> Tables</span>
+          <div class="section-actions"><button class="btn" onclick="generateTables()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div>
+        </div>
+        <div id="tables-container"></div>
+      </div>
+    </div>
+
+    <div id="section-filtered" class="tab-section">
+      <div class="page">
+        <div class="section-header">
+          <span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg><span>Filtered</span> Tables</span>
+          <div class="section-actions"><button class="btn" onclick="generateFilteredTables()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div>
+        </div>
+        <div id="filtered-section-container"></div>
+      </div>
+      <div id="filteredAlertModal" class="filtered-alert-overlay">
+        <div class="filtered-alert-box">
+          <button class="modal-close-x" id="filteredAlertClose">&times;</button>
+          <div class="icon-container"><img src="https://img.icons8.com/?size=100&id=523&format=png&color=228BE6" alt="Alert" class="alert-icon"><h3>Please Check Below Parameters!</h3></div>
+          <div id="filteredAlertBody" style="text-align:left;max-height:260px;overflow-y:auto;font-size:.85rem;line-height:1.6;margin-top:10px;color:#e74c3c;"></div>
+          <div style="text-align:right;margin-top:16px;"><button class="close-btn" id="filteredAlertCloseBtn">Close</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="section-sanction" class="tab-section">
+      <div class="page">
+        <div class="section-header">
+          <span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Floor Area For <span>F.A.R.</span> Calculation</span>
+          <div class="section-actions"><button class="btn" onclick="generateSanctionTables()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div>
+        </div>
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title"><svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>Floor Area For F.A.R. Calculation</div>
+          <div class="table-wrap"><table id="sanction-floor-table"><thead><tr><th>Floor</th><th>Total Floor Area</th><th>Stair Well</th><th>Lift Well</th><th>Duct / Cutout</th><th>Effective Floor Area</th><th>Stairway</th><th>Lift Lobby</th><th>Net Floor Area</th></tr></thead><tbody></tbody><tfoot><tr><td>Total</td><td id="s-total-floor-area">0.000</td><td id="s-total-stair-well">0.000</td><td id="s-total-lift-well">0.000</td><td id="s-total-duct-cutout">0.000</td><td id="s-total-effective-floor-area">0.000</td><td id="s-total-stairway">0.000</td><td id="s-total-lift-lobby">0.000</td><td id="s-total-net-floor-area">0.000</td></tr></tfoot></table></div>
+        </div>
+        <div class="data-card" id="sanction-compare-container" style="display:none;">
+          <div class="data-card-title"><svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Comparative Table</div>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:4px;">Below Comparative Area Statement for Residential Use-Group Only*</p>
+          <p style="font-size:.74rem;color:var(--muted2);margin-bottom:12px;">(If You Have Another Use-Group, Please Calculate it manually)</p>
+          <div class="table-wrap"><table id="sanction-compare-table"><thead><tr><th>Floor</th><th>Gross Floor Area of Residential</th><th>Gross of Common Area, Parking Area &amp; Tenement Area</th><th>Difference</th></tr></thead><tbody></tbody><tfoot><tr><td>Total</td><td id="s-total-floor-area-secondary">0.000</td><td id="s-total-common-parking-tenements">0.000</td><td id="s-difference">0.000</td></tr></tfoot></table></div>
+          <div class="warn-strip" id="sanction-warn-strip" style="display:none;margin-top:14px;"><svg style="width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Total residential area is not equal to total common area, parking area &amp; tenements area.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="section-parking" class="tab-section">
+      <div class="page">
+        <div class="section-header">
+          <span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg><span>Parking</span> Calculation</span>
+          <div class="section-actions"><button class="btn" onclick="generateParkingTables()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div>
+        </div>
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title"><svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Parking Required For Tenements</div>
+          <p style="font-size:.76rem;color:var(--muted);margin-bottom:12px;">(In flat names: A, B, … for 0.15, 0.20, … &amp; 1, 2, … for 1st floor, 2nd floor, …)</p>
+          <div class="table-wrap" style="margin-bottom:16px;"><table id="p-tenement-table"><thead><tr id="p-tenement-header"></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
+          <div class="table-wrap" id="p-common-area-wrap" style="display:none;"><table id="p-common-area-table"><thead><tr id="p-common-area-header"><th>Floor</th><th>Total Area</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
+        </div>
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title"><svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>Parking Required For Other Use-Groups</div>
+          <div id="p-other-layers-container"></div>
+        </div>
+        <div class="data-card">
+          <div class="data-card-title"><svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>Provided Parking</div>
+          <div class="table-wrap"><table id="p-parking-provided-table"><thead><tr id="p-parking-provided-header"></tr></thead><tbody></tbody><tfoot><tr id="p-parking-provided-footer"></tr></tfoot></table></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="section-occupancy" class="tab-section">
+      <div class="page">
+        <div class="section-header">
+          <span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Occupancy</span> Data</span>
+          <div class="section-actions"><button class="btn" onclick="if(typeof initOccupancy==='function') initOccupancy()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div>
+        </div>
+        <div class="data-card">
+          <div class="data-card-title"><svg style="width:13px;height:13px;vertical-align:middle;margin-right:4px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Occupancy Table</div>
+          <div class="table-wrap"><table id="occ-table"><thead><tr><th>Layer</th><th>Total Floor Area</th><th>Deducted Area</th><th>Net Area</th><th>Percentage</th></tr></thead><tbody></tbody><tfoot><tr><th>Total</th><th id="occ-total-floor-area">0.000</th><th id="occ-total-deducted-area">0.000</th><th id="occ-total-net-area">0.000</th><th id="occ-total-percentage">100%</th></tr></tfoot></table></div>
+          <div style="margin-top:20px;text-align:right;"><button class="btn" id="occ-proceed-btn" onclick="kmcProceedToFinalSummary()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>Proceed to Final Summary</button></div>
+        </div>
+        <div id="occ-alert-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;">
+          <div style="background:var(--card-bg,#1a1f2e);border-radius:12px;padding:28px 32px;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.5);">
+            <img src="https://img.icons8.com/ios-filled/50/ff0000/error.png" alt="Alert" style="width:40px;margin-bottom:12px;">
+            <p id="occ-alert-message" style="color:var(--text,#e2e8f0);margin-bottom:18px;font-size:.9rem;"></p>
+            <button id="occ-alert-close" class="btn btn-danger" style="padding:8px 22px;">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="section-master" class="tab-section">
+      <div class="page">
+        <div class="section-header">
+          <span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Final</span> Summary</span>
+          <div class="section-actions"><button class="btn" id="master-update-btn" onclick="document.getElementById('master-popup').style.display='flex'"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Update Values</button></div>
+        </div>
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title">Comparison Table</div>
+          <div class="table-wrap"><table id="master-table"><thead><tr><th>Particulars</th><th>Data</th><th>Particulars</th><th>Data</th></tr></thead><tbody>
+            <tr><td class="head">Road Width</td><td id="roadwidth">0.00</td><td class="head">Building Use - Group</td><td id="usegroup">No data available</td></tr>
+            <tr><td class="head">Land Area as per Boundary Declaration</td><td id="land-area">0.000</td><td class="head">Land Area as per Document (min.)</td><td id="land-area-doc">0.000</td></tr>
+            <tr><td class="head">Permissible Ground Coverage</td><td id="per-ground-coverage">0.000</td><td class="head">Proposed Ground Coverage</td><td id="pro-ground-coverage">0.000</td></tr>
+            <tr><td class="head">Permissible F.A.R.</td><td id="per-far">0.000</td><td class="head">Proposed F.A.R</td><td id="pro-far">0.000</td></tr>
+            <tr><td class="head">Permissible Height</td><td id="per-height">0.000</td><td class="head">Proposed Height</td><td id="pro-height">0.000</td></tr>
+            <tr><td class="head">Required Tree Cover Area</td><td id="per-tree">0.000</td><td class="head">Proposed Tree Cover Area</td><td id="pro-tree">0.000</td></tr>
+            <tr><td class="head">Permissible C.B./Loft/Ledge Area</td><td id="per-cb">0.000</td><td class="head">Proposed C.B./Loft/Ledge Area</td><td id="pro-cb">0.000</td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title">Open Spaces</div>
+          <div class="table-wrap"><table id="master-open-spaces"><thead><tr><th>Open Spaces</th><th>Required</th><th>Proposed</th></tr></thead><tbody>
+            <tr><td class="head">Front</td><td id="per-front">0.000</td><td id="pro-front">0.000</td></tr>
+            <tr><td class="head">Side 1</td><td id="per-side1">0.000</td><td id="pro-side1">0.000</td></tr>
+            <tr><td class="head">Side 2</td><td id="per-side2">0.000</td><td id="pro-side2">0.000</td></tr>
+            <tr><td class="head">Rear</td><td id="per-rear">0.000</td><td id="pro-rear">0.000</td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="data-card" style="margin-bottom:20px;">
+          <div class="data-card-title">Car Parking</div>
+          <div class="table-wrap"><table id="master-parking"><thead><tr><th>Particulars</th><th>Required</th><th>Proposed</th></tr></thead><tbody>
+            <tr><td class="head">Nos. of Car Parking</td><td id="per-car">0</td><td id="pro-car">0</td></tr>
+            <tr><td class="head">Car Parking Area</td><td id="per-park-area">0.000</td><td id="pro-park-area">0.000</td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="data-card">
+          <div class="data-card-title">Feesable Floor Area</div>
+          <div class="table-wrap"><table id="master-fees"><thead><tr><th>Total Floor Area</th><th>Total Additional Floor Area</th><th>Total Floor Area For Fees</th></tr></thead><tbody><tr><td id="total-floor">0.000</td><td id="additional-floor">0.000</td><td id="total-fees-area">0.000</td></tr></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ORIGINAL Master Update Popup -->
+    <div id="master-popup">
+      <div class="master-popup-box">
+        <div class="master-popup-header">
+          <div><div class="master-popup-title">Update Values</div><div class="master-popup-sub">Override auto-calculated fields if needed</div></div>
+          <button class="master-popup-close" onclick="document.getElementById('master-popup').style.display='none'" aria-label="Close">&times;</button>
+        </div>
+        <div class="master-popup-body">
+          <div class="master-popup-field"><label class="master-popup-label">Land Area as per Document (min.) <span class="req">*</span></label><input class="master-popup-input" type="number" id="manual-land-area" step="0.01" placeholder="Enter value if different from Boundary Area"/></div>
+          <div class="master-popup-field"><label class="master-popup-label">Permissible F.A.R.</label><input class="master-popup-input" type="number" id="manual-far" step="0.01" placeholder="Enter value if different from F.A.R. Table-3"/></div>
+          <div class="master-popup-field"><label class="master-popup-label">Car Parking Bonus</label><input class="master-popup-input" type="number" id="manual-parking-area" step="0.01" placeholder="Enter car parking bonus area"/></div>
+        </div>
+        <div class="master-popup-footer">
+          <button class="btn" id="master-update-confirm"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Update</button>
+          <button class="btn btn-danger" onclick="document.getElementById('master-popup').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORIGINAL Instruction Overlay -->
+    <div class="overlay" id="instrOverlay" onclick="handleOverlayClick(event)">
+      <div class="instr-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+          <div><div class="modal-title" id="modalTitle">Follow The Steps</div><div class="modal-subtitle">Complete guide to extract &amp; process AutoCAD data</div></div>
+          <button class="modal-close-btn" onclick="document.getElementById('instrOverlay').classList.remove('active')" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="step"><div class="step-line"><div class="step-num">1</div><div class="step-connector"></div></div><div class="step-content"><div class="step-title">Download the .dxe File</div><div class="step-desc">Download the <strong>.dxe</strong> file to extract data from AutoCAD.</div><a class="dl-link" href="..\..\..\src\docs\data extraction_kmc.dxe" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download File</a></div></div>
+          <div class="step"><div class="step-line"><div class="step-num">2</div><div class="step-connector"></div></div><div class="step-content"><div class="step-title">Save Extracted Data in Correct Format</div><div class="step-desc">All sheets — MASTER SHEET, A — must be saved together in a <strong>single Excel file</strong>.</div><div class="format-pills"><span class="pill">.xls</span><span class="pill">.xlsx</span><span class="pill">.csv</span></div></div></div>
+          <div class="step"><div class="step-line"><div class="step-num">3</div><div class="step-connector"></div></div><div class="step-content"><div class="step-title">Upload the Excel File</div><div class="step-desc">Click the upload zone or <strong>"Browse"</strong> and select the prepared Excel file.</div></div></div>
+          <div class="step"><div class="step-line"><div class="step-num">4</div></div><div class="step-content"><div class="step-title">Run Your Calculations</div><div class="step-desc">Use the menu tabs to run calculations based on the uploaded data.</div></div></div>
+        </div>
+        <div class="modal-divider"></div>
+        <div class="modal-footer"><button class="got-it-btn" onclick="document.getElementById('instrOverlay').classList.remove('active')">Got It ✓</button></div>
+      </div>
+    </div>
+
+  </div><!-- /app-wrapper -->
+
+  <button id="scrollTopBtn" title="Back to top" aria-label="Scroll to top">
+    <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+  </button>
+
+
+  <!-- ══════════════════════════════════════════
+       TOP-NAV + TAB JS — all fixes applied
+  ══════════════════════════════════════════ -->
+  <script>
+
+  /* ── Map of tab → generate function name ── */
+  var KMC_TAB_FN = {
+    'section-tables':    'generateTables',
+    'section-filtered':  'generateFilteredTables',
+    'section-sanction':  'generateSanctionTables',
+    'section-parking':   'generateParkingTables',
+    'section-occupancy': 'initOccupancy',
+    'section-master':    'generateMasterTable'
+  };
+
+  /* ── Tab click — switch + call generate, waiting for data if needed ── */
+  function kmcTabClick(tabId) {
+    // switchTab handles section switching + lazy script loading + init
+    if (typeof switchTab === 'function') {
+      switchTab(tabId);
+      return; // switchTab does everything — don't run the poll below
+    }
+
+    // Fallback: kmc_core.js not loaded yet — do a basic section switch
+    document.querySelectorAll('.tab-section').forEach(function(s) {
+      s.style.display = 'none'; s.classList.remove('active');
+    });
+    var t = document.getElementById(tabId);
+    if (t) { t.style.display = ''; t.classList.add('active'); }
+    document.querySelectorAll('.tab-btn').forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
+    });
+
+    var hero = document.getElementById('home-hero');
+    if (hero) hero.style.display = (tabId === 'section-home') ? '' : 'none';
+
+    var fn = KMC_TAB_FN[tabId];
+    if (!fn) return;
+
+    if (localStorage.getItem('csvData')) {
+      if (typeof window[fn] === 'function') window[fn]();
+      return;
+    }
+
+    var waited = 0;
+    var waitPoll = setInterval(function() {
+      waited++;
+      if (localStorage.getItem('csvData')) {
+        clearInterval(waitPoll);
+        var still = document.querySelector('.tab-btn.active');
+        if (still && still.getAttribute('data-tab') === tabId) {
+          if (typeof window[fn] === 'function') window[fn]();
+        }
+      } else if (waited > 100) {
+        clearInterval(waitPoll);
+      }
+    }, 50);
+  }
+
+  /* ── Hero show/hide helpers ── */
+  function kmcHideHero() {
+    var hero = document.getElementById('home-hero');
+    if (hero) hero.style.display = 'none';
+  }
+  function kmcShowHero() {
+    var hero = document.getElementById('home-hero');
+    if (hero) hero.style.display = '';
+  }
+
+  /* ── applyTabStates ── */
+  window.applyTabStates = function(unlock) {
+    var ids = ['tabLayerTables','filteredTables','sanctionTab','parkingTab','occupancyTab'];
+    ids.forEach(function(id) {
+      var b = document.getElementById(id);
+      if (b) b.style.display = unlock ? '' : 'none';
+    });
+    // Final Summary tab: visible whenever data is loaded, but locked until
+    // the user explicitly clicks "Proceed to Final Summary" in the Occupancy tab.
+    // kmc_core.js applyTabStates handles the lock/unlock badge — we just show/hide here.
+    var mt = document.getElementById('masterTab');
+    if (mt) mt.style.display = unlock ? '' : 'none';
+    if (unlock) kmcHideHero();
+    else kmcShowHero();
+  };
+  window.resetTabUnlocks = function() {
+    localStorage.removeItem('_masterUnlocked');
+    window.applyTabStates(false);
+  };
+
+  /* ── Proceed to Final Summary ──
+     Validates occupancy data before unlocking the master tab.
+     Mirrors old proceedToMaster() behaviour from kmc_core.js.
+  ── */
+  window.kmcProceedToFinalSummary = function() {
+
+    /* Helper: show the occupancy alert modal */
+    function showOccAlert(msg) {
+      var modal  = document.getElementById('occ-alert-modal');
+      var msgEl  = document.getElementById('occ-alert-message');
+      if (!modal) return;
+      if (msgEl) msgEl.textContent = msg;
+      modal.style.display = 'flex';
+      // Wire close handlers once
+      var closeBtn = document.getElementById('occ-alert-close');
+      if (closeBtn && !closeBtn._kmcAlertBound) {
+        closeBtn._kmcAlertBound = true;
+        closeBtn.addEventListener('click', function() { modal.style.display = 'none'; });
+        modal.addEventListener('click',    function(e) { if (e.target === modal) modal.style.display = 'none'; });
+      }
+    }
+
+    /* 1. Occupancy table must have at least one data row */
+    var occBody = document.querySelector('#occ-table tbody');
+    if (!occBody || occBody.querySelectorAll('tr').length === 0) {
+      showOccAlert('Occupancy table is empty. Please run the Occupancy tab before proceeding to Final Summary.');
+      return;
+    }
+
+    /* 2. Total percentage must be ~100% */
+    var pctEl  = document.getElementById('occ-total-percentage');
+    if (pctEl) {
+      var pct = parseFloat(pctEl.textContent.replace('%','').trim());
+      if (!isNaN(pct) && (pct < 99 || pct > 101)) {
+        showOccAlert(
+          'Total occupancy is ' + pctEl.textContent +
+          ' — expected 100%. Please verify the occupancy data before proceeding.'
+        );
+        return;
+      }
+    }
+
+/* 3. Passed — save highest percentage use-group then unlock Final Summary */
+var occRows = document.querySelectorAll('#occ-table tbody tr');
+var bestLayer = null, bestPct = -1, totalNet = 0;
+var rowData = [];
+occRows.forEach(function(tr) {
+  var cells = tr.querySelectorAll('td');
+  if (cells.length < 5) return;
+  var net = parseFloat(cells[3].textContent) || 0;
+  totalNet += net;
+  rowData.push({ layer: cells[0].textContent.trim(), net: net });
+});
+rowData.forEach(function(d) {
+  var pct = totalNet > 0 ? (d.net / totalNet) * 100 : 0;
+  if (pct > bestPct) { bestPct = pct; bestLayer = d.layer; }
+});
+if (bestLayer) {
+  localStorage.setItem('highestPercentageItem', JSON.stringify({
+    layer: bestLayer,
+    percentage: bestPct.toFixed(2)
+  }));
+}
+localStorage.setItem('_masterUnlocked', '1');
+    // applyTabStates MUST run before kmcTabClick so switchTab's
+    // disabled/tab-locked guard is cleared before navigation fires
+    if (typeof applyTabStates === 'function') applyTabStates(true);
+    else {
+      // fallback: manually clear the lock so switchTab doesn't bail
+      var mt = document.getElementById('masterTab');
+      if (mt) { mt.style.display = ''; mt.disabled = false; mt.classList.remove('tab-locked'); }
+    }
+    kmcTabClick('section-master');
+  };
+
+  /* ── FIX 3: Clear data — show confirm popup first ── */
+  window._kmcClearData = function() {
+    var popup = document.getElementById('kmc-confirm-popup');
+    if (!popup) {
+      popup = document.createElement('div');
+      popup.id = 'kmc-confirm-popup';
+      popup.style.cssText = 'position:fixed;inset:0;background:rgba(26,24,20,.6);backdrop-filter:blur(5px);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      popup.innerHTML =
+        '<div style="background:var(--paper,#fdfbf7);border:1px solid var(--border2,rgba(26,24,20,.18));border-radius:14px;padding:28px 32px;max-width:360px;width:92%;box-shadow:0 16px 48px rgba(0,0,0,.2);text-align:center;">' +
+          '<div style="font-size:2rem;margin-bottom:10px;">🗑️</div>' +
+          '<h3 style="font-family:var(--font-mono,monospace);font-size:.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink,#1a1814);margin-bottom:8px;">Clear All Data?</h3>' +
+          '<p style="font-size:.8rem;color:var(--muted,#8c8880);line-height:1.6;margin-bottom:22px;">This will remove the uploaded file and all calculated results. This action cannot be undone.</p>' +
+          '<div style="display:flex;gap:10px;justify-content:center;">' +
+            '<button id="kmc-confirm-yes" style="padding:9px 24px;background:#ff5252;color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;">Yes, Clear</button>' +
+            '<button id="kmc-confirm-no"  style="padding:9px 24px;background:transparent;color:var(--ink2,#3d3a32);border:1px solid var(--border2,rgba(26,24,20,.18));border-radius:7px;font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;">Cancel</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(popup);
+      document.getElementById('kmc-confirm-no').onclick  = function() { popup.style.display = 'none'; };
+      document.getElementById('kmc-confirm-yes').onclick = function() { popup.style.display = 'none'; window._kmcDoClear(); };
+      popup.addEventListener('click', function(e) { if (e.target === popup) popup.style.display = 'none'; });
+    } else {
+      popup.style.display = 'flex';
+    }
+  };
+
+  /* ── Actual clear (runs after user confirms) ── */
+window._kmcDoClear = function() {
+  // Clear all data first
+  localStorage.removeItem('csvData');
+  localStorage.removeItem('uploadedFileName');
+  localStorage.removeItem('_tabsUnlocked');
+  localStorage.removeItem('_masterUnlocked');
+  localStorage.removeItem('mainTableData');
+  localStorage.removeItem('highestPercentageItem');
+  localStorage.removeItem('totalParkingArea');
+  localStorage.removeItem('kmcTabsUnlocked');
+
+  // Navigate to same page — loads fresh from cache, no visible "refresh"
+  window.location.href = window.location.pathname;
+};
+
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // Bind clear button if it's already in DOM (fallback — injection may have done it already)
+    var clearBtn = document.getElementById('clearStorageBtn');
+    if (clearBtn && !clearBtn._kmcBound) {
+      clearBtn._kmcBound = true;
+      clearBtn.addEventListener('click', window._kmcClearData);
+    }
+
+    // Use MutationObserver to bind clearBtn if it arrives later via injection
+    var observer = new MutationObserver(function() {
+      var btn = document.getElementById('clearStorageBtn');
+      if (btn && !btn._kmcBound) {
+        btn._kmcBound = true;
+        btn.addEventListener('click', window._kmcClearData);
+        // Restore persisted state for this button
+        if (localStorage.getItem('_tabsUnlocked') === '1') {
+          btn.style.display = 'inline-flex';
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // FIX 1: Restore full UI state on page refresh if data was previously uploaded
+    if (localStorage.getItem('_tabsUnlocked') === '1') {
+      var fname = localStorage.getItem('uploadedFileName') || '';
+      // Unlock tabs
+      window.applyTabStates(true);
+      // Update status bar (dot may not exist yet if injection is pending — MutationObserver handles that)
+      var dot = document.getElementById('status-dot');
+      var txt = document.getElementById('status-text');
+      if (dot) dot.classList.add('green');
+      if (txt) txt.textContent = fname ? 'Loaded — ' + fname : 'Data loaded';
+      // Show clear button if already in DOM
+      var cb = document.getElementById('clearStorageBtn');
+      if (cb) cb.style.display = 'inline-flex';
+      // Hide upload UI, show data table
+      var mc = document.getElementById('main-container');
+      var ic = document.getElementById('info-container');
+      var tc = document.querySelector('.home-two-col');
+      var dxfCol = document.getElementById('dxf-right-col');
+      var fs = document.getElementById('feature-strip');
+      if (ic)     ic.style.display     = 'none';
+      if (tc)     tc.style.display     = 'none';
+      if (dxfCol) dxfCol.style.display = 'none';
+      if (fs)     fs.style.display     = 'none';
+      if (mc)     mc.style.display     = 'block';
+      kmcHideHero();
+      // Load saved CSV data into the table
+      var csv = localStorage.getItem('csvData');
+      if (csv) {
+        var fnEl = document.getElementById('loaded-filename');
+        if (fnEl) fnEl.textContent = fname;
+        // Call displayData once original scripts have loaded
+        var tries = 0;
+        var poll = setInterval(function() {
+          tries++;
+          if (typeof window.displayData === 'function') {
+            window.displayData(csv);
+            clearInterval(poll);
+          } else if (tries > 100) clearInterval(poll);
+        }, 50);
+      }
+    }
+
+    // Modal close handlers
+    var mc2 = document.getElementById('modalClose');
+    if (mc2) mc2.addEventListener('click', function() {
+      var m = document.getElementById('errorModal');
+      if (m) { m.classList.remove('show'); m.style.display = ''; }
+    });
+    var fac = document.getElementById('filteredAlertClose');
+    var facb = document.getElementById('filteredAlertCloseBtn');
+    if (fac)  fac.addEventListener('click',  function() { document.getElementById('filteredAlertModal').classList.remove('active'); });
+    if (facb) facb.addEventListener('click', function() { document.getElementById('filteredAlertModal').classList.remove('active'); });
+    var oac = document.getElementById('occ-alert-close');
+    if (oac) oac.addEventListener('click', function() { document.getElementById('occ-alert-modal').style.display = 'none'; });
+
+    // FIX 1: observe main-container to sync hero visibility
+    var mainCon = document.getElementById('main-container');
+    if (mainCon) {
+      new MutationObserver(function() {
+        var loaded = mainCon.style.display !== 'none' && mainCon.style.display !== '';
+        if (loaded) kmcHideHero(); else kmcShowHero();
+      }).observe(mainCon, { attributes: true, attributeFilter: ['style'] });
+    }
+  });
+
+  /* ── checkErrors — calls original script function or triggers modal directly ── */
+function kmcCheckErrors() {
+  var fns = ['checkErrors', 'runCheckErrors', 'checkErrorsHandler', 'checkDataErrors'];
+  for (var i = 0; i < fns.length; i++) {
+    if (typeof window[fns[i]] === 'function') {
+      window[fns[i]]();
+      _kmcCheckMissingLayers(); // also check missing layers
+      return;
+    }
+  }
+
+  // No external function — just run missing layer check and show modal
+  _kmcCheckMissingLayers();
+}
+
+function _kmcCheckMissingLayers() {
+  var REQUIRED = ['Plot', 'Road', 'Ground Coverage', 'Open Space', 'Height'];
+
+  var csv = localStorage.getItem('csvData');
+  if (!csv) return;
+
+  var missing = REQUIRED.filter(function(layer) {
+    return csv.indexOf(',' + layer + ',') === -1;
+  });
+
+  if (missing.length === 0) return;
+
+  var body = document.getElementById('modalBody');
+  var modal = document.getElementById('errorModal');
+  if (!body || !modal) return;
+
+
+    // Remove previously added missing-layer errors before re-adding
+    body.querySelectorAll('.missing-layer-error').forEach(function(el) {
+      el.parentNode.removeChild(el);
+    });
+
+    // Add separator
+    var hr = document.createElement('hr');
+    hr.className = 'missing-layer-error';
+    hr.style.cssText = 'border:none;border-top:1px solid rgba(231,76,60,.25);margin:10px 0;';
+    body.appendChild(hr);
+
+    // Add heading
+    var heading = document.createElement('div');
+    heading.className = 'missing-layer-error';
+    heading.style.cssText = 'font-weight:700;color:#e74c3c;margin-bottom:6px;';
+    heading.textContent = 'Missing Required Layers:';
+    body.appendChild(heading);
+
+    missing.forEach(function(layer) {
+    var div = document.createElement('div');
+    div.className = 'error-item missing-layer-error';
+    div.style.cssText = 'cursor:default;text-decoration:none;';
+    div.textContent = layer + ' layer is missing from the data';
+    body.appendChild(div);
+  });
+
+  modal.style.display = 'block';
+}
+
+  /* ── Top nav switcher ── */
+  function kmcSwitchNav(target, btn) {
+    document.getElementById('kmc-guide-section').style.display   = (target === 'guide')   ? '' : 'none';
+    document.getElementById('kmc-updates-section').style.display = (target === 'updates') ? '' : 'none';
+    var tabBar = document.getElementById('mainTabBar');
+    if (target === 'home') {
+      tabBar.style.display = '';
+      // Re-show whichever tab section is active
+      var activeBtn = document.querySelector('.tab-btn.active');
+      if (activeBtn) {
+        var tid = activeBtn.getAttribute('data-tab');
+        var el = document.getElementById(tid);
+        if (el) { el.style.display = ''; el.classList.add('active'); }
+      }
+      // If data is loaded, keep data view; otherwise show upload panel
+      if (localStorage.getItem('_tabsUnlocked') !== '1') {
+        var tc2 = document.querySelector('.home-two-col');
+        var fs2 = document.getElementById('feature-strip');
+        var hero2 = document.getElementById('home-hero');
+        if (tc2) tc2.style.display = 'flex';
+        if (fs2) fs2.style.display = '';
+        if (hero2) hero2.style.display = '';
+      }
+    } else {
+      tabBar.style.display = 'none';
+      document.querySelectorAll('.tab-section').forEach(function(s) { s.style.display = 'none'; });
+    }
+    document.querySelectorAll('.sh-pill').forEach(function(p) { p.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+  }
+
+  /* ── View data from kmcuploads ──
+     Triggers on ?uploadId=kmc_... (actual param your uploads page sends)
+     or legacy ?view=1. Hides the upload UI and renders stored CSV data.
+  ── */
+  (function() {
+    var params   = new URLSearchParams(window.location.search);
+    var uploadId = params.get('uploadId');
+    var viewFlag = params.get('view');
+    if (!uploadId && viewFlag !== '1') return; // not a kmcuploads redirect
+
+    function showStoredData() {
+      var csv = localStorage.getItem('csvData');
+      if (!csv) return false;
+
+      var mc     = document.getElementById('main-container');
+      var ic     = document.getElementById('info-container');
+      var tc     = document.querySelector('.home-two-col');
+      var dxfCol = document.getElementById('dxf-right-col');
+      var fs     = document.getElementById('feature-strip');
+      if (!mc) return false;
+
+      var fname = localStorage.getItem('uploadedFileName') || '';
+
+      // Hide upload panel, show data card
+      if (ic)     ic.style.display     = 'none';
+      if (tc)     tc.style.display     = 'none';
+      if (dxfCol) dxfCol.style.display = 'none';
+      if (fs)     fs.style.display     = 'none';
+      mc.style.display = 'block';
+      kmcHideHero();
+
+      // Unlock tabs
+      if (typeof window.applyTabStates === 'function') window.applyTabStates(true);
+
+      // Status bar (shell-injected — guard with if)
+      var dot = document.getElementById('status-dot');
+      var txt = document.getElementById('status-text');
+      if (dot) dot.classList.add('green');
+      if (txt) txt.textContent = fname ? 'Loaded — ' + fname : 'Data loaded';
+      var cb = document.getElementById('clearStorageBtn');
+      if (cb) cb.style.display = 'inline-flex';
+      var fnEl = document.getElementById('loaded-filename');
+      if (fnEl) fnEl.textContent = fname;
+
+      // displayData may not be defined yet if lazy scripts haven't loaded
+      if (typeof window.displayData === 'function') {
+        window.displayData(csv);
+        return true;
+      }
+      return false;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var called = false;
+      var tries  = 0;
+      var poll   = setInterval(function() {
+        tries++;
+        if (!called) {
+          called = showStoredData();
+        } else if (document.getElementById('status-dot')) {
+          // displayData called AND shell bar is ready — fully done
+          clearInterval(poll);
+        }
+        if (tries > 200) clearInterval(poll); // hard stop at 10 s
+      }, 50);
+    });
+  })();
+
+  // Scroll to top
+  window.addEventListener('scroll', function() {
+    var stb = document.getElementById('scrollTopBtn');
+    if (stb) stb.classList.toggle('show', window.scrollY > 300);
+  });
+  document.addEventListener('DOMContentLoaded', function() {
+    var stb = document.getElementById('scrollTopBtn');
+    if (stb) stb.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  });
+
+  // Overlay click-outside
+  function handleOverlayClick(e) {
+    if (e.target.classList.contains('overlay')) e.target.classList.remove('active');
+  }
+  </script>
+
+
+  <!-- ══════════════════════════════════════════
+       ORIGINAL SCRIPTS — COMPLETELY UNCHANGED
+  ══════════════════════════════════════════ -->
+  <script src="../../../src/library/xlsx.full.min.js"></script>
+  <script src="../../../src/js/data_extraction_kmc/index_kmc.js"></script>
+  <script src="../../../src/js/data_extraction_kmc/kmc-upload-tracker.js"></script>
+  <script src="../../../src/js/data_extraction_kmc/kmc_core.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof loadScriptsSequential === 'function') {
+        loadScriptsSequential(['../../../src/js/data_extraction_kmc/kmc_home.js'], null);
+      }
+    });
+  </script>
+
+  <!-- ── DXF LAYER EXTRACTOR SCRIPT — verbatim from original ── -->
+  <script>
+  (function(){
+    'use strict';
+    const MASTER_PATTERN = /^master\s+sheet\.dxf$/i;
+    const MASTER_LAYERS = ["Plot","Road","Splay","Strip","GroundCoverage","TreeCover","OpenSpace","Waterbody","Goomty","Alignment","GFPlanExistingStructure","Sanctioned Alignment","STP","RWH","Pavement"];
+    const A_LAYERS = ["Column","Open Space_Ext_1","Residential","Mercantile_wholesale","Mercantile_retail","Business","Institutional","Storage","Assembly","Hazardous","Industrial","Educational","Internal Road","Stair","Lift","Lift_Ext_1","Loft","Cupboard","Tenement","Tenement_Ext_1","Tenement_Single","Tenement_Single_Ext_1","Height","Floor Height","Roof_Structure","Terrace","Parking_Area","Heritage","Existing","Service_floor","Common Area","Fire Refuge","Triple_Balcony","Court Yard","Shaft","Corridor","EVCP","Solar","Baby Care Room"];
+    const SHARED_LAYERS = ["Parking"];
+    const MASTER_SET = new Set(MASTER_LAYERS);
+    const A_SET      = new Set(A_LAYERS);
+    const SHARED_SET = new Set(SHARED_LAYERS);
+    const TARGET_SET = new Set([...MASTER_LAYERS,...A_LAYERS,...SHARED_LAYERS]);
+    const MM_TO_M   = 0.001;
+    const MM2_TO_M2 = MM_TO_M * MM_TO_M;
+    const EXPECTED_PRINTABLE = {"Plot":true,"Road":false,"Splay":true,"Strip":true,"GroundCoverage":false,"TreeCover":false,"OpenSpace":false,"Open Space_Ext_1":false,"Residential":false,"Mercantile_wholesale":false,"Mercantile_retail":false,"Business":false,"Institutional":false,"Storage":false,"Assembly":false,"Hazardous":false,"Industrial":false,"Educational":false,"Internal Road":false,"Alignment":false,"Stair":false,"Lift":false,"Lift_Ext_1":false,"Loft":false,"Cupboard":false,"Tenement":false,"Tenement_Ext_1":false,"Tenement_Single":false,"Tenement_Single_Ext_1":false,"Height":false,"Floor Height":false,"Roof_Structure":false,"Terrace":false,"Parking":true,"Parking_Area":false,"Waterbody":true,"Heritage":false,"Existing":false,"Service_floor":false,"Common Area":false,"Fire Refuge":false,"Triple_Balcony":false,"Goomty":false,"Court Yard":false,"Shaft":false,"Corridor":false,"STP":false,"RWH":false,"Pavement":false,"EVCP":false,"Solar":false,"Baby Care Room":false,"Column":true,"GFPlanExistingStructure":false,"Sanctioned Alignment":false};
+    const DXF = { master:null, a:null, rows:[], filtered:[] };
+    let _pendingShowAnyway = null;
+
+    (function watchExcelUpload(){
+      const mainCon=document.getElementById('main-container');
+      const infoCon=document.getElementById('info-container');
+      const dxfCol=document.getElementById('dxf-right-col');
+      if(!mainCon||!dxfCol) return;
+      function syncDxfCol(){ const el=mainCon.style.display==='block'; dxfCol.style.display=el?'none':''; }
+      new MutationObserver(syncDxfCol).observe(mainCon,{attributes:true,attributeFilter:['style']});
+      if(infoCon) new MutationObserver(syncDxfCol).observe(infoCon,{attributes:true,attributeFilter:['style']});
+      syncDxfCol();
+    })();
+
+    window.dxfDzDrag=function(e,slot,on){e.preventDefault();document.getElementById('dz-'+slot).classList.toggle('drag',on);};
+    window.dxfDzDrop=function(e,slot){e.preventDefault();document.getElementById('dz-'+slot).classList.remove('drag');const f=e.dataTransfer.files[0];if(f)dxfFileChosen(slot,f);};
+    window.dxfFileChosen=function(slot,file){
+      const dz=document.getElementById('dz-'+slot);
+      const valid=slot==='master'?MASTER_PATTERN.test(file.name):file.name==='A.dxf';
+      const label=slot==='master'?'"Master Sheet.dxf" (any capitalisation)':'"A.dxf" (capital A, exact)';
+      dz.classList.remove('ok','err');
+      document.getElementById('dxf-err-'+slot).textContent=valid?'':'Expected '+label+' — got "'+file.name+'"';
+      document.getElementById('dxf-ico-'+slot).textContent=valid?'✅':'📂';
+      document.getElementById('dxf-hint-'+slot).innerHTML=valid?'<span style="color:#16a34a;font-family:monospace;font-size:11px">'+file.name+'</span>':(slot==='master'?'any capitalisation':'must be capital A');
+      dz.classList.add(valid?'ok':'err');
+      DXF[slot]=valid?file:null;
+      const btn=document.getElementById('dxf-btn-extract');
+      const ready=!!(DXF.master&&DXF.a);
+      btn.disabled=!ready; btn.style.opacity=ready?'1':'0.45'; btn.style.cursor=ready?'pointer':'not-allowed';
+    };
+
+    function tokenise(text){
+      const cleaned=text.replace(/^\uFEFF/,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+      const lines=cleaned.split('\n'); const pairs=[];
+      for(let i=0;i+1<lines.length;i+=2){const code=lines[i].trim(),val=lines[i+1].trim();if(code!=='')pairs.push({code,val});}
+      return pairs;
+    }
+
+    function parseDXF(text){
+      const pairs=tokenise(text); const n=pairs.length;
+      const layerDefs={}; let inTable=false,inLayerTable=false,curLayer=null;
+      for(let i=0;i<n;i++){
+        const{code,val}=pairs[i];
+        if(code==='0'&&val==='TABLE'){inTable=true;continue;}
+        if(code==='0'&&val==='ENDTAB'){if(curLayer&&curLayer.name)layerDefs[curLayer.name]={...curLayer};curLayer=null;inTable=false;inLayerTable=false;continue;}
+        if(inTable&&code==='2'&&val==='LAYER'){inLayerTable=true;continue;}
+        if(!inLayerTable)continue;
+        if(code==='0'&&val==='LAYER'){if(curLayer&&curLayer.name)layerDefs[curLayer.name]={...curLayer};curLayer={};continue;}
+        if(curLayer){if(code==='2')curLayer.name=val;if(code==='62')curLayer.color=parseInt(val);if(code==='6')curLayer.linetype=val||'Continuous';if(code==='370')curLayer.lineweight=parseInt(val);if(code==='290')curLayer.plot=val==='1';}
+      }
+      const ETYPES=new Set(['LINE','LWPOLYLINE','POLYLINE','POINT','INSERT']);
+      const allLayerNames=new Set(); const rawEnts=[]; let section='',ent=null;
+      for(let i=0;i<n;i++){
+        const{code,val}=pairs[i];
+        if(code==='0'&&val==='SECTION')continue;
+        if(code==='2'&&(val==='BLOCKS'||val==='ENTITIES')){if(ent){rawEnts.push(finalise(ent,layerDefs));ent=null;}section=val;continue;}
+        if(code==='0'&&val==='ENDSEC'){if(ent){rawEnts.push(finalise(ent,layerDefs));ent=null;}section='';continue;}
+        if(code==='8'&&val)allLayerNames.add(val);
+        if(section!=='BLOCKS'&&section!=='ENTITIES')continue;
+        if(code==='0'){
+          if(ent){rawEnts.push(finalise(ent,layerDefs));ent=null;}
+          if(ETYPES.has(val)){ent={type:val,layer:'0',color:null,linetype:null,lineweight:null,closed:false,length:0,area:0,x1:null,y1:null,x2:null,y2:null,vertices:[],curX:null,curY:null};}else ent=null;
+          continue;
+        }
+        if(!ent)continue;
+        if(code==='8')ent.layer=val;if(code==='62')ent.color=parseInt(val);if(code==='6')ent.linetype=val;if(code==='370')ent.lineweight=parseInt(val);
+        if(code==='70'&&(ent.type==='LWPOLYLINE'||ent.type==='POLYLINE'))ent.closed=(parseInt(val)&1)===1;
+        if(ent.type==='LINE'){if(code==='10')ent.x1=parseFloat(val);if(code==='20')ent.y1=parseFloat(val);if(code==='11')ent.x2=parseFloat(val);if(code==='21')ent.y2=parseFloat(val);}
+        if(ent.type==='LWPOLYLINE'){if(code==='10'){if(ent.curX!==null&&ent.curY!==null)ent.vertices.push([ent.curX,ent.curY]);ent.curX=parseFloat(val);ent.curY=null;}if(code==='20')ent.curY=parseFloat(val);}
+      }
+      if(ent)rawEnts.push(finalise(ent,layerDefs));
+      function dist(ax,ay,bx,by){return Math.sqrt((bx-ax)**2+(by-ay)**2);}
+      function perimeter(v,closed){let l=0;for(let i=0;i<v.length-1;i++)l+=dist(v[i][0],v[i][1],v[i+1][0],v[i+1][1]);if(closed&&v.length>1)l+=dist(v[v.length-1][0],v[v.length-1][1],v[0][0],v[0][1]);return l;}
+      function shoelace(v){let a=0;const m=v.length;for(let i=0;i<m;i++){const j=(i+1)%m;a+=v[i][0]*v[j][1]-v[j][0]*v[i][1];}return Math.abs(a)/2;}
+      for(const e of rawEnts){
+        if(e.type==='LINE'&&e.x1!==null&&e.y1!==null&&e.x2!==null&&e.y2!==null)e.length=dist(e.x1,e.y1,e.x2,e.y2);
+        if(e.type==='LWPOLYLINE'){if(e.curX!==null&&e.curY!==null)e.vertices.push([e.curX,e.curY]);if(e.vertices.length>=2){e.length=perimeter(e.vertices,e.closed);if(e.closed&&e.vertices.length>=3)e.area=shoelace(e.vertices);}}
+      }
+      const rows=[];
+      for(const e of rawEnts){
+        if(!TARGET_SET.has(e.layer))continue;
+        let name;
+        if(e.type==='LINE')name='Line';
+        else if(e.type==='LWPOLYLINE'||e.type==='POLYLINE')name='Polyline';
+        else if(e.type==='POINT')name='Point';
+        else if(e.type==='INSERT')name='Insert';
+        else name=e.type;
+        const isPoly=(e.type==='LWPOLYLINE'||e.type==='POLYLINE'),isLine=(e.type==='LINE'),isClosed=e.closed||false;
+        const showLen=(isLine||isPoly)&&(e.length||0)>0,showArea=isPoly&&isClosed&&(e.area||0)>0;
+        const lw=e.lineweight;
+        const lwLabel=(!lw||lw===-3||lw===0)?'ByLayer':lw===-1?'ByLayer':lw===-2?'ByBlock':lw>0?(lw/100).toFixed(2)+' mm':'ByLayer';
+        rows.push({count:1,name,colorRaw:String(e.color??7),layer:e.layer,length:showLen?(e.length*MM_TO_M).toFixed(3):'',area:showArea?(e.area*MM2_TO_M2).toFixed(3):'',linetype:e.linetype||'ByLayer',lineweight:lwLabel,closed:isClosed?-1:0,printable:e.printable,source:'',expectedIn:SHARED_SET.has(e.layer)?'both':MASTER_SET.has(e.layer)?'master':'a'});
+      }
+      return{rows,allLayerNames:[...allLayerNames].sort(),entityCount:rawEnts.length};
+    }
+
+    function finalise(ent,layerDefs){const ld=layerDefs[ent.layer]||{};if(ent.color===null)ent.color=ld.color??7;ent.printable=ld.plot!==undefined?ld.plot:true;return ent;}
+
+    window.dxfHandleExtract=function(){
+      const btn=document.getElementById('dxf-btn-extract');
+      btn.textContent='⏳ Parsing…';btn.disabled=true;
+      Promise.all([readFile(DXF.master),readFile(DXF.a)]).then(([mt,at])=>{
+        const mRes=parseDXF(mt),aRes=parseDXF(at);
+        const masterRows=mRes.rows.map(r=>({...r,source:DXF.master.name.replace(/\.\w+$/,'')}));
+        const aRows=aRes.rows.map(r=>({...r,source:DXF.a.name.replace(/\.\w+$/,'')}));
+        DXF.rows=[...masterRows,...aRows];
+        const seen1=new Set(),seen2=new Set();
+        const layerMismatches=[
+          ...mRes.rows.filter(r=>A_SET.has(r.layer)&&!SHARED_SET.has(r.layer)).map(r=>({layer:r.layer,foundIn:DXF.master.name,shouldBeIn:'A.dxf'})),
+          ...aRes.rows.filter(r=>MASTER_SET.has(r.layer)&&!SHARED_SET.has(r.layer)).map(r=>({layer:r.layer,foundIn:DXF.a.name,shouldBeIn:'Master Sheet.dxf'}))
+        ].filter(m=>{const k=m.layer+'|'+m.foundIn;if(seen1.has(k))return false;seen1.add(k);return true;});
+        const printMismatches=DXF.rows.map(r=>{const exp=EXPECTED_PRINTABLE[r.layer],act=r.printable!==undefined?r.printable:exp;return{layer:r.layer,source:r.source,expected:exp,actual:act,mismatch:exp!==undefined&&act!==exp};}).filter(m=>{if(!m.mismatch)return false;const k=m.layer+'|'+m.source;if(seen2.has(k))return false;seen2.add(k);return true;});
+        btn.textContent='⚡ Extract Layers';btn.disabled=false;btn.style.opacity='1';btn.style.cursor='pointer';
+        function buildCSV(rows){const header='Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed';const lines=rows.map(r=>[r.count,r.name,r.colorRaw,r.layer,r.length,r.linetype,r.lineweight,r.area,r.closed].join(','));return header+'\n'+lines.join('\n');}
+        const doShow=()=>{
+          const csv=buildCSV(DXF.rows);
+          localStorage.setItem('csvData',csv);
+          const fname=DXF.master.name+' + '+DXF.a.name;
+          localStorage.setItem('uploadedFileName',fname);
+          const dot=document.getElementById('status-dot'),txt=document.getElementById('status-text');
+          if(dot)dot.classList.add('green');if(txt)txt.textContent='Uploaded - '+fname;
+          const fnEl=document.getElementById('loaded-filename');if(fnEl)fnEl.textContent=fname;
+          const clearBtn=document.getElementById('clearStorageBtn');if(clearBtn)clearBtn.style.display='inline-flex';
+          localStorage.setItem('_tabsUnlocked','1');
+          if(typeof window.applyTabStates==='function') window.applyTabStates(true);
+          document.querySelectorAll('.tab-btn:not([data-tab="section-home"])').forEach(b=>{b.style.display='';});
+          document.querySelector('.home-two-col').style.display='none';
+          document.getElementById('info-container').style.display='none';
+          var fsEl=document.getElementById('feature-strip');if(fsEl)fsEl.style.display='none';
+          document.getElementById('main-container').style.display='block';
+          if(typeof window.displayData==='function') window.displayData(csv);
+          if(typeof window._kmcTabRefresh==='function') window._kmcTabRefresh();
+        };
+        if(layerMismatches.length>0||printMismatches.length>0){
+          let html='';
+          if(layerMismatches.length>0){html+='<p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Layer in wrong file</p>';html+=layerMismatches.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#dc2626;font-weight:700;flex:1">${m.layer}</span><span style="color:#94a3b8;font-size:11px">in <b style="color:#d97706">${m.foundIn}</b> → <b style="color:#16a34a">${m.shouldBeIn}</b></span></div>`).join('');}
+          if(printMismatches.length>0){html+='<p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 6px">Printable flag mismatch</p>';html+=printMismatches.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#92400e;font-weight:700;flex:1">${m.layer}</span><span style="color:#94a3b8;font-size:11px">in <b>${m.source}</b> · actual: <b style="color:#dc2626">${m.actual?'Yes':'No'}</b> → expected: <b style="color:#16a34a">${m.expected?'Yes':'No'}</b></span></div>`).join('');}
+          document.getElementById('dxf-popup-body').innerHTML=html;
+          document.getElementById('dxf-popup').style.display='flex';
+          _pendingShowAnyway=doShow;
+        }else{doShow();}
+      }).catch(err=>{console.error(err);btn.textContent='⚡ Extract Layers';btn.disabled=false;btn.style.opacity='1';});
+    };
+
+    window.dxfClosePopup=function(showAnyway){document.getElementById('dxf-popup').style.display='none';if(showAnyway&&_pendingShowAnyway)_pendingShowAnyway();_pendingShowAnyway=null;};
+
+    window.dxfReset=function(){
+      DXF.master=null;DXF.a=null;DXF.rows=[];DXF.filtered=[];
+      localStorage.removeItem('csvData');localStorage.removeItem('uploadedFileName');localStorage.removeItem('_tabsUnlocked');
+      const dot=document.getElementById('status-dot'),txt=document.getElementById('status-text');
+      if(dot)dot.classList.remove('green');if(txt)txt.textContent='No file loaded — upload to begin';
+      const fnEl=document.getElementById('loaded-filename');if(fnEl)fnEl.textContent='';
+      document.getElementById('main-container').style.display='none';
+      document.getElementById('info-container').style.display='block';
+      document.querySelector('.home-two-col').style.display='flex';
+      var fsReset=document.getElementById('feature-strip');if(fsReset)fsReset.style.display='';
+      const clearBtn=document.getElementById('clearStorageBtn');if(clearBtn)clearBtn.style.display='none';
+      ['master','a'].forEach(slot=>{
+        const dz=document.getElementById('dz-'+slot);if(!dz)return;
+        dz.classList.remove('ok','err','drag');
+        document.getElementById('dxf-ico-'+slot).textContent='📂';
+        document.getElementById('dxf-hint-'+slot).textContent=slot==='master'?'any capitalisation':'must be capital A';
+        document.getElementById('dxf-err-'+slot).textContent='';
+        document.getElementById('dxf-inp-'+slot).value='';
+      });
+      const btn=document.getElementById('dxf-btn-extract');
+      if(btn){btn.disabled=true;btn.style.opacity='0.45';btn.style.cursor='not-allowed';btn.textContent='⚡ Extract Layers';}
+      if(typeof resetTabUnlocks==='function')resetTabUnlocks();else if(typeof applyTabStates==='function')applyTabStates();
+      if(typeof switchTab==='function')switchTab('section-home');
+    };
+
+    function readFile(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsText(f);});}
+
+  })();
+  </script>
+
+</body>
+</html>
