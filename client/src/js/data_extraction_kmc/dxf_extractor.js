@@ -6,9 +6,9 @@
 // ── Constants ─────────────────────────────────────────────────────────────────
 // Layers expected ONLY in Master Sheet
 const MASTER_LAYERS = [
-  "Plot","Road","Splay","Strip","GroundCoverage","TreeCover","OpenSpace",
-  "Waterbody","Goomty","Alignment","GFPlanExistingStructure",
-  "Sanctioned Alignment","STP","RWH","Pavement"
+  "Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
+  "Waterbody","Goomty","Alignment","Existing",
+  "Alignment","STP","RWH","Pavement"
 ];
 // Layers expected ONLY in A.dxf
 const A_LAYERS = [
@@ -34,8 +34,8 @@ const MM_TO_M   = 0.001;
 const MM2_TO_M2 = MM_TO_M * MM_TO_M;   // for area: mm² → m²
 
 const EXPECTED_PRINTABLE = {
-  "Plot":true,"Road":false,"Splay":true,"Strip":true,"GroundCoverage":false,"TreeCover":false,
-  "OpenSpace":false,"Open Space_Ext_1":false,"Residential":false,"Mercantile_wholesale":false,
+  "Plot":true,"Road":false,"Splay":true,"Strip":true,"Ground Coverage":false,"Tree Cover":false,
+  "Open Space":false,"Open Space_Ext_1":false,"Residential":false,"Mercantile_wholesale":false,
   "Mercantile_retail":false,"Business":false,"Institutional":false,"Storage":false,"Assembly":false,
   "Hazardous":false,"Industrial":false,"Educational":false,"Internal Road":false,"Alignment":false,
   "Stair":false,"Lift":false,"Lift_Ext_1":false,"Loft":false,"Cupboard":false,"Tenement":false,
@@ -45,8 +45,8 @@ const EXPECTED_PRINTABLE = {
   "Wall":true,"Text":true,"Dimension":true,"Section":true,"Print":true,"Mis1":true,
   "Block_Text":true,"Fire Refuge":false,"Triple_Balcony":false,"Goomty":false,"Court Yard":false,
   "Shaft":false,"Corridor":false,"STP":false,"RWH":false,"Pavement":false,"EVCP":false,
-  "Solar":false,"Baby Care Room":false,"Column":true,"GFPlanExistingStructure":false,
-  "Sanctioned Alignment":false
+  "Solar":false,"Baby Care Room":false,"Column":true,"Existing":false,
+  "Alignment":false
 };
 
 const NAME_TO_ACI = { red:1,yellow:2,green:3,cyan:4,blue:5,magenta:6,white:7,grey:8,gray:8 };
