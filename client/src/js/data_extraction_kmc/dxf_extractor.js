@@ -6,7 +6,7 @@
 // ── Constants ─────────────────────────────────────────────────────────────────
 // Layers expected ONLY in Master Sheet
 const MASTER_LAYERS = [
-  "Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
+  "Plot","Road","Splay","Strip","Tree Cover","Open Space",
   "Waterbody","Goomty","Alignment","Existing",
   "Alignment","STP","RWH","Pavement"
 ];
@@ -18,7 +18,7 @@ const A_LAYERS = [
   "Tenement_Single","Tenement_Single_Ext_1","Height","Floor Height","Roof_Structure","Terrace",
   "Parking_Area","Heritage","Existing","Service_floor","Common Area",
   "Fire Refuge","Triple_Balcony","Court Yard","Shaft",
-  "Corridor","EVCP","Solar","Baby Care Room"
+  "Corridor","EVCP","Solar","Baby Care Room","Ground Coverage"
 ];
 // Layers allowed in BOTH files
 const SHARED_LAYERS = ["Parking"];
