@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project Management | CyManSquare</title>
+  <link rel="icon" href="../../assets/images/cymansquare_logo.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="../../../../client/src/styles/project_management/style.css">
+  <style>
+    :root { --site-blue:#0b74ff; }
+    .text-primary        { color:var(--accent) !important; }
+    .border-primary      { border-color:var(--accent) !important; }
+    .progress-bar        { background-color:var(--accent) !important; }
+    .btn-outline-primary { color:var(--accent); border-color:var(--accent); }
+    .btn-outline-primary:hover { background:var(--accent); color:#fff; }
+    body { display:flex !important; flex-direction:column !important; min-height:100vh !important; overflow:hidden !important; }
+    .app-wrapper { display:flex !important; flex-direction:row !important; flex:1 1 auto !important; min-height:0 !important; overflow:hidden !important; }
+    .sidebar { flex:0 0 180px !important; width:180px !important; min-width:180px !important; overflow-y:auto !important; overflow-x:hidden !important; scrollbar-width:none !important; }
+    .sidebar::-webkit-scrollbar { display:none !important; }
+    .main { flex:1 1 0% !important; min-width:0 !important; display:flex !important; flex-direction:column !important; overflow:hidden !important; }
+    header.topbar { flex-shrink:0 !important; position:relative !important; z-index:10 !important; }
+    .content { flex:1 1 auto !important; overflow-y:auto !important; min-height:0 !important; padding-bottom:80px !important; }
+    body > footer, body > [id*="footer"], body > [class*="footer"] { flex:0 0 auto !important; width:100% !important; position:relative !important; z-index:50 !important; }
+
+    /* Kanban */
+    /* ── Kanban board ── */
+    .kanban-board { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; align-items:start; }
+    .kanban-col {
+      background:var(--bg-secondary);
+      border-radius:12px;
+      padding:0;
+      display:flex; flex-direction:column;
+      min-height:300px;
+      border:1.5px solid var(--border);
+      transition:border-color .2s, box-shadow .2s;
+      overflow:hidden;
+    }
+    .kanban-col.drag-over {
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px var(--accent-dim);
+      background:var(--accent-dim);
+    }
+    .kanban-col-header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 12px 8px;
+      border-bottom:1.5px solid var(--border);
+      background:var(--card);
+      gap:6px;
+    }
+    .kanban-col-header .col-title {
+      display:flex; align-items:center; gap:7px;
+      font-size:var(--font-size-xs); font-weight:700;
+      text-transform:uppercase; letter-spacing:.07em;
+    }
+    .kanban-col-header .col-dot {
+      width:8px; height:8px; border-radius:50%; flex-shrink:0;
+    }
+    .kanban-col-header .col-right {
+      display:flex; align-items:center; gap:6px;
+    }
+    .kanban-col-body {
+      padding:8px; display:flex; flex-direction:column; gap:7px; flex:1;
+    }
+    .kanban-col-footer {
+      padding:6px 8px;
+      border-top:1px solid var(--border);
+    }
+    .kanban-col-footer button {
+      width:100%; background:none; border:1px dashed var(--border-md);
+      border-radius:7px; padding:5px; font-size:var(--font-size-xs);
+      color:var(--muted); cursor:pointer; transition:all .15s;
+      display:flex; align-items:center; justify-content:center; gap:4px;
+    }
+    .kanban-col-footer button:hover { background:var(--accent-dim); color:var(--accent); border-color:var(--accent); }
+    /* Card */
+    .kanban-card {
+      background:var(--card);
+      border-radius:9px;
+      padding:11px 12px;
+      border:1.5px solid var(--border);
+      box-shadow:var(--shadow-xs);
+      cursor:grab;
+      transition:box-shadow .18s, transform .18s, border-color .18s;
+      user-select:none;
+      position:relative;
+    }
+    .kanban-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:var(--border-md); }
+    .kanban-card.dragging { opacity:.4; transform:rotate(1.5deg) scale(.97); cursor:grabbing; box-shadow:var(--shadow-lg); }
+    .kanban-card .kc-priority-bar {
+      position:absolute; top:0; left:0; width:3px; height:100%;
+      border-radius:9px 0 0 9px;
+    }
+    .kanban-card .kc-title {
+      font-size:var(--font-size-sm); font-weight:600; color:var(--text-primary);
+      margin-bottom:6px; line-height:1.4; padding-left:6px;
+    }
+    .kanban-card .kc-project {
+      font-size:var(--font-size-xs); color:var(--muted); font-weight:500;
+      margin-bottom:7px; padding-left:6px; display:flex; align-items:center; gap:4px;
+    }
+    .kanban-card .kc-footer {
+      display:flex; align-items:center; justify-content:space-between; gap:6px;
+      margin-top:8px; padding-top:7px; border-top:1px solid var(--divider);
+    }
+    .kanban-card .kc-badges { display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
+    .kanban-card .kc-assignees { display:flex; gap:2px; align-items:center; }
+    .kc-avatar { width:22px; height:22px; border-radius:50%; font-size:.58rem; font-weight:700; display:flex; align-items:center; justify-content:center; color:#fff; border:2px solid var(--card); flex-shrink:0; }
+    .kc-badge { font-size:.6rem; padding:2px 6px; border-radius:4px; font-weight:600; background:var(--soft); color:var(--accent); }
+    .kc-sub-bar { display:flex; align-items:center; gap:4px; }
+    .kc-sub-bar .bar { width:36px; height:3px; border-radius:99px; background:var(--border-md); overflow:hidden; }
+    .kc-sub-bar .bar-fill { height:100%; background:var(--accent); border-radius:99px; }
+    .kanban-empty {
+      color:var(--muted); font-size:var(--font-size-xs); text-align:center;
+      padding:32px 12px; display:flex; flex-direction:column; align-items:center; gap:6px;
+    }
+    .kanban-empty i { font-size:1.4rem; opacity:.3; }
+    /* Due date colours */
+    .kc-due { font-size:.6rem; font-weight:600; padding:2px 6px; border-radius:4px; }
+    .kc-due.overdue  { background:#fee2e2; color:#b91c1c; }
+    .kc-due.due-soon { background:#fef3c7; color:#92400e; }
+    .kc-due.on-track { background:var(--chip-low-bg); color:var(--chip-low-text); }
+    /* Board toolbar */
+    .kanban-toolbar {
+      display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;
+    }
+
+    /* Team */
+    .member-avatar { width:38px; height:38px; border-radius:50%; font-size:.85rem; font-weight:700; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+
+    /* Subtasks */
+    .subtask-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--divider); font-size:var(--font-size-sm); }
+    .subtask-row:last-child { border-bottom:none; }
+
+    /* Time tracking */
+    .timer-display { font-size:1.6rem; font-weight:800; font-variant-numeric:tabular-nums; color:var(--accent); letter-spacing:.06em; }
+    .time-log-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid var(--divider); font-size:var(--font-size-sm); }
+    .time-log-row:last-child { border-bottom:none; }
+
+    /* Notifications */
+    .notif-dot { width:8px; height:8px; border-radius:50%; background:#ef4444; display:inline-block; }
+    .notif-badge { position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:.5rem; font-weight:700; border-radius:99px; padding:1px 4px; min-width:14px; text-align:center; line-height:1.4; }
+    .notif-item { display:flex; gap:10px; align-items:flex-start; padding:9px 14px; border-bottom:1px solid var(--divider); font-size:var(--font-size-sm); cursor:pointer; transition:background .15s; }
+    .notif-item:hover { background:var(--accent-dim); }
+    .notif-item.unread { background:var(--soft); }
+    .notif-icon { width:28px; height:28px; border-radius:7px; background:var(--accent-dim); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:.85rem; flex-shrink:0; }
+
+    /* Reports */
+    .report-kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-bottom:14px; }
+    .report-kpi { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px; text-align:center; }
+    .report-kpi .rk-num { font-size:1.3rem; font-weight:800; color:var(--text-primary); }
+    .report-kpi .rk-label { font-size:var(--font-size-xs); color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+
+    /* Badges */
+    .badge-recurring { background:var(--soft); color:var(--accent); font-size:var(--font-size-xs); border-radius:4px; padding:1px 5px; font-weight:600; }
+    .badge-dep { background:#fef3c7; color:#92400e; font-size:var(--font-size-xs); border-radius:4px; padding:1px 5px; font-weight:600; }
+    body.dark-mode .badge-dep,[data-theme="dark"] .badge-dep { background:#2a1e08; color:#fbbf24; }
+    .attach-chip { display:inline-flex; align-items:center; gap:4px; background:var(--soft); color:var(--accent); border-radius:5px; padding:2px 7px; font-size:var(--font-size-xs); font-weight:600; text-decoration:none; border:1px solid var(--accent-mid); }
+
+    /* Accent swatch */
+    .accent-swatch { width:26px; height:26px; border-radius:50%; border:2.5px solid transparent; cursor:pointer; transition:transform .15s,border-color .15s; outline:none; padding:0; }
+    .accent-swatch:hover { transform:scale(1.15); }
+    .accent-swatch.active { border-color:var(--text-primary); transform:scale(1.12); }
+
+    @media(max-width:900px){ .kanban-board{grid-template-columns:1fr 1fr;} }
+    @media(max-width:580px){ .kanban-board{grid-template-columns:1fr;} }
+  </style>
+  <script>
+    (function(){
+      var dark=localStorage.getItem('cymDark')==='1';
+      document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+      if(dark)document.documentElement.style.colorScheme='dark';
+    })();
+  </script>
+</head>
+<body>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="../../../../client/src/js/feature-shell.js" data-feature="Project Management" data-login="login.html" data-home="../../../../index.html"></script>
+
+  <div class="app-wrapper">
+  <button id="toggleSidebar" class="hamburger"><i class="bi bi-list" style="font-size:1.2rem"></i></button>
+
+  <aside class="sidebar" id="sidebar">
+    <nav class="nav" aria-label="Main navigation">
+      <a id="navCalendar"   class="active"><span class="ico"><i class="bi bi-calendar3"></i></span>Calendar</a>
+      <a id="navKanban">                  <span class="ico"><i class="bi bi-kanban"></i></span>Kanban</a>
+      <a id="navAssessment">              <span class="ico"><i class="bi bi-clipboard-data"></i></span>Assessment</a>
+      <a id="navTimeline">                <span class="ico"><i class="bi bi-clock-history"></i></span>Timeline</a>
+      <a id="navProjects">                <span class="ico"><i class="bi bi-folder2"></i></span>Projects</a>
+      <a id="navTeam">                    <span class="ico"><i class="bi bi-people"></i></span>Team</a>
+      <a id="navReports">                 <span class="ico"><i class="bi bi-bar-chart-line"></i></span>Reports</a>
+      <a id="navSettings">                <span class="ico"><i class="bi bi-gear"></i></span>Settings</a>
+      <a id="navHelp">                    <span class="ico"><i class="bi bi-question-circle"></i></span>Help</a>
+    </nav>
+  </aside>
+
+  <span id="userIcon" style="display:none"></span>
+  <span id="userName" style="display:none"></span>
+  <span id="userGreeting" style="display:none"></span>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="top-left">
+        <h4 id="topbarTitle" class="m-0 fw-bold text-primary">Dashboard</h4>
+      </div>
+      <div class="top-right">
+        <button id="openProjectModalBtn" class="btn btn-outline-primary btn-sm"><i class="bi bi-folder-plus"></i> Project</button>
+        <button id="openTaskModalBtn" class="btn btn-outline-success btn-sm"><i class="bi bi-plus-lg"></i> Task</button>
+        <div style="position:relative;display:inline-block">
+          <button id="notifBellBtn" class="btn btn-outline-secondary btn-sm" title="Notifications"><i class="bi bi-bell"></i></button>
+          <span id="notifBadge" class="notif-badge" style="display:none">0</span>
+        </div>
+        <button id="logoutBtn" style="display:none"></button>
+      </div>
+    </header>
+
+    <!-- CALENDAR -->
+    <div id="calendarView" class="content" aria-hidden="false">
+      <div class="calendar-header">
+        <button id="prevMonth" class="btn btn-outline-secondary btn-sm arrow-btn">&lt;</button>
+        <h3 id="monthYear" class="fw-bold mb-0"></h3>
+        <button id="nextMonth" class="btn btn-outline-secondary btn-sm arrow-btn">&gt;</button>
+      </div>
+      <div class="calendar-days"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+      <div id="calendar" class="calendar-grid"></div>
+      <div id="loading" class="text-center text-muted mt-3">Loading data...</div>
+    </div>
+
+    <!-- KANBAN -->
+    <div id="kanbanView" class="content hidden" aria-hidden="true">
+      <div class="kanban-toolbar">
+        <div style="flex:1;min-width:0">
+          <h4 class="mb-0">Kanban Board</h4>
+          <p class="text-muted mb-0" style="font-size:var(--font-size-xs)">Drag &amp; drop to move tasks · Double-click to edit</p>
+        </div>
+        <select id="kanbanProjectFilter" class="form-select form-select-sm" style="max-width:160px"><option value="">All Projects</option></select>
+        <select id="kanbanAssigneeFilter" class="form-select form-select-sm" style="max-width:140px"><option value="">All Members</option></select>
+        <select id="kanbanPriorityFilter" class="form-select form-select-sm" style="max-width:130px"><option value="">All Priorities</option><option value="high">🔴 High</option><option value="medium">🟡 Medium</option><option value="low">🟢 Low</option></select>
+        <button id="kanbanCollapseBtn" class="btn btn-sm btn-outline-secondary" title="Collapse done"><i class="bi bi-arrows-collapse"></i></button>
+      </div>
+      <div class="kanban-board" id="kanbanBoard">
+        <div class="kanban-col" id="kCol-todo" data-status="todo">
+          <div class="kanban-col-header">
+            <div class="col-title"><div class="col-dot" style="background:#94a3b8"></div><span style="color:#64748b">To Do</span></div>
+            <div class="col-right"><span class="badge" style="background:#e2e8f0;color:#475569;font-size:.65rem" id="kCount-todo">0</span></div>
+          </div>
+          <div class="kanban-col-body" id="kCards-todo"></div>
+          <div class="kanban-col-footer"><button onclick="openNewTask()" id="kAddTodo"><i class="bi bi-plus"></i> Add task</button></div>
+        </div>
+        <div class="kanban-col" id="kCol-inprogress" data-status="inprogress">
+          <div class="kanban-col-header">
+            <div class="col-title"><div class="col-dot" style="background:#f59e0b"></div><span style="color:#b45309">In Progress</span></div>
+            <div class="col-right"><span class="badge" style="background:#fef3c7;color:#92400e;font-size:.65rem" id="kCount-inprogress">0</span></div>
+          </div>
+          <div class="kanban-col-body" id="kCards-inprogress"></div>
+          <div class="kanban-col-footer"><button onclick="openNewTaskInStatus('inprogress')"><i class="bi bi-plus"></i> Add task</button></div>
+        </div>
+        <div class="kanban-col" id="kCol-review" data-status="review">
+          <div class="kanban-col-header">
+            <div class="col-title"><div class="col-dot" style="background:#8b5cf6"></div><span style="color:#6d28d9">Review</span></div>
+            <div class="col-right"><span class="badge" style="background:#ede9fe;color:#5b21b6;font-size:.65rem" id="kCount-review">0</span></div>
+          </div>
+          <div class="kanban-col-body" id="kCards-review"></div>
+          <div class="kanban-col-footer"><button onclick="openNewTaskInStatus('review')"><i class="bi bi-plus"></i> Add task</button></div>
+        </div>
+        <div class="kanban-col" id="kCol-done" data-status="done">
+          <div class="kanban-col-header">
+            <div class="col-title"><div class="col-dot" style="background:#10b981"></div><span style="color:#065f46">Done</span></div>
+            <div class="col-right">
+              <span class="badge" style="background:#d1fae5;color:#065f46;font-size:.65rem" id="kCount-done">0</span>
+              <button id="kClearDoneBtn" class="btn btn-sm" style="font-size:.6rem;padding:1px 6px;color:var(--muted);border:1px solid var(--border);border-radius:5px;background:none" title="Clear done tasks">Clear</button>
+            </div>
+          </div>
+          <div class="kanban-col-body" id="kCards-done"></div>
+          <div class="kanban-col-footer"><button onclick="openNewTaskInStatus('done')"><i class="bi bi-plus"></i> Add task</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASSESSMENT -->
+    <div id="assessmentView" class="content hidden" aria-hidden="true">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div><h4 class="mb-0">Assessment Dashboard</h4><p class="text-muted mb-0">Project analytics &amp; task management</p></div>
+        <div class="search-white"><i class="bi bi-search" style="color:var(--muted)"></i><input id="assessSearch" placeholder="Search tasks, projects..."></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi-card"><div class="kpi-left"><small>Projects</small><div id="kpProjects" class="num">0</div></div><div class="kpi-pill">All</div></div>
+        <div class="kpi-card"><div class="kpi-left"><small>Total Tasks</small><div id="kpTasks" class="num">0</div></div><div style="font-weight:700">—</div></div>
+        <div class="kpi-card"><div class="kpi-left"><small>Completed</small><div id="kpCompleted" class="num text-success">0</div></div><div style="color:#10b981;font-weight:700">✔</div></div>
+        <div class="kpi-card"><div class="kpi-left"><small>Pending</small><div id="kpPending" class="num text-warning">0</div></div><div style="color:#f59e0b;font-weight:700">⏳</div></div>
+        <div class="kpi-card"><div class="kpi-left"><small>Overdue</small><div id="kpOverdue" class="num text-danger">0</div></div><div style="color:#ef4444;font-weight:700">⚠</div></div>
+      </div>
+      <div class="filters" style="display:flex;flex-wrap:nowrap;gap:6px;align-items:center;overflow-x:auto;padding:7px 12px">
+        <select id="filterProject"  class="form-select form-select-sm" style="min-width:120px;max-width:150px"><option value="">All Projects</option></select>
+        <select id="filterPriority" class="form-select form-select-sm" style="min-width:100px;max-width:120px"><option value="">Priority</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+        <select id="filterStatus"   class="form-select form-select-sm" style="min-width:100px;max-width:120px"><option value="">Status</option><option value="pending">Pending</option><option value="completed">Completed</option></select>
+        <input id="filterFrom" type="date" class="form-control form-control-sm" style="min-width:120px;max-width:140px">
+        <input id="filterTo"   type="date" class="form-control form-control-sm" style="min-width:120px;max-width:140px">
+        <button id="applyFilters" class="btn btn-primary btn-sm" style="white-space:nowrap">Apply</button>
+        <button id="resetFilters" class="btn btn-outline-secondary btn-sm" style="white-space:nowrap">Reset</button>
+      </div>
+      <div class="card-table">
+        <div class="card-header d-flex justify-content-between align-items-center"><strong>All Tasks</strong></div>
+        <div class="table-responsive">
+          <table class="table table-borderless">
+            <thead><tr>
+              <th>#</th>
+              <th class="sortable" data-key="project">Project <span class="sort-icon">▲▼</span></th>
+              <th class="sortable" data-key="description">Description <span class="sort-icon">▲▼</span></th>
+              <th class="sortable" data-key="target">Target <span class="sort-icon">▲▼</span></th>
+              <th class="sortable" data-key="priority">Priority <span class="sort-icon">▲▼</span></th>
+              <th class="sortable" data-key="status">Status <span class="sort-icon">▲▼</span></th>
+              <th>Assigned</th><th>Time</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="taskBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="charts">
+        <div class="chart-card"><div class="title">Task Completion</div><canvas id="statusChart" style="max-height:120px"></canvas></div>
+        <div class="chart-card"><div class="title">Priority</div><canvas id="priorityChart" style="max-height:120px"></canvas></div>
+        <div class="chart-card"><div class="title">Progress</div>
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:100%">
+            <h3 id="progressTotal">0</h3>
+            <div class="progress" style="width:90%"><div id="progressBar" class="progress-bar" role="progressbar" style="width:0%"></div></div>
+            <small id="progressTxt" style="color:var(--muted)">0% completed</small>
+          </div>
+        </div>
+      </div>
+      <div class="card-table">
+        <div class="card-header"><strong class="text-danger">Trash Bin</strong></div>
+        <div class="table-responsive">
+          <table class="table table-borderless"><thead><tr><th>#</th><th>Description</th><th>Deleted</th><th>Actions</th></tr></thead><tbody id="trashBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div id="projectsView" class="content hidden" aria-hidden="true">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div><h4 class="mb-0">Projects</h4><div class="text-muted small">Manage projects — add, edit or delete.</div></div>
+        <button id="addProjectBtnTop" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> New Project</button>
+      </div>
+      <div id="projectList"></div>
+    </div>
+
+    <!-- TEAM -->
+    <div id="teamView" class="content hidden" aria-hidden="true">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div><h4 class="mb-0">Team Members</h4><div class="text-muted small">Add people and assign tasks to them.</div></div>
+        <button id="addMemberBtn" class="btn btn-accent btn-sm"><i class="bi bi-person-plus"></i> Add Member</button>
+      </div>
+      <div id="memberList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px"></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="reportsView" class="content hidden" aria-hidden="true">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div><h4 class="mb-0">Reports</h4><div class="text-muted small">Analytics, burndown &amp; data export.</div></div>
+      </div>
+      <div class="report-kpi-grid" id="reportKpiGrid"></div>
+      <div class="card-panel mb-3">
+        <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-graph-down-arrow text-primary"></i> Burndown Chart</h5>
+        <p class="text-muted" style="font-size:var(--font-size-sm)">Tasks remaining over the last 30 days.</p>
+        <canvas id="burndownChart" style="max-height:200px"></canvas>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="card-panel">
+          <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-person-lines-fill text-primary"></i> Workload by Member</h5>
+          <canvas id="workloadChart" style="max-height:160px"></canvas>
+        </div>
+        <div class="card-panel">
+          <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-speedometer2 text-primary"></i> Weekly Velocity</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">Tasks completed per week (last 8 weeks).</p>
+          <canvas id="velocityChart" style="max-height:160px"></canvas>
+        </div>
+      </div>
+      <div class="card-panel mb-3">
+        <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-stopwatch text-primary"></i> Time Tracked by Project</h5>
+        <div id="timeTrackSummary"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <!-- Full Backup -->
+        <div class="card-panel" style="grid-column:1/-1">
+          <h5 style="display:flex;align-items:center;gap:8px"><i class="bi bi-shield-check text-primary"></i> Full Backup &amp; Restore</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">Exports <strong>everything</strong> — projects, tasks (with subtasks, time logs, attachments, assignees, recurring, dependencies, notes), trash, team members, and milestones — as a single JSON file. Restore brings it all back.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <button id="fullBackupBtn" class="btn btn-accent btn-sm"><i class="bi bi-cloud-download me-1"></i>Download Full Backup (.json)</button>
+            <label class="btn btn-outline-primary btn-sm mb-0" style="cursor:pointer">
+              <i class="bi bi-cloud-upload me-1"></i>Restore from Backup
+              <input id="restoreFile" type="file" accept=".json" style="display:none">
+            </label>
+          </div>
+          <div id="backupStatus" style="font-size:var(--font-size-xs);color:var(--muted)"></div>
+        </div>
+        <!-- CSV Export -->
+        <div class="card-panel">
+          <h5><i class="bi bi-filetype-csv text-primary"></i> CSV Export</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">Export tasks as a spreadsheet-compatible CSV (flat format).</p>
+          <button id="exportCsvBtn" class="btn btn-outline-primary btn-sm"><i class="bi bi-download me-1"></i>Export Tasks CSV</button>
+        </div>
+        <!-- CSV Import -->
+        <div class="card-panel">
+          <h5><i class="bi bi-filetype-csv text-primary"></i> CSV Import</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">Import tasks from a CSV. Columns: project, description, target, priority, completed.</p>
+          <input id="importFile" type="file" accept=".csv" class="form-control form-control-sm mb-2">
+          <button id="importCsvBtn" class="btn btn-outline-secondary btn-sm">Import CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settingsView" class="content hidden" aria-hidden="true">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div><h4 class="mb-0">Settings</h4><div class="text-muted small">Manage your preferences and workspace.</div></div>
+      </div>
+      <div class="card-panel mb-3" style="background:linear-gradient(135deg,var(--accent-dim),var(--soft));border:1px solid var(--accent-mid)">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.4rem">📁</span><div><div style="font-size:var(--font-size-2xl);font-weight:800;color:var(--accent)" id="setStatProjects">0</div><div style="font-size:var(--font-size-xs);color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Projects</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.4rem">✅</span><div><div style="font-size:var(--font-size-2xl);font-weight:800;color:#10b981" id="setStatDone">0</div><div style="font-size:var(--font-size-xs);color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Completed</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.4rem">⏳</span><div><div style="font-size:var(--font-size-2xl);font-weight:800;color:#f59e0b" id="setStatPending">0</div><div style="font-size:var(--font-size-xs);color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Pending</div></div></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.4rem">🔥</span><div><div style="font-size:var(--font-size-2xl);font-weight:800;color:#ef4444" id="setStatOverdue">0</div><div style="font-size:var(--font-size-xs);color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Overdue</div></div></div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:var(--font-size-xs);color:var(--muted);margin-bottom:4px">Overall Progress</div>
+            <div style="width:130px;height:7px;background:var(--border-md);border-radius:99px;overflow:hidden"><div id="setProgressBar" style="height:100%;background:var(--accent);border-radius:99px;transition:width .5s;width:0%"></div></div>
+            <div style="font-size:var(--font-size-xs);color:var(--accent);font-weight:700;margin-top:3px" id="setProgressPct">0%</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="card-panel">
+          <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-palette2 text-primary"></i> Accent Colour</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">Pick your preferred UI accent colour.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap" id="accentPicker">
+            <button class="accent-swatch active" data-color="#0b74ff" style="background:#0b74ff"></button>
+            <button class="accent-swatch" data-color="#7c3aed" style="background:#7c3aed"></button>
+            <button class="accent-swatch" data-color="#059669" style="background:#059669"></button>
+            <button class="accent-swatch" data-color="#dc2626" style="background:#dc2626"></button>
+            <button class="accent-swatch" data-color="#d97706" style="background:#d97706"></button>
+            <button class="accent-swatch" data-color="#0891b2" style="background:#0891b2"></button>
+          </div>
+        </div>
+        <div class="card-panel">
+          <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-layout-sidebar text-primary"></i> Sidebar Density</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">Adjust nav item spacing.</p>
+          <div class="btn-group w-100">
+            <input type="radio" class="btn-check" name="sidebarDensity" id="densityCompact" value="compact">
+            <label class="btn btn-outline-primary btn-sm" for="densityCompact">Compact</label>
+            <input type="radio" class="btn-check" name="sidebarDensity" id="densityDefault" value="default" checked>
+            <label class="btn btn-outline-primary btn-sm" for="densityDefault">Default</label>
+            <input type="radio" class="btn-check" name="sidebarDensity" id="densityComfy" value="comfy">
+            <label class="btn btn-outline-primary btn-sm" for="densityComfy">Comfy</label>
+          </div>
+        </div>
+        <div class="card-panel">
+          <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-sort-down text-primary"></i> Default Task Sort</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">How tasks sort in Assessment view.</p>
+          <select id="defaultSortSelect" class="form-select form-select-sm">
+            <option value="">None (as added)</option>
+            <option value="priority">Priority (High first)</option>
+            <option value="target">Due Date (Soonest)</option>
+            <option value="status">Status (Overdue first)</option>
+            <option value="project">Project (A-Z)</option>
+          </select>
+        </div>
+        <div class="card-panel">
+          <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-calendar-week text-primary"></i> Week Starts On</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">First day of the week in Calendar.</p>
+          <div class="btn-group w-100">
+            <input type="radio" class="btn-check" name="weekStart" id="weekSun" value="0" checked>
+            <label class="btn btn-outline-primary btn-sm" for="weekSun">Sunday</label>
+            <input type="radio" class="btn-check" name="weekStart" id="weekMon" value="1">
+            <label class="btn btn-outline-primary btn-sm" for="weekMon">Monday</label>
+          </div>
+        </div>
+        <div class="card-panel">
+          <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-bell text-primary"></i> Overdue Alerts</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">Show banner when overdue tasks exist.</p>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="overdueAlertToggle" checked>
+            <label class="form-check-label" for="overdueAlertToggle">Show overdue alert</label>
+          </div>
+        </div>
+        <div class="card-panel">
+          <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-database text-primary"></i> Data Management</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">Backup or wipe your project data.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="backupBtn" class="btn btn-accent btn-sm"><i class="bi bi-shield-check me-1"></i>Full Backup</button>
+            <button id="clearDataBtn" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash3 me-1"></i>Clear All</button>
+          </div>
+        </div>
+        <!-- Week-off Days — full width row with manual date input -->
+        <div class="card-panel" style="grid-column:1/-1">
+          <h5 style="display:flex;align-items:center;gap:7px"><i class="bi bi-moon-stars text-primary"></i> Week Off Days</h5>
+          <p class="text-muted" style="font-size:var(--font-size-sm)">Select which days of the week are off. They will be greyed out on the Calendar.</p>
+          <!-- Day toggles -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+            <button class="weekoff-btn btn btn-sm btn-outline-secondary" data-day="0">Sunday</button>
+            <button class="weekoff-btn btn btn-sm btn-outline-secondary" data-day="1">Monday</button>
+            <button class="weekoff-btn btn btn-sm btn-outline-secondary" data-day="2">Tuesday</button>
+            <button class="weekoff-btn btn btn-sm btn-outline-secondary" data-day="3">Wednesday</button>
+            <button class="weekoff-btn btn btn-sm btn-outline-secondary" data-day="4">Thursday</button>
+            <button class="weekoff-btn btn btn-sm btn-outline-secondary" data-day="5">Friday</button>
+            <button class="weekoff-btn btn btn-sm btn-outline-secondary" data-day="6">Saturday</button>
+          </div>
+          <!-- Manual specific-date off -->
+          <div style="border-top:1px solid var(--divider);padding-top:12px">
+            <div style="font-weight:600;font-size:var(--font-size-sm);margin-bottom:6px"><i class="bi bi-calendar-x text-primary"></i> Add Specific Off Date</div>
+            <p class="text-muted" style="font-size:var(--font-size-xs)">Add individual dates (holidays, leaves) to block on the Calendar.</p>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="date" id="specificOffDateInput" class="form-control form-control-sm" style="max-width:170px">
+              <input type="text" id="specificOffLabelInput" class="form-control form-control-sm" style="max-width:160px" placeholder="Label (e.g. Diwali)">
+              <button id="addSpecificOffBtn" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg me-1"></i>Add Date</button>
+            </div>
+            <div id="specificOffList" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px"></div>
+          </div>
+        </div>
+      </div>
+      <div id="overdueAlertBanner" class="card-panel mt-3" style="display:none;border:1.5px solid #ef4444;background:var(--chip-high-bg)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <i class="bi bi-exclamation-triangle-fill" style="color:#ef4444;font-size:1.1rem"></i>
+          <div><div style="font-weight:700;color:#ef4444;font-size:var(--font-size-md)" id="overdueAlertText">You have overdue tasks!</div><div style="font-size:var(--font-size-sm);color:var(--muted)">Switch to Assessment to review them.</div></div>
+          <button class="btn btn-sm btn-outline-danger ms-auto" onclick="document.getElementById('navAssessment').click()">View Tasks</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HELP -->
+    <div id="helpView" class="content hidden" aria-hidden="true">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div><h4 class="mb-0">Help &amp; Support</h4><div class="text-muted small">Get guidance on using CyMan² Project Management</div></div>
+      </div>
+      <div class="card-panel">
+        <h5>Feature Guide</h5>
+        <ul class="text-muted mb-0" style="font-size:var(--font-size-base)">
+          <li><strong>Calendar:</strong> View all tasks by date.</li>
+          <li><strong>Kanban:</strong> Drag-and-drop board — To Do → In Progress → Review → Done.</li>
+          <li><strong>Assessment:</strong> KPIs, filters, sort, charts and full task table with time tracking.</li>
+          <li><strong>Timeline:</strong> Milestones and tasks on a visual horizontal track per project.</li>
+          <li><strong>Projects:</strong> Add projects with start/due dates and track per-project progress.</li>
+          <li><strong>Team:</strong> Add members, assign tasks, view workload per person.</li>
+          <li><strong>Reports:</strong> Burndown chart, velocity, workload, time summary, CSV export/import.</li>
+          <li><strong>Settings:</strong> Accent colour, density, sort defaults, week start, overdue alerts.</li>
+        </ul>
+      </div>
+      <div class="card-panel">
+        <h5>Need More Help?</h5>
+        <ul class="list-unstyled" style="font-size:var(--font-size-base)">
+          <li><i class="bi bi-envelope text-primary"></i> <a href="mailto:cymansquare@outlook.com">cymansquare@outlook.com</a></li>
+          <li><i class="bi bi-whatsapp text-success"></i> <a href="https://wa.me/8282061314" target="_blank">WhatsApp (24×7)</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div id="timelineView" class="content hidden" aria-hidden="true">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div><h4 class="mb-0">Project Timeline</h4><p class="text-muted mb-0">View milestones and track project progress.</p></div>
+        <button id="addMilestoneBtn" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Add Milestone</button>
+      </div>
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <div class="input-group" style="max-width:250px">
+          <span class="input-group-text border-end-0"><i class="bi bi-search"></i></span>
+          <input type="text" id="timelineSearch" class="form-control border-start-0" placeholder="Search keyword...">
+        </div>
+        <select id="projectFilter" class="form-select" style="max-width:220px"><option value="all">All Projects</option></select>
+        <div class="btn-group">
+          <input type="radio" class="btn-check" name="typeFilter" id="showBoth" value="both" checked>
+          <label class="btn btn-outline-primary btn-sm" for="showBoth">Both</label>
+          <input type="radio" class="btn-check" name="typeFilter" id="showTasks" value="tasks">
+          <label class="btn btn-outline-primary btn-sm" for="showTasks">Tasks</label>
+          <input type="radio" class="btn-check" name="typeFilter" id="showMilestones" value="milestones">
+          <label class="btn btn-outline-primary btn-sm" for="showMilestones">Milestones</label>
+        </div>
+      </div>
+      <div id="timelineContainer"></div>
+    </div>
+  </div><!-- /.main -->
+  </div><!-- /.app-wrapper -->
+
+  <!-- NOTIFICATION PANEL -->
+  <div id="notifPanel" style="display:none;position:fixed;top:54px;right:12px;width:310px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);z-index:5000;flex-direction:column;max-height:420px;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border)">
+      <strong style="font-size:var(--font-size-md)">Notifications</strong>
+      <button id="markAllReadBtn" class="btn btn-sm btn-outline-secondary" style="font-size:var(--font-size-xs)">Mark all read</button>
+    </div>
+    <div id="notifList" style="overflow-y:auto;max-height:370px"></div>
+  </div>
+
+  <!-- PROJECT MODAL -->
+  <div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:460px"><div class="modal-content">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:8px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent)"><i class="bi bi-folder-plus"></i></div><h5 class="modal-title mb-0">Add / Edit Project</h5></div>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editProjectId">
+        <div class="mb-3"><label class="form-label">Project Name <span style="color:#ef4444">*</span></label><input id="projectName" class="form-control" placeholder="e.g. Website Redesign"></div>
+        <div class="mb-3"><label class="form-label">Description</label><textarea id="projectDesc" class="form-control" rows="2" placeholder="Brief overview..."></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label class="form-label">Start Date</label><input id="projectStart" type="date" class="form-control"></div>
+          <div><label class="form-label">Due Date</label><input id="projectDue" type="date" class="form-control"></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button id="saveProject" class="btn btn-accent"><i class="bi bi-check-lg me-1"></i>Save Project</button>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- TASK MODAL -->
+  <div class="modal fade" id="taskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:8px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent)"><i class="bi bi-list-task"></i></div><h5 class="modal-title mb-0">Add / Edit Task</h5></div>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editTaskId">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="mb-3">
+          <div><label class="form-label">Project <span style="color:#ef4444">*</span></label><select id="taskProject" class="form-select"></select></div>
+          <div><label class="form-label">Assign To</label><select id="taskAssignee" class="form-select"><option value="">Unassigned</option></select></div>
+        </div>
+        <div class="mb-3"><label class="form-label">Description</label><input id="taskDesc" class="form-control" placeholder="What needs to be done?"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px" class="mb-3">
+          <div><label class="form-label">Target Date <span style="color:#ef4444">*</span></label><input id="taskTarget" type="date" class="form-control"></div>
+          <div><label class="form-label">Priority</label><select id="taskPriority" class="form-select"><option value="low">🟢 Low</option><option value="medium">🟡 Medium</option><option value="high">🔴 High</option></select></div>
+          <div><label class="form-label">Kanban Column</label><select id="taskKanbanStatus" class="form-select"><option value="todo">To Do</option><option value="inprogress">In Progress</option><option value="review">Review</option><option value="done">Done</option></select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="mb-3">
+          <div><label class="form-label">Depends On</label><select id="taskDependsOn" class="form-select"><option value="">None</option></select></div>
+          <div><label class="form-label">Recurring</label><select id="taskRecurring" class="form-select"><option value="">None</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="biweekly">Bi-weekly</option><option value="monthly">Monthly</option></select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="mb-3">
+          <div><label class="form-label">Estimated Hours</label><input id="taskEstHours" type="number" min="0" step="0.5" class="form-control" placeholder="e.g. 4"></div>
+          <div style="display:flex;align-items:flex-end;padding-bottom:4px"><div class="form-check form-switch"><input type="checkbox" id="taskCompleted" class="form-check-input"><label class="form-check-label" for="taskCompleted">Mark as Completed</label></div></div>
+        </div>
+        <div class="mb-3"><label class="form-label">Notes</label><textarea id="taskNotes" class="form-control" rows="2" placeholder="Additional notes..."></textarea></div>
+        <div class="mb-3">
+          <label class="form-label">Attach File</label>
+          <input id="taskFileInput" type="file" class="form-control form-control-sm">
+          <div id="existingAttachments" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
+        <div class="mb-1">
+          <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">Subtasks <button type="button" id="addSubtaskBtn" class="btn btn-sm btn-outline-primary" style="font-size:var(--font-size-xs);padding:2px 8px"><i class="bi bi-plus"></i> Add</button></label>
+          <div id="subtaskList"></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button id="saveTask" class="btn btn-accent"><i class="bi bi-check-lg me-1"></i>Save Task</button>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- TIME TRACKER MODAL -->
+  <div class="modal fade" id="timeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px"><div class="modal-content">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:8px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent)"><i class="bi bi-stopwatch"></i></div><h5 class="modal-title mb-0">Time Tracker</h5></div>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="text-muted mb-1" id="timeModalTaskName" style="font-size:var(--font-size-sm)"></p>
+        <div class="timer-display mb-3" id="timerDisplay">00:00:00</div>
+        <div class="d-flex justify-content-center gap-2 mb-4">
+          <button id="timerStartBtn" class="btn btn-accent btn-sm"><i class="bi bi-play-fill me-1"></i>Start</button>
+          <button id="timerPauseBtn" class="btn btn-outline-secondary btn-sm" disabled><i class="bi bi-pause-fill me-1"></i>Pause</button>
+          <button id="timerStopBtn" class="btn btn-outline-danger btn-sm" disabled><i class="bi bi-stop-fill me-1"></i>Log &amp; Stop</button>
+        </div>
+        <div style="text-align:left"><strong style="font-size:var(--font-size-sm)">Time Logs</strong><div id="timeLogList" style="margin-top:6px;max-height:150px;overflow-y:auto"></div></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- MEMBER MODAL -->
+  <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:380px"><div class="modal-content">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:8px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent)"><i class="bi bi-person-plus"></i></div><h5 class="modal-title mb-0">Add / Edit Member</h5></div>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editMemberId">
+        <div class="mb-3"><label class="form-label">Name <span style="color:#ef4444">*</span></label><input id="memberName" class="form-control" placeholder="Full name"></div>
+        <div class="mb-3"><label class="form-label">Role</label><input id="memberRole" class="form-control" placeholder="e.g. Developer, Designer..."></div>
+        <div class="mb-3"><label class="form-label">Avatar Colour</label>
+          <div style="display:flex;gap:8px" id="memberColorPicker">
+            <button class="accent-swatch active" data-mcolor="#0b74ff" style="background:#0b74ff"></button>
+            <button class="accent-swatch" data-mcolor="#7c3aed" style="background:#7c3aed"></button>
+            <button class="accent-swatch" data-mcolor="#059669" style="background:#059669"></button>
+            <button class="accent-swatch" data-mcolor="#dc2626" style="background:#dc2626"></button>
+            <button class="accent-swatch" data-mcolor="#d97706" style="background:#d97706"></button>
+            <button class="accent-swatch" data-mcolor="#0891b2" style="background:#0891b2"></button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button id="saveMember" class="btn btn-accent"><i class="bi bi-check-lg me-1"></i>Save Member</button>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- MILESTONE MODAL -->
+  <div class="modal fade" id="milestoneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:440px"><div class="modal-content">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:8px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent)"><i class="bi bi-flag"></i></div><h5 class="modal-title mb-0">Add / Edit Milestone</h5></div>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div style="background:var(--accent-dim);border-radius:6px;padding:7px 10px;margin-bottom:14px;font-size:var(--font-size-xs);color:var(--muted)"><i class="bi bi-info-circle me-1"></i>Milestones appear in Timeline view only.</div>
+        <input type="hidden" id="editMilestoneId">
+        <div class="mb-3"><label class="form-label">Project <span style="color:#ef4444">*</span></label><select id="milestoneProject" class="form-select"></select></div>
+        <div class="mb-3"><label class="form-label">Title <span style="color:#ef4444">*</span></label><input id="milestoneTitle" class="form-control" placeholder="e.g. Design complete"></div>
+        <div class="mb-3"><label class="form-label">Date <span style="color:#ef4444">*</span></label><input id="milestoneDate" type="date" class="form-control"></div>
+        <div class="form-check form-switch"><input type="checkbox" id="milestoneDone" class="form-check-input"><label class="form-check-label" for="milestoneDone">Mark as Completed</label></div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <button class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button id="saveMilestoneBtn" class="btn btn-accent"><i class="bi bi-check-lg me-1"></i>Save Milestone</button>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- LOADER -->
+  <div id="loaderOverlay">
+    <div class="text-center">
+      <div class="spinner-border" role="status" style="width:3rem;height:3rem"><span class="visually-hidden">Loading...</span></div>
+      <div class="mt-2 text-muted">Loading data...</div>
+    </div>
+  </div>
+
+  <!-- UPDATE NOTICE -->
+  <div id="timelineUpdateNotice" class="update-popup hidden">
+    <div class="update-content">
+      <h6 class="fw-bold text-primary mb-1"><i class="bi bi-stars me-1"></i> 8 New Features!</h6>
+      <p class="text-muted small mb-2">Kanban, Team, Time Tracking, Subtasks, Recurring, Dependencies, Reports &amp; Notifications are live.</p>
+      <button id="closeUpdateNotice" class="btn btn-sm btn-primary">Got it</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../../../client/src/js/project_management/db.js"></script>
+  <script src="../../../../client/src/js/project_management/app.js"></script>
+</body>
+</html>
