@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="CyManSquare — The future of architectural workflow. KMC data extraction, AI architecture tools, and project management for modern firms.">
   <title>CyMan² | Home</title>
   <link rel="icon" href="client/public/assets/images/cymansquare_logo.svg" type="image/svg+xml">
@@ -18,6 +18,7 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="client/src/styles/main.css">
+<link rel="stylesheet" href="client/src/styles/mobile.css">
 </head>
 <body id="body">
 
@@ -369,7 +370,53 @@
   <div class="auth-group" id="authGroup">
     <a class="auth-link" onclick="toggleModal()">Log In</a>
   </div>
+
+<button class="hamburger" id="hamburger" aria-label="Menu">
+  <span></span><span></span><span></span>
+</button>
 </header>
+
+<!-- ── Mobile sidebar (must be outside header) ── -->
+<div class="mob-backdrop" id="mobBackdrop"></div>
+<aside class="mob-sidebar" id="mobSidebar">
+  <div class="mob-sidebar-header">
+    <div class="brand">
+      <img src="client/public/assets/images/cymansquare_logo.svg" alt="CyManSquare" style="height:24px">
+      <span style="font-family:'Akaya Kanadaka',cursive;font-size:1.1rem;font-weight:100;color:var(--orange)">CyMan²</span>
+    </div>
+    <button class="mob-sidebar-close" id="mobSidebarClose" aria-label="Close menu">&#x2715;</button>
+  </div>
+  <nav class="mob-nav">
+    <a class="mob-nav-item active" onclick="mobileNav(0)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a class="mob-nav-item" onclick="mobileNav(1)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Features
+    </a>
+    <a class="mob-nav-item" onclick="mobileNav(2)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Services
+    </a>
+    <a class="mob-nav-item" onclick="mobileNav(3)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Updates
+    </a>
+    <a class="mob-nav-item" onclick="mobileNav(4)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Support
+    </a>
+    <a class="mob-nav-item" onclick="mobileNav(5)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Pricing
+    </a>
+  </nav>
+  <div class="mob-sidebar-footer">
+    <a class="mob-auth-link" onclick="toggleModal();closeSidebar()">Log In</a>
+    <button class="primary-btn sm" onclick="getStarted();closeSidebar()">Get Started</button>
+  </div>
+</aside>
 
 <!-- ══════════════════════════════════════════════════════════════
      VIEWPORT SLIDES
@@ -566,6 +613,79 @@
 ══════════════════════════════════════════════════════════════ -->
 <script type="module" src="client/src/js/main.js"></script>
 <script type="module" src="client/src/js/dashboard.js"></script>
+<script>
+  // ── Mobile Sidebar ─────────────────────────────
+  const hamburger   = document.getElementById('hamburger');
+  const mobSidebar  = document.getElementById('mobSidebar');
+  const mobBackdrop = document.getElementById('mobBackdrop');
+  const mobCloseBtn = document.getElementById('mobSidebarClose');
 
+  function openSidebar() {
+    hamburger.classList.add('open');
+    mobSidebar.classList.add('open');
+    mobBackdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    hamburger.classList.remove('open');
+    mobSidebar.classList.remove('open');
+    mobBackdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  hamburger.addEventListener('click', () =>
+    mobSidebar.classList.contains('open') ? closeSidebar() : openSidebar()
+  );
+  mobBackdrop.addEventListener('click', closeSidebar);
+  mobCloseBtn && mobCloseBtn.addEventListener('click', closeSidebar);
+
+  // ── FIX 1: Mobile navigation ───────────────────
+  // On mobile the viewport is vertical (stacked sections),
+  // so slideTo() (horizontal JS) doesn't work.
+  // mobileNav() scrolls directly to the section instead.
+  window.mobileNav = function(index) {
+    closeSidebar();
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      // Scroll to the nth section
+      const sections = document.querySelectorAll('.viewport > section');
+      if (sections[index]) {
+        const headerH = document.querySelector('header')?.offsetHeight || 58;
+        const top = sections[index].getBoundingClientRect().top + window.scrollY - headerH;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    } else {
+      // Desktop: use existing slideTo if available
+      if (typeof slideTo === 'function') slideTo(index);
+    }
+
+    // Highlight active item
+    document.querySelectorAll('.mob-nav-item').forEach((el, i) => {
+      el.classList.toggle('active', i === index);
+    });
+  };
+
+  // Keep sidebar active state in sync when desktop slides change
+  window.setSidebarActive = function(index) {
+    document.querySelectorAll('.mob-nav-item').forEach((el, i) => {
+      el.classList.toggle('active', i === index);
+    });
+  };
+
+  // Highlight sidebar item on scroll (mobile vertical layout)
+  if (window.innerWidth <= 768) {
+    const sections = document.querySelectorAll('.viewport > section');
+    const navItems = document.querySelectorAll('.mob-nav-item');
+    window.addEventListener('scroll', () => {
+      const headerH = document.querySelector('header')?.offsetHeight || 58;
+      let current = 0;
+      sections.forEach((sec, i) => {
+        if (sec.getBoundingClientRect().top - headerH - 60 <= 0) current = i;
+      });
+      navItems.forEach((el, i) => el.classList.toggle('active', i === current));
+    }, { passive: true });
+  }
+</script>
 </body>
 </html>
