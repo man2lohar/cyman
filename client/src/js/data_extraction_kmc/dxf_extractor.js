@@ -6,7 +6,7 @@
 // ── Constants ─────────────────────────────────────────────────────────────────
 // Layers expected ONLY in Master Sheet
 const MASTER_LAYERS = [
-  "Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
+  "Plot","Road","Splay","Strip","GroundCoverage","Tree Cover","Open Space",
   "Waterbody","Goomty","Alignment","Existing",
   "Alignment","STP","RWH","Pavement"
 ];
