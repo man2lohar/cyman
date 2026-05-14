@@ -227,10 +227,10 @@
     }
 
     const HeightTable = [
-      { width: [0, 2.4],       height: 7.0 },
-      { width: [2.4, 3.5],     height: 10.0 },
-      { width: [3.5, 7.0],     height: 12.5 },
-      { width: [7.0, 9.0],     height: 21.5 },
+      { width: [2.4, 3.0],     height: 7.0 },
+      { width: [3.0, 4.25],    height: 10.0 },
+      { width: [4.25, 6.75],   height: 12.5 },
+      { width: [6.75, 9.0],    height: 21.5 },
       { width: [9.0, 12.0],    height: 40.0 },
       { width: [12.0, 15.0],   height: 60.0 },
       { width: [15.0, Infinity], height: Infinity },
