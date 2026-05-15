@@ -412,7 +412,8 @@
       Pricing
     </a>
   </nav>
-  <div class="mob-sidebar-footer">
+  <div class="mob-sidebar-footer" id="mobSidebarFooter">
+    <!-- content injected by updateMobAuth() below -->
     <a class="mob-auth-link" onclick="toggleModal();closeSidebar()">Log In</a>
     <button class="primary-btn sm" onclick="getStarted();closeSidebar()">Get Started</button>
   </div>
@@ -614,11 +615,15 @@
 <script type="module" src="client/src/js/main.js"></script>
 <script type="module" src="client/src/js/dashboard.js"></script>
 <script>
-  // ── Mobile Sidebar ─────────────────────────────
-  const hamburger   = document.getElementById('hamburger');
-  const mobSidebar  = document.getElementById('mobSidebar');
-  const mobBackdrop = document.getElementById('mobBackdrop');
-  const mobCloseBtn = document.getElementById('mobSidebarClose');
+  // ════════════════════════════════════════════════
+  //  MOBILE SIDEBAR — all 5 fixes
+  // ════════════════════════════════════════════════
+
+  const hamburger      = document.getElementById('hamburger');
+  const mobSidebar     = document.getElementById('mobSidebar');
+  const mobBackdrop    = document.getElementById('mobBackdrop');
+  const mobCloseBtn    = document.getElementById('mobSidebarClose');
+  const mobAuthFooter  = document.getElementById('mobSidebarFooter');
 
   function openSidebar() {
     hamburger.classList.add('open');
@@ -631,6 +636,8 @@
     mobSidebar.classList.remove('open');
     mobBackdrop.classList.remove('open');
     document.body.style.overflow = '';
+    // FIX 2: restore page scrolling after closing sidebar
+    if (window.innerWidth <= 768) document.body.style.overflow = '';
   }
 
   hamburger.addEventListener('click', () =>
@@ -639,53 +646,143 @@
   mobBackdrop.addEventListener('click', closeSidebar);
   mobCloseBtn && mobCloseBtn.addEventListener('click', closeSidebar);
 
+  // ── FIX 2: Ensure page scrolls on mobile ───────
+  // main.js sets body overflow:hidden for desktop horizontal scroll.
+  // On mobile we override that so the page can scroll normally.
+  function enforceMobileScroll() {
+    if (window.innerWidth <= 768 && !mobSidebar.classList.contains('open')) {
+      document.body.style.overflow = '';
+      document.body.style.overflowY = 'auto';
+      document.body.style.overflowX = 'hidden';
+    }
+  }
+  // Run once and keep checking in case main.js resets it
+  enforceMobileScroll();
+  window.addEventListener('resize', enforceMobileScroll);
+  // Poll for the first 3 seconds after load to catch main.js overrides
+  let scrollGuard = setInterval(() => {
+    if (window.innerWidth <= 768) enforceMobileScroll();
+  }, 200);
+  setTimeout(() => clearInterval(scrollGuard), 3000);
+
   // ── FIX 1: Mobile navigation ───────────────────
-  // On mobile the viewport is vertical (stacked sections),
-  // so slideTo() (horizontal JS) doesn't work.
-  // mobileNav() scrolls directly to the section instead.
   window.mobileNav = function(index) {
     closeSidebar();
-    const isMobile = window.innerWidth <= 768;
-
-    if (isMobile) {
-      // Scroll to the nth section
+    if (window.innerWidth <= 768) {
+      // Vertical layout: scroll to section
       const sections = document.querySelectorAll('.viewport > section');
       if (sections[index]) {
         const headerH = document.querySelector('header')?.offsetHeight || 58;
-        const top = sections[index].getBoundingClientRect().top + window.scrollY - headerH;
+        const top = sections[index].getBoundingClientRect().top + window.scrollY - headerH - 8;
         window.scrollTo({ top, behavior: 'smooth' });
       }
     } else {
-      // Desktop: use existing slideTo if available
       if (typeof slideTo === 'function') slideTo(index);
     }
-
-    // Highlight active item
-    document.querySelectorAll('.mob-nav-item').forEach((el, i) => {
-      el.classList.toggle('active', i === index);
-    });
+    document.querySelectorAll('.mob-nav-item').forEach((el, i) =>
+      el.classList.toggle('active', i === index));
   };
 
-  // Keep sidebar active state in sync when desktop slides change
+  // Keep sidebar active in sync with desktop slider
   window.setSidebarActive = function(index) {
-    document.querySelectorAll('.mob-nav-item').forEach((el, i) => {
-      el.classList.toggle('active', i === index);
-    });
+    document.querySelectorAll('.mob-nav-item').forEach((el, i) =>
+      el.classList.toggle('active', i === index));
   };
 
-  // Highlight sidebar item on scroll (mobile vertical layout)
-  if (window.innerWidth <= 768) {
+  // Auto-highlight as user scrolls (mobile)
+  window.addEventListener('scroll', () => {
+    if (window.innerWidth > 768) return;
     const sections = document.querySelectorAll('.viewport > section');
-    const navItems = document.querySelectorAll('.mob-nav-item');
-    window.addEventListener('scroll', () => {
-      const headerH = document.querySelector('header')?.offsetHeight || 58;
-      let current = 0;
-      sections.forEach((sec, i) => {
-        if (sec.getBoundingClientRect().top - headerH - 60 <= 0) current = i;
-      });
-      navItems.forEach((el, i) => el.classList.toggle('active', i === current));
-    }, { passive: true });
+    const headerH  = document.querySelector('header')?.offsetHeight || 58;
+    let current = 0;
+    sections.forEach((sec, i) => {
+      if (sec.getBoundingClientRect().top - headerH - 80 <= 0) current = i;
+    });
+    document.querySelectorAll('.mob-nav-item').forEach((el, i) =>
+      el.classList.toggle('active', i === current));
+  }, { passive: true });
+
+  // ── FIX 3: openFeature fallback ────────────────
+  // main.js is a module — its functions aren't global by default.
+  // This fallback ensures feature chips always work on mobile.
+  if (typeof window.openFeature !== 'function') {
+    window.openFeature = function(name, url) {
+      window.open(url, '_blank');
+    };
   }
+  // Also fallback for getStarted in case module hasn't loaded
+  if (typeof window.getStarted !== 'function') {
+    window.getStarted = function() { toggleModal(); };
+  }
+
+  // ── FIX 1: Sidebar shows login/user correctly ──
+  // Watch the desktop #authGroup for changes and mirror to sidebar footer
+  function updateMobAuth() {
+    const authGroup = document.getElementById('authGroup');
+    if (!authGroup || !mobAuthFooter) return;
+
+    const isLoggedIn = authGroup.querySelector('.profile-trigger') !== null
+                    || authGroup.querySelector('.dash-trigger') !== null
+                    || authGroup.querySelector('[data-loggedin]') !== null;
+
+    // Also check localStorage as fallback
+    let storedUser = null;
+    try {
+      const raw = localStorage.getItem('cymansquare_user')
+               || localStorage.getItem('user')
+               || localStorage.getItem('currentUser');
+      if (raw) storedUser = JSON.parse(raw);
+    } catch(e) {}
+
+    const loggedIn = isLoggedIn || !!storedUser;
+    const email    = storedUser?.email || storedUser?.name || '';
+    const initial  = email ? email[0].toUpperCase() : 'U';
+
+    if (loggedIn) {
+      mobAuthFooter.innerHTML = `
+        <div class="mob-user-row">
+          <div class="mob-avatar">${initial}</div>
+          <div class="mob-user-info">
+            <div class="mob-user-email">${email || 'My Account'}</div>
+            <div class="mob-user-role">Member</div>
+          </div>
+          <button class="mob-logout-btn" onclick="handleLogout && handleLogout(); updateMobAuth();" title="Sign out">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+        <button class="primary-btn sm" style="width:100%;justify-content:center"
+          onclick="if(typeof openDashboard==='function')openDashboard(); closeSidebar();">
+          Open Dashboard
+        </button>`;
+    } else {
+      mobAuthFooter.innerHTML = `
+        <a class="mob-auth-link" onclick="toggleModal();closeSidebar()">Log In</a>
+        <button class="primary-btn sm" onclick="(window.getStarted||toggleModal)();closeSidebar()">Get Started</button>`;
+    }
+  }
+
+  // Run on load and watch authGroup for DOM changes
+  document.addEventListener('DOMContentLoaded', () => {
+    updateMobAuth();
+    const authGroup = document.getElementById('authGroup');
+    if (authGroup) {
+      new MutationObserver(updateMobAuth).observe(authGroup, { childList: true, subtree: true });
+    }
+  });
+  // Also expose globally so main.js / dashboard.js can call it
+  window.updateMobAuth = updateMobAuth;
+
+  // Re-check auth state whenever dashboard overlay is opened/closed
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.dash-close-btn') ||
+        e.target.closest('.dashboard-overlay') === document.querySelector('.dashboard-overlay')) {
+      setTimeout(updateMobAuth, 100);
+    }
+  });
 </script>
 </body>
 </html>
