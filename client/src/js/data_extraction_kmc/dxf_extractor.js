@@ -16,7 +16,7 @@ const A_LAYERS = [
   "Business","Institutional","Storage","Assembly","Hazardous","Industrial","Educational",
   "Internal Road","Stair","Lift","Lift_Ext_1","Loft","Cupboard","Tenement","Tenement_Ext_1",
   "Tenement_Single","Tenement_Single_Ext_1","Height","Floor Height","Roof_Structure","Terrace",
-  "Parking_Area","Heritage","Existing","Service_floor","Common Area",
+  "Parking_Area","Heritage","Service_floor","Common Area",
   "Fire Refuge","Triple_Balcony","Court Yard","Shaft",
   "Corridor","EVCP","Solar","Baby Care Room"
 ];
