@@ -181,6 +181,16 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="../../../../client/src/js/feature-shell.js" data-feature="Project Management" data-login="login.html" data-home="../../../../index.html"></script>
+  <script>
+    /* Guard: if firebase is not available, show a clear error instead of infinite spinner */
+    window.addEventListener('error', function(e) {
+      var lo = document.getElementById('loaderOverlay');
+      if (lo) {
+        lo.innerHTML = '<div class="text-center p-4"><div style="color:#ef4444;font-size:1.1rem;font-weight:700;margin-bottom:8px">⚠️ Load Error</div><div style="color:#6b7280;font-size:.85rem">' + (e.message||'Script error') + '</div><button onclick="location.reload()" class="btn btn-sm btn-primary mt-3">Retry</button></div>';
+        lo.classList.remove('hidden');
+      }
+    });
+  </script>
 
   <div class="app-wrapper">
   <button id="toggleSidebar" class="hamburger"><i class="bi bi-list" style="font-size:1.2rem"></i></button>
@@ -631,7 +641,11 @@
         <div class="mb-3"><label class="form-label">Description</label><input id="taskDesc" class="form-control" placeholder="What needs to be done?"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px" class="mb-3">
           <div><label class="form-label">Target Date <span style="color:#ef4444">*</span></label><input id="taskTarget" type="date" class="form-control"></div>
-          <div><label class="form-label">Priority</label><select id="taskPriority" class="form-select"><option value="low">🟢 Low</option><option value="medium">🟡 Medium</option><option value="high">🔴 High</option></select></div>
+          <div><label class="form-label">Priority</label><select id="taskPriority" class="form-select" id="taskPriority">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select></div>
           <div><label class="form-label">Kanban Column</label><select id="taskKanbanStatus" class="form-select"><option value="todo">To Do</option><option value="inprogress">In Progress</option><option value="review">Review</option><option value="done">Done</option></select></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="mb-3">
@@ -731,11 +745,11 @@
     </div></div>
   </div>
 
-  <!-- LOADER -->
-  <div id="loaderOverlay">
+  <!-- LOADER — hidden by default, shown by JS only after Firebase confirmed -->
+  <div id="loaderOverlay" class="hidden">
     <div class="text-center">
-      <div class="spinner-border" role="status" style="width:3rem;height:3rem"><span class="visually-hidden">Loading...</span></div>
-      <div class="mt-2 text-muted">Loading data...</div>
+      <div class="spinner-border" role="status" style="width:2.4rem;height:2.4rem"><span class="visually-hidden">Loading...</span></div>
+      <div class="mt-2 text-muted" style="font-size:var(--font-size-sm)">Loading your data...</div>
     </div>
   </div>
 
