@@ -466,19 +466,61 @@ header.topbar {
 
 .task-chip {
   margin-top: 2px;
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: 4px;
   font-size: var(--font-size-xs);
-  line-height: 1.4;
+  font-weight: 600;
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
+  display: inline-block;
 }
-.low    { background: var(--chip-low-bg);  color: var(--chip-low-text); }
-.medium { background: var(--chip-med-bg);  color: var(--chip-med-text); }
-.high   { background: var(--chip-high-bg); color: var(--chip-high-text); }
+/* Priority colours — high specificity to beat Bootstrap resets */
+.task-chip.low,
+span.task-chip.low,
+td .task-chip.low,
+.kanban-card .task-chip.low,
+.kc-badges .task-chip.low {
+  background: var(--chip-low-bg)  !important;
+  color:      var(--chip-low-text) !important;
+}
+.task-chip.medium,
+span.task-chip.medium,
+td .task-chip.medium,
+.kanban-card .task-chip.medium,
+.kc-badges .task-chip.medium {
+  background: var(--chip-med-bg)  !important;
+  color:      var(--chip-med-text) !important;
+}
+.task-chip.high,
+span.task-chip.high,
+td .task-chip.high,
+.kanban-card .task-chip.high,
+.kc-badges .task-chip.high {
+  background: var(--chip-high-bg)  !important;
+  color:      var(--chip-high-text) !important;
+}
+/* Standalone .low / .medium / .high (calendar chips) */
+.low    { background: var(--chip-low-bg)  !important; color: var(--chip-low-text)  !important; }
+.medium { background: var(--chip-med-bg)  !important; color: var(--chip-med-text)  !important; }
+.high   { background: var(--chip-high-bg) !important; color: var(--chip-high-text) !important; }
 .completed { text-decoration: line-through; opacity: 0.5; }
+
+/* Ensure dark mode chip tokens are vivid enough to read */
+[data-theme="dark"] .task-chip.low,
+body.dark-mode .task-chip.low    { background: #052e16 !important; color: #4ade80 !important; }
+[data-theme="dark"] .task-chip.medium,
+body.dark-mode .task-chip.medium { background: #1c1400 !important; color: #fbbf24 !important; }
+[data-theme="dark"] .task-chip.high,
+body.dark-mode .task-chip.high   { background: #1c0404 !important; color: #f87171 !important; }
+[data-theme="dark"] .low,
+body.dark-mode .low    { background: #052e16 !important; color: #4ade80 !important; }
+[data-theme="dark"] .medium,
+body.dark-mode .medium { background: #1c1400 !important; color: #fbbf24 !important; }
+[data-theme="dark"] .high,
+body.dark-mode .high   { background: #1c0404 !important; color: #f87171 !important; }
 
 /* ============================================================
    PROJECTS
