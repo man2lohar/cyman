@@ -121,9 +121,9 @@
   ──────────────────────────────────────── */
   const floorAreaRatioTable = [
     { width: [0, 2.4],       residential: 0,    educational: 0,    industrial: 0,    storage: 0,    hazardous: 0,    assembly: 0,    business: 0,    institutional: 0,    mercantile_retail: 0,    Mercantile_wholesale: 0 },
-    { width: [2.4, 3.5],     residential: 1.25, educational: 0,    industrial: 0,    storage: 0,    hazardous: 0,    assembly: 0,    business: 0,    institutional: 0,    mercantile_retail: 0,    Mercantile_wholesale: 0 },
-    { width: [3.5, 7.0],     residential: 1.75, educational: 0,    industrial: 0,    storage: 0,    hazardous: 0,    assembly: 0,    business: 0,    institutional: 0,    mercantile_retail: 0,    Mercantile_wholesale: 0 },
-    { width: [7.0, 9.0],     residential: 2.0,  educational: 2.0,  industrial: 0,    storage: 0,    hazardous: 0,    assembly: 0,    business: 0,    institutional: 0,    mercantile_retail: 0,    Mercantile_wholesale: 0 },
+    { width: [2.4, 3.5],     residential: 1.5, educational: 0,    industrial: 0,    storage: 0,    hazardous: 0,    assembly: 0,    business: 0,    institutional: 0,    mercantile_retail: 0,    Mercantile_wholesale: 0 },
+    { width: [3.5, 6.75],    residential: 1.75, educational: 0,    industrial: 0,    storage: 0,    hazardous: 0,    assembly: 0,    business: 0,    institutional: 0,    mercantile_retail: 0,    Mercantile_wholesale: 0 },
+    { width: [6.75, 9.0],    residential: 2.0,  educational: 2.0,  industrial: 0,    storage: 0,    hazardous: 0,    assembly: 0,    business: 0,    institutional: 0,    mercantile_retail: 0,    Mercantile_wholesale: 0 },
     { width: [9.0, 15.0],    residential: 2.25, educational: 2.25, industrial: 2.0,  storage: 2.0,  hazardous: 2.0,  assembly: 2.0,  business: 2.0,  institutional: 2.0,  mercantile_retail: 2.0,  Mercantile_wholesale: 2.0 },
     { width: [15.0, 21.5],   residential: 2.5,  educational: 2.5,  industrial: 2.0,  storage: 2.0,  hazardous: 2.0,  assembly: 2.25, business: 2.25, institutional: 2.25, mercantile_retail: 2.25, Mercantile_wholesale: 2.25 },
     { width: [21.5, 24.0],   residential: 2.75, educational: 2.75, industrial: 2.0,  storage: 2.0,  hazardous: 2.0,  assembly: 2.5,  business: 2.5,  institutional: 2.5,  mercantile_retail: 2.5,  Mercantile_wholesale: 2.5 },
