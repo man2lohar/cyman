@@ -1,133 +1,65 @@
 (function () {
-  // --- Firebase Config ---
+  /* ================================================================
+     CyManSquare — db.js  (save-only version)
+     
+     app.js handles all Firebase READS directly with safeOnce().
+     db.js only provides SAVE functions and trash operations so the
+     loading chain is fully controlled and never hangs.
+  ================================================================ */
+
   const firebaseConfig = {
-    apiKey: "AIzaSyDYwO0SAoHcg076PnCGMGaAmvHfwPl6-n4",
-    authDomain: "project-management-man2.firebaseapp.com",
-    databaseURL: "https://project-management-man2-default-rtdb.firebaseio.com",
-    projectId: "project-management-man2",
-    storageBucket: "project-management-man2.firebasestorage.app",
+    apiKey:            "AIzaSyDYwO0SAoHcg076PnCGMGaAmvHfwPl6-n4",
+    authDomain:        "project-management-man2.firebaseapp.com",
+    databaseURL:       "https://project-management-man2-default-rtdb.firebaseio.com",
+    projectId:         "project-management-man2",
+    storageBucket:     "project-management-man2.firebasestorage.app",
     messagingSenderId: "731310432635",
-    appId: "1:731310432635:web:d617c81ee9cd0122a49dde",
-    measurementId: "G-NJFELXSRRP"
+    appId:             "1:731310432635:web:d617c81ee9cd0122a49dde",
+    measurementId:     "G-NJFELXSRRP"
   };
 
-  // Initialize Firebase
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+  const db   = firebase.database();
   const auth = firebase.auth();
 
-  window.projects = [];
-  window.tasks = [];
-  window.trash = [];
+  /* Initialise globals so app.js never hits undefined */
+  window.projects = window.projects || [];
+  window.tasks    = window.tasks    || [];
+  window.trash    = window.trash    || [];
 
-  // --- Wait for login ---
-  function waitForLogin() {
-    return new Promise((resolve, reject) => {
-      const unsub = auth.onAuthStateChanged(user => {
-        unsub();
-        if (user) resolve(user);
-        else reject("Not logged in");
-      });
-    });
+  /* ── Helper: get a ref under the current user ── */
+  function uref(path) {
+    var user = auth.currentUser;
+    if (!user) { console.warn('[db] uref: no currentUser for path:', path); return null; }
+    return db.ref('users/' + user.uid + '/' + path);
   }
 
-  // --- User Reference ---
-  function userRef(path) {
-    const user = auth.currentUser;
-    if (!user) return db.ref("public_error");
-    return db.ref(`users/${user.uid}/${path}`);
+  /* ── Save helpers ── */
+  function safeSave(path, data) {
+    var ref = uref(path);
+    if (!ref) return;
+    ref.set(data || []).catch(function(e) { console.error('[db] save error on', path, e.message); });
   }
 
-  // --- Generate Unique IDs ---
-  function uid() {
-    return "id-" + Math.random().toString(36).substr(2, 9);
-  }
+  window.saveProjects = function() { safeSave('projects', window.projects); };
+  window.saveTasks    = function() { safeSave('tasks',    window.tasks);    };
+  window.saveTrash    = function() { safeSave('trash',    window.trash);    };
 
-  // --- Normalize Old Data (string-based to object-based) ---
-  function normalizeProjects(projArray) {
-    if (!Array.isArray(projArray)) return [];
-    return projArray.map(p => {
-      if (typeof p === "string") return { id: uid(), name: p };
-      if (p && typeof p === "object" && p.name) return p;
-      return { id: uid(), name: "Untitled" };
-    });
-  }
-
-  function normalizeTasks(taskArray, projects) {
-    if (!Array.isArray(taskArray)) return [];
-    const map = {};
-    projects.forEach(p => (map[p.name] = p.id));
-    return taskArray.map(t => {
-      if (!t) return null;
-      if (!t.projectId && t.project && map[t.project])
-        t.projectId = map[t.project];
-      return t;
-    }).filter(Boolean);
-  }
-
-  // --- Load Projects ---
-  window.loadProjects = (cb) => {
-    waitForLogin().then(() => {
-      userRef("projects").once("value").then(snapshot => {
-        const val = snapshot.val() || [];
-        window.projects = normalizeProjects(val);
-        userRef("projects").set(window.projects); // ensure normalized
-        cb?.(window.projects);
-      });
-    });
-  };
-
-  // --- Load Tasks ---
-  window.loadTasks = (cb) => {
-    waitForLogin().then(() => {
-      userRef("tasks").once("value").then(snapshot => {
-        const val = snapshot.val() || [];
-        window.tasks = normalizeTasks(val, window.projects);
-        userRef("tasks").set(window.tasks); // save normalized
-        cb?.(window.tasks);
-      });
-    });
-  };
-
-  // --- Load Trash ---
-  window.loadTrash = (cb) => {
-    waitForLogin().then(() => {
-      userRef("trash").once("value").then(snapshot => {
-        window.trash = snapshot.val() || [];
-        cb?.(window.trash);
-      });
-    });
-  };
-
-  // --- Save All ---
-  window.saveProjects = () => {
-    waitForLogin().then(() => userRef("projects").set(window.projects || []));
-  };
-
-  window.saveTasks = () => {
-    waitForLogin().then(() => userRef("tasks").set(window.tasks || []));
-  };
-
-  window.saveTrash = () => {
-    waitForLogin().then(() => userRef("trash").set(window.trash || []));
-  };
-
-  // --- Move Task to Trash ---
-  window.moveToTrash = (taskIndex) => {
-    if (!Array.isArray(window.tasks) || taskIndex < 0) return;
-    const task = window.tasks.splice(taskIndex, 1)[0];
+  /* ── Trash operations ── */
+  window.moveToTrash = function(taskIndex) {
+    if (!Array.isArray(window.tasks) || taskIndex < 0 || taskIndex >= window.tasks.length) return;
+    var task = window.tasks.splice(taskIndex, 1)[0];
     if (!task) return;
-    window.trash = window.trash || [];
     task.deletedAt = new Date().toISOString();
+    window.trash = window.trash || [];
     window.trash.push(task);
     window.saveTasks();
     window.saveTrash();
   };
 
-  // --- Restore Task from Trash ---
-  window.restoreFromTrash = (trashIndex) => {
-    if (!Array.isArray(window.trash) || trashIndex < 0) return;
-    const task = window.trash.splice(trashIndex, 1)[0];
+  window.restoreFromTrash = function(trashIndex) {
+    if (!Array.isArray(window.trash) || trashIndex < 0 || trashIndex >= window.trash.length) return;
+    var task = window.trash.splice(trashIndex, 1)[0];
     if (!task) return;
     delete task.deletedAt;
     window.tasks = window.tasks || [];
@@ -136,19 +68,16 @@
     window.saveTrash();
   };
 
-  // --- Delete Permanently ---
-  window.deletePermanently = (trashIndex) => {
-    if (!Array.isArray(window.trash) || trashIndex < 0) return;
+  window.deletePermanently = function(trashIndex) {
+    if (!Array.isArray(window.trash) || trashIndex < 0 || trashIndex >= window.trash.length) return;
     window.trash.splice(trashIndex, 1);
     window.saveTrash();
   };
 
-  // --- Load All Data ---
-  window.loadAllData = (cb) => {
-    Promise.all([
-      new Promise(res => loadProjects(res)),
-      new Promise(res => loadTasks(res)),
-      new Promise(res => loadTrash(res))
-    ]).then(() => cb?.());
-  };
+  /* ── Legacy stubs so nothing breaks if old code calls these ── */
+  window.loadProjects = function(cb) { cb?.(window.projects); };
+  window.loadTasks    = function(cb) { cb?.(window.tasks);    };
+  window.loadTrash    = function(cb) { cb?.(window.trash);    };
+  window.loadAllData  = function(cb) { cb?.();                };
+
 })();
