@@ -45,8 +45,7 @@ const EXPECTED_PRINTABLE = {
   "Wall":true,"Text":true,"Dimension":true,"Section":true,"Print":true,"Mis1":true,
   "Block_Text":true,"Fire Refuge":false,"Triple_Balcony":false,"Goomty":false,"Court Yard":false,
   "Shaft":false,"Corridor":false,"STP":false,"RWH":false,"Pavement":false,"EVCP":false,
-  "Solar":false,"Baby Care Room":false,"Column":true,"GFPlanExistingStructure":false,
-  "Sanctioned Alignment":false
+  "Solar":false,"Baby Care Room":false,"Column":true,"Sanctioned Alignment":false
 };
 
 const NAME_TO_ACI = { red:1,yellow:2,green:3,cyan:4,blue:5,magenta:6,white:7,grey:8,gray:8 };
