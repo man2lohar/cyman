@@ -10,8 +10,26 @@ function applyTheme(on) {
   document.body.classList.toggle('dark-mode', on);
   document.documentElement.setAttribute('data-theme', on ? 'dark' : 'light');
   document.documentElement.style.colorScheme = on ? 'dark' : 'light';
+  localStorage.setItem('cymDark', on ? '1' : '0');
 }
+/* Expose globally so feature-shell.js can call it */
+window.applyTheme = applyTheme;
 applyTheme(localStorage.getItem('cymDark') === '1');
+
+/* Listen for localStorage changes from the shell toggle (cross-frame / same-page) */
+window.addEventListener('storage', function(e) {
+  if (e.key === 'cymDark') applyTheme(e.newValue === '1');
+});
+/* Also poll every 300ms as fallback for same-page shell toggles that
+   don't fire storage events (same origin, same tab) */
+var _lastDark = localStorage.getItem('cymDark');
+setInterval(function() {
+  var cur = localStorage.getItem('cymDark');
+  if (cur !== _lastDark) {
+    _lastDark = cur;
+    applyTheme(cur === '1');
+  }
+}, 300);
 
 /* ── Globals ── */
 window.members = window.members || [];
@@ -39,32 +57,91 @@ const views = {
   settings: document.getElementById('settingsView'),
   help: document.getElementById('helpView')
 };
-const projectModal   = new bootstrap.Modal(document.getElementById('projectModal'));
-const taskModal      = new bootstrap.Modal(document.getElementById('taskModal'));
-const timeModal      = new bootstrap.Modal(document.getElementById('timeModal'));
-const memberModal    = new bootstrap.Modal(document.getElementById('memberModal'));
-const milestoneModal = new bootstrap.Modal(document.getElementById('milestoneModal'));
-const milestoneForm  = {
-  id:      document.getElementById('editMilestoneId'),
-  project: document.getElementById('milestoneProject'),
-  title:   document.getElementById('milestoneTitle'),
-  date:    document.getElementById('milestoneDate'),
-  done:    document.getElementById('milestoneDone')
+/* ── Modals: lazy-init so they never crash if DOM not ready ── */
+let _projectModal, _taskModal, _timeModal, _memberModal, _milestoneModal;
+function getProjectModal()   { return _projectModal   || (_projectModal   = new bootstrap.Modal(document.getElementById('projectModal'))); }
+function getTaskModal()      { return _taskModal      || (_taskModal      = new bootstrap.Modal(document.getElementById('taskModal'))); }
+function getTimeModal()      { return _timeModal      || (_timeModal      = new bootstrap.Modal(document.getElementById('timeModal'))); }
+function getMemberModal()    { return _memberModal    || (_memberModal    = new bootstrap.Modal(document.getElementById('memberModal'))); }
+function getMilestoneModal() { return _milestoneModal || (_milestoneModal = new bootstrap.Modal(document.getElementById('milestoneModal'))); }
+/* Keep named aliases so existing calls still work */
+const projectModal   = { show: () => getProjectModal().show(),   hide: () => getProjectModal().hide()   };
+const taskModal      = { show: () => getTaskModal().show(),      hide: () => getTaskModal().hide()      };
+const timeModal      = { show: () => getTimeModal().show(),      hide: () => getTimeModal().hide()      };
+const memberModal    = { show: () => getMemberModal().show(),    hide: () => getMemberModal().hide()    };
+const milestoneModal = { show: () => getMilestoneModal().show(), hide: () => getMilestoneModal().hide() };
+
+/* milestoneForm: lazy getter so null elements don't crash at load time */
+const milestoneForm = {
+  get id()      { return document.getElementById('editMilestoneId');   },
+  get project() { return document.getElementById('milestoneProject');  },
+  get title()   { return document.getElementById('milestoneTitle');    },
+  get date()    { return document.getElementById('milestoneDate');     },
+  get done()    { return document.getElementById('milestoneDone');     }
 };
 
 /* ── Helpers ── */
 function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function showLoader() { document.getElementById('loaderOverlay').classList.remove('hidden'); }
-function hideLoader() { document.getElementById('loaderOverlay').classList.add('hidden'); }
+function showLoader() {
+  var el = document.getElementById('loaderOverlay');
+  if (el) el.classList.remove('hidden');
+}
+function hideLoader() {
+  var el = document.getElementById('loaderOverlay');
+  if (el) el.classList.add('hidden');
+}
+/* Top-bar progress indicator — non-blocking thin line at the top */
+function showTopBarLoader() {
+  var bar = document.getElementById('topBarLoader');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'topBarLoader';
+    bar.style.cssText = 'position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:99999;transition:width .4s ease;width:0%;border-radius:0 2px 2px 0';
+    document.body.appendChild(bar);
+  }
+  bar.style.width = '0%';
+  bar.style.display = 'block';
+  // Animate to 80% while loading
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() { bar.style.width = '80%'; });
+  });
+}
+function hideTopBarLoader() {
+  var bar = document.getElementById('topBarLoader');
+  if (!bar) return;
+  bar.style.width = '100%';
+  setTimeout(function() { bar.style.display = 'none'; bar.style.width = '0%'; }, 400);
+}
 function rndColor() { return ['#0b74ff','#7c3aed','#059669','#dc2626','#d97706','#0891b2','#db2777'][Math.floor(Math.random()*7)]; }
 function initials(n) { return (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2); }
 function fmtSecs(s) { const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sc = s%60; return [h,m,sc].map(v => String(v).padStart(2,'0')).join(':'); }
 function fmtHours(s) { return (s / 3600).toFixed(1) + 'h'; }
 function today() { return new Date().toISOString().split('T')[0]; }
 
+/* Priority badge — always inline styles, never class-based, so Bootstrap can't override */
+function priorityBadge(priority, fontSize) {
+  fontSize = fontSize || 'var(--font-size-xs)';
+  const map = {
+    high:   { bg:'#fee2e2', color:'#b91c1c', dot:'#ef4444', label:'High'   },
+    medium: { bg:'#fef3c7', color:'#92400e', dot:'#f59e0b', label:'Medium' },
+    low:    { bg:'#dcfce7', color:'#15803d', dot:'#22c55e', label:'Low'    },
+  };
+  // Dark mode detection
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+               document.body.classList.contains('dark-mode');
+  const darkMap = {
+    high:   { bg:'#1c0404', color:'#f87171', dot:'#ef4444', label:'High'   },
+    medium: { bg:'#1c1400', color:'#fbbf24', dot:'#f59e0b', label:'Medium' },
+    low:    { bg:'#052e16', color:'#4ade80', dot:'#22c55e', label:'Low'    },
+  };
+  const p    = (priority||'low').toLowerCase();
+  const cfg  = (dark ? darkMap : map)[p] || (dark ? darkMap : map).low;
+  return `<span style="display:inline-flex;align-items:center;gap:4px;background:${cfg.bg};color:${cfg.color};border-radius:5px;padding:2px 7px;font-size:${fontSize};font-weight:700;white-space:nowrap;flex-shrink:0"><span style="width:6px;height:6px;border-radius:50%;background:${cfg.dot};flex-shrink:0;display:inline-block"></span>${cfg.label}</span>`;
+}
+
 /* ── View switching ── */
 function switchView(key) {
-  Object.values(views).forEach(v => { v.classList.add('hidden'); v.setAttribute('aria-hidden', 'true'); });
+  Object.values(views).forEach(v => { if(v) { v.classList.add('hidden'); v.setAttribute('aria-hidden', 'true'); } });
   if (views[key]) { views[key].classList.remove('hidden'); views[key].setAttribute('aria-hidden', 'false'); }
   document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
   const navId = { calendar:'navCalendar', kanban:'navKanban', assessment:'navAssessment', timeline:'navTimeline', projects:'navProjects', team:'navTeam', reports:'navReports', settings:'navSettings', help:'navHelp' }[key];
@@ -107,12 +184,15 @@ function renderCalendar() {
   const monthTasks = (window.tasks||[]).filter(t => (t.target||'').startsWith(monthStr));
   const doneCount = monthTasks.filter(t=>t.completed).length;
   const overdueCount = monthTasks.filter(t=>!t.completed && t.target < todayStr).length;
+  // Stats bar — always placed right before the calendar grid
   let statsBar = document.getElementById('calStatsBar');
   if (!statsBar) {
     statsBar = document.createElement('div');
     statsBar.id = 'calStatsBar';
-    const calView = document.getElementById('calendarView');
-    calView.insertBefore(statsBar, calEl);
+  }
+  // Always ensure it sits directly before calEl (safe even if already there)
+  if (calEl.parentNode && calEl.previousSibling !== statsBar) {
+    calEl.parentNode.insertBefore(statsBar, calEl);
   }
   statsBar.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:var(--font-size-xs)';
   statsBar.innerHTML = `
@@ -127,9 +207,16 @@ function renderCalendar() {
   const specificOffArr = (() => { try { return JSON.parse(localStorage.getItem('cymSpecificOff')||'[]'); } catch(e){return[];} })();
   const membersList    = window.members || [];
 
-  // Group tasks by date
+  // Group tasks by date — normalise to YYYY-MM-DD before grouping
   const grouped = {};
-  (window.tasks||[]).forEach(t => { if (t.target) (grouped[t.target]=grouped[t.target]||[]).push(t); });
+  (window.tasks||[]).forEach(t => {
+    if (!t || !t.target) return;
+    const iso = toISODate(String(t.target));
+    if (iso && iso.length === 10) {
+      grouped[iso] = grouped[iso] || [];
+      grouped[iso].push(t);
+    }
+  });
 
   // Day-name row (already in HTML) — just update if week starts Monday
   const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -201,8 +288,15 @@ function renderCalendar() {
     const MAX_SHOW = 3;
     dayTasks.slice(0, MAX_SHOW).forEach(t => {
       const chip = document.createElement('div');
-      chip.className = `task-chip ${t.priority||''} ${t.completed?'completed':''}`;
-      chip.style.cssText = 'display:flex;align-items:center;gap:3px;margin-bottom:2px;cursor:pointer;';
+      chip.className = `task-chip${t.completed?' completed':''}`;
+      const _dark = document.documentElement.getAttribute('data-theme')==='dark'||document.body.classList.contains('dark-mode');
+      const _priColors = {
+        high:   _dark?{bg:'#1c0404',border:'#ef4444'}:{bg:'#fee2e2',border:'#fca5a5'},
+        medium: _dark?{bg:'#1c1400',border:'#f59e0b'}:{bg:'#fef3c7',border:'#fcd34d'},
+        low:    _dark?{bg:'#052e16',border:'#22c55e'}:{bg:'#dcfce7',border:'#86efac'},
+      };
+      const _pc = _priColors[(t.priority||'low')] || _priColors.low;
+      chip.style.cssText = `display:flex;align-items:center;gap:3px;margin-bottom:2px;cursor:pointer;background:${_pc.bg};border-left:2.5px solid ${_pc.border};border-radius:4px;padding:2px 5px;`;
 
       const textSpan = document.createElement('span');
       textSpan.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:var(--font-size-xs)';
@@ -252,7 +346,7 @@ function showDayPopover(ds, tasks, anchor) {
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid var(--divider);cursor:pointer';
     const mem = (t.assignees||[]).slice(0,2).map(n => { const m=(window.members||[]).find(m=>m.name===n); return `<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:${m?m.color:'#6b7280'};color:#fff;font-size:.5rem;font-weight:700" title="${esc(n)}">${initials(n)}</span>`; }).join('');
-    row.innerHTML = `<span class="task-chip ${t.priority||''}" style="margin:0;padding:1px 5px;font-size:.6rem;flex-shrink:0">${t.priority||'low'}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--font-size-xs);${t.completed?'text-decoration:line-through;color:var(--muted)':''}">${esc(t.description||'')}</span>${mem?`<div style="display:flex;gap:2px">${mem}</div>`:''}`;
+    row.innerHTML = `${priorityBadge(t.priority, '.6rem')}<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--font-size-xs);${t.completed?'text-decoration:line-through;color:var(--muted)':''}">${esc(t.description||'')}</span>${mem?`<div style="display:flex;gap:2px">${mem}</div>`:''}`;
     row.addEventListener('click', () => { editTask(window.tasks.indexOf(t)); document.getElementById('calDayPopover')?.remove(); });
     pop.appendChild(row);
   });
@@ -281,8 +375,9 @@ KANBAN_COLS.forEach(status => {
     e.preventDefault();
     col.classList.remove('drag-over');
     const idx = parseInt(e.dataTransfer.getData('taskIdx'));
-    if (isNaN(idx) || !window.tasks[idx]) return;
+    if (isNaN(idx)) return;
     const t = window.tasks[idx];
+    if (!t) return;
     if (t.kanbanStatus === status) return;           // no-op if same column
     t.kanbanStatus = status;
     if (status === 'done' && !t.completed) { t.completed = true; t.completedAt = today(); }
@@ -315,6 +410,7 @@ document.getElementById('kClearDoneBtn')?.addEventListener('click', () => {
     return true;
   });
   if (typeof saveTasks === 'function') saveTasks();
+  if (typeof saveTrash === 'function') saveTrash();
   renderKanban(); renderAllAssessment();
 });
 
@@ -599,13 +695,17 @@ function renderKanban() {
 ══════════════════════════════════════════════ */
 function renderProjects() {
   const pl = document.getElementById('projectList');
+  if (!pl) return;
   const tps = document.getElementById('taskProject');
   pl.innerHTML = '';
-  tps.innerHTML = '<option value="">Select project</option>';
+  if (tps) tps.innerHTML = '<option value="">Select project</option>';
   (window.projects || []).forEach((p, i) => {
     const tasks = (window.tasks || []).filter(t => t.project === p.name);
     const done = tasks.filter(t => t.completed).length;
     const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+    if (tps) {
+      const opt = document.createElement('option'); opt.value = p.name; opt.textContent = p.name; tps.appendChild(opt);
+    }
     const row = document.createElement('div'); row.className = 'proj-row';
     row.innerHTML = `
       <div style="flex:1;min-width:0">
@@ -627,10 +727,15 @@ document.getElementById('openProjectModalBtn').addEventListener('click', openNew
 document.getElementById('addProjectBtnTop')?.addEventListener('click', openNewProject);
 function openNewProject() {
   document.getElementById('editProjectId').value = '';
-  document.getElementById('projectName').value = '';
-  document.getElementById('projectDesc').value = '';
-  document.getElementById('projectStart').value = '';
-  document.getElementById('projectDue').value = '';
+  document.getElementById('projectName').value   = '';
+  document.getElementById('projectDesc').value   = '';
+  document.getElementById('projectStart').value  = '';
+  document.getElementById('projectDue').value    = '';
+  // Clear any stale validation error
+  const ni = document.getElementById('projectName');
+  if (ni) { ni.style.borderColor=''; ni.style.boxShadow=''; }
+  const ee = document.getElementById('projectNameError');
+  if (ee) ee.remove();
   projectModal.show();
 }
 window.editProject = function(i) {
@@ -646,26 +751,57 @@ window.deleteProject = function(i) {
   const p = (window.projects || [])[i]; if (!p) return;
   if (!confirm('Delete this project and all its tasks?')) return;
   window.projects.splice(i, 1);
-  window.tasks = (window.tasks || []).filter(t => t.project !== p.name);
+  window.tasks  = (window.tasks  || []).filter(t => t.project !== p.name);
+  window.trash  = (window.trash  || []).filter(t => t.project !== p.name);
   if (typeof saveProjects === 'function') saveProjects();
-  if (typeof saveTasks === 'function') saveTasks();
+  if (typeof saveTasks    === 'function') saveTasks();
+  if (typeof saveTrash    === 'function') saveTrash();
   renderProjects(); renderCalendar(); renderAllAssessment(); renderKanban();
 };
 document.getElementById('saveProject').addEventListener('click', () => {
-  const name = document.getElementById('projectName').value.trim(); if (!name) return alert('Enter project name');
-  const desc = document.getElementById('projectDesc').value.trim();
+  const name = document.getElementById('projectName').value.trim();
+  if (!name) return alert('Enter a project name.');
+  const desc  = document.getElementById('projectDesc').value.trim();
   const start = document.getElementById('projectStart').value;
   const due   = document.getElementById('projectDue').value;
   const idx   = document.getElementById('editProjectId').value;
+
+  // Duplicate project name check
+  const dupProj = (window.projects || []).findIndex((p, i) =>
+    p.name.trim().toLowerCase() === name.toLowerCase() && String(i) !== String(idx)
+  );
+  if (dupProj !== -1) {
+    const ni = document.getElementById('projectName');
+    ni.style.borderColor = '#ef4444';
+    ni.style.boxShadow   = '0 0 0 3px rgba(239,68,68,.15)';
+    let ee = document.getElementById('projectNameError');
+    if (!ee) {
+      ee = document.createElement('div');
+      ee.id = 'projectNameError';
+      ee.style.cssText = 'color:#ef4444;font-size:var(--font-size-xs);margin-top:4px;font-weight:600';
+      ni.parentNode.appendChild(ee);
+    }
+    ee.textContent = `"${name}" already exists. Please use a unique name.`;
+    ni.addEventListener('input', function clr() {
+      ni.style.borderColor=''; ni.style.boxShadow='';
+      if(ee) ee.textContent='';
+      ni.removeEventListener('input',clr);
+    }, { once: true });
+    return;
+  }
+
   if (idx !== '') {
     const prev = window.projects[idx].name;
     window.projects[idx] = { ...window.projects[idx], name, description: desc, start, due };
     (window.tasks || []).forEach(t => { if (t.project === prev) t.project = name; });
+    // Also update project name in trash
+    (window.trash || []).forEach(t => { if (t.project === prev) t.project = name; });
   } else {
     window.projects.push({ id: Date.now(), name, description: desc, start, due });
   }
   if (typeof saveProjects === 'function') saveProjects();
   if (typeof saveTasks === 'function') saveTasks();
+  if (typeof saveTrash === 'function') saveTrash();
   if (document.activeElement) document.activeElement.blur();
   projectModal.hide();
   renderProjects(); renderCalendar(); renderAllAssessment(); renderKanban();
@@ -734,7 +870,11 @@ window.removeAttachment = function(taskIdx, attachIdx) {
   if (!window.tasks[taskIdx]) return;
   window.tasks[taskIdx].attachments = (window.tasks[taskIdx].attachments || []).filter((_, i) => i !== attachIdx);
   if (typeof saveTasks === 'function') saveTasks();
+  // Re-open modal showing updated attachments
   editTask(taskIdx);
+  // Clear file input so stale file doesn't get re-attached on next save
+  const fi = document.getElementById('taskFileInput');
+  if (fi) fi.value = '';
 };
 document.getElementById('addSubtaskBtn').addEventListener('click', () => { subtasksInModal.push({ text: '', done: false }); renderSubtasksInModal(); });
 function renderSubtasksInModal() {
@@ -748,7 +888,21 @@ function renderSubtasksInModal() {
 document.getElementById('saveTask').addEventListener('click', () => {
   const proj = document.getElementById('taskProject').value;
   const date = document.getElementById('taskTarget').value;
-  if (!proj || !date) return alert('Select project and target date');
+  if (!proj || !date) return alert('Select project and target date.');
+  const desc = document.getElementById('taskDesc').value.trim();
+  const editingIdx = document.getElementById('editTaskId').value;
+  // Warn if same project + description already exists (not same task being edited)
+  if (desc) {
+    const dup = (window.tasks || []).findIndex((t, i) =>
+      t.project === proj &&
+      (t.description||'').trim().toLowerCase() === desc.toLowerCase() &&
+      String(i) !== String(editingIdx)
+    );
+    if (dup !== -1) {
+      if (!confirm(`A task named "${desc}" already exists in "${proj}".
+Save anyway?`)) return;
+    }
+  }
   const idx = document.getElementById('editTaskId').value;
   const prev = idx !== '' ? window.tasks[idx] : null;
   const isCompleted = document.getElementById('taskCompleted').checked;
@@ -758,7 +912,7 @@ document.getElementById('saveTask').addEventListener('click', () => {
       id: prev ? prev.id : Date.now(),
       project: proj,
       description: document.getElementById('taskDesc').value.trim(),
-      target: date,
+      target: toISODate(date),
       priority: document.getElementById('taskPriority').value,
       completed: isCompleted,
       completedAt: isCompleted ? (prev && prev.completedAt ? prev.completedAt : today()) : null,
@@ -796,6 +950,7 @@ window.deleteTaskByIndex = function(i) {
   const removed = (window.tasks || []).splice(i, 1)[0];
   if (removed) window.trash.push({ ...removed, deletedAt: new Date().toISOString() });
   if (typeof saveTasks === 'function') saveTasks();
+  if (typeof saveTrash === 'function') saveTrash();
   renderCalendar(); renderProjects(); renderAllAssessment(); renderKanban();
 };
 
@@ -814,7 +969,7 @@ function renderTeam() {
     const taskListHtml = tasks.length ? tasks.map(t => {
       const isOverdue = !t.completed && t.target && t.target < today();
       return `<div style="display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid var(--divider)">
-        <span class="task-chip ${t.priority||''}" style="margin:0;padding:1px 5px;font-size:.6rem;flex-shrink:0">${t.priority||'low'}</span>
+        ${priorityBadge(t.priority, '.6rem')}
         <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--font-size-xs);${t.completed?'text-decoration:line-through;color:var(--muted)':''}">${esc(t.description||'(no title)')}</span>
         ${t.target ? `<span style="font-size:var(--font-size-xs);color:var(--muted);white-space:nowrap;flex-shrink:0">${t.target}</span>` : ''}
         ${isOverdue ? '<span style="color:#ef4444;font-size:.7rem;flex-shrink:0">⏰</span>' : ''}
@@ -859,10 +1014,15 @@ window.toggleMemberTasks = function(id) {
 };
 document.getElementById('addMemberBtn').addEventListener('click', () => {
   document.getElementById('editMemberId').value = '';
-  document.getElementById('memberName').value = '';
-  document.getElementById('memberRole').value = '';
+  document.getElementById('memberName').value   = '';
+  document.getElementById('memberRole').value   = '';
   selectedMemberColor = '#0b74ff';
   document.querySelectorAll('#memberColorPicker .accent-swatch').forEach(b => b.classList.toggle('active', b.dataset.mcolor === selectedMemberColor));
+  // Clear any leftover error from previous open
+  const ni = document.getElementById('memberName');
+  if (ni) { ni.style.borderColor=''; ni.style.boxShadow=''; }
+  const ee = document.getElementById('memberNameError');
+  if (ee) ee.remove();
   memberModal.show();
 });
 document.querySelectorAll('#memberColorPicker .accent-swatch').forEach(b => {
@@ -882,33 +1042,110 @@ window.editMember = function(i) {
 };
 window.deleteMember = function(i) {
   if (!confirm('Remove this member?')) return;
-  window.members.splice(i, 1); saveMembers(); renderTeam();
+  const m = window.members[i];
+  window.members.splice(i, 1);
+  // Remove this member from all task assignee lists
+  if (m) {
+    let changed = false;
+    (window.tasks || []).forEach(t => {
+      if (Array.isArray(t.assignees) && t.assignees.includes(m.name)) {
+        t.assignees = t.assignees.filter(n => n !== m.name);
+        changed = true;
+      }
+    });
+    if (changed && typeof saveTasks === 'function') saveTasks();
+  }
+  saveMembers(); renderTeam(); renderKanban(); renderAllAssessment();
 };
 document.getElementById('saveMember').addEventListener('click', () => {
-  const name = document.getElementById('memberName').value.trim(); if (!name) return alert('Enter name');
+  const name = document.getElementById('memberName').value.trim();
+  if (!name) return alert('Enter a member name.');
   const role = document.getElementById('memberRole').value.trim();
   const idx  = document.getElementById('editMemberId').value;
-  if (idx !== '') window.members[idx] = { ...window.members[idx], name, role, color: selectedMemberColor };
-  else window.members.push({ id: Date.now(), name, role, color: selectedMemberColor });
+
+  // ── Duplicate name check ──
+  const dupIdx = (window.members || []).findIndex((m, i) =>
+    m.name.trim().toLowerCase() === name.toLowerCase() && String(i) !== String(idx)
+  );
+  if (dupIdx !== -1) {
+    // Highlight the name field red and show inline error
+    const nameInput = document.getElementById('memberName');
+    nameInput.style.borderColor = '#ef4444';
+    nameInput.style.boxShadow   = '0 0 0 3px rgba(239,68,68,.15)';
+    let errEl = document.getElementById('memberNameError');
+    if (!errEl) {
+      errEl = document.createElement('div');
+      errEl.id = 'memberNameError';
+      errEl.style.cssText = 'color:#ef4444;font-size:var(--font-size-xs);margin-top:4px;font-weight:600';
+      nameInput.parentNode.appendChild(errEl);
+    }
+    errEl.textContent = `"${name}" already exists. Please use a unique name.`;
+    nameInput.addEventListener('input', function clearErr() {
+      nameInput.style.borderColor = '';
+      nameInput.style.boxShadow   = '';
+      if (errEl) errEl.textContent = '';
+      nameInput.removeEventListener('input', clearErr);
+    }, { once: true });
+    return;
+  }
+
+  if (idx !== '') {
+    const oldName = window.members[idx] ? window.members[idx].name : null;
+    window.members[idx] = { ...window.members[idx], name, role, color: selectedMemberColor };
+    // If name changed, update all tasks and trash that reference the old name
+    if (oldName && oldName !== name) {
+      let taskUpdated = false;
+      (window.tasks || []).forEach(t => {
+        if (Array.isArray(t.assignees)) {
+          const i = t.assignees.indexOf(oldName);
+          if (i !== -1) { t.assignees[i] = name; taskUpdated = true; }
+        }
+      });
+      (window.trash || []).forEach(t => {
+        if (Array.isArray(t.assignees)) {
+          const i = t.assignees.indexOf(oldName);
+          if (i !== -1) { t.assignees[i] = name; taskUpdated = true; }
+        }
+      });
+      if (taskUpdated && typeof saveTasks === 'function') saveTasks();
+      if (taskUpdated && typeof saveTrash === 'function') saveTrash();
+    }
+  } else {
+    window.members.push({ id: Date.now(), name, role, color: selectedMemberColor });
+  }
+
+  // Clear any previous error styling
+  const nameInput = document.getElementById('memberName');
+  nameInput.style.borderColor = '';
+  nameInput.style.boxShadow   = '';
+  const errEl = document.getElementById('memberNameError');
+  if (errEl) errEl.remove();
+
   saveMembers(); memberModal.hide(); renderTeam();
+  renderKanban(); renderAllAssessment();
 });
 function saveMembers() {
-  if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-    const uid = firebase.auth().currentUser.uid;
-    firebase.database().ref(`users/${uid}/members`).set(window.members);
-  } else {
-    localStorage.setItem('cymMembers', JSON.stringify(window.members));
+  // Uses db.js getUser pattern — safe to call any time
+  if (typeof firebase === 'undefined') return;
+  const user = firebase.auth().currentUser;
+  if (user) {
+    firebase.database().ref(`users/${user.uid}/members`).set(window.members || [])
+      .catch(e => console.warn('saveMembers:', e));
   }
 }
-function loadMembers() {
-  if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-    const uid = firebase.auth().currentUser.uid;
-    firebase.database().ref(`users/${uid}/members`).once('value').then(s => {
-      window.members = s.val() ? Object.values(s.val()) : [];
-    });
-  } else {
-    try { window.members = JSON.parse(localStorage.getItem('cymMembers') || '[]'); } catch(e) { window.members = []; }
-  }
+function loadMembers(cb) {
+  if (typeof firebase === 'undefined') { window.members = []; cb?.(); return; }
+  const user = firebase.auth().currentUser;
+  if (!user) { window.members = []; cb?.(); return; }
+  firebase.database().ref(`users/${user.uid}/members`).once('value')
+    .then(s => {
+      const val = s.val();
+      if (!val) { window.members = []; }
+      else if (Array.isArray(val)) { window.members = val.filter(Boolean); }
+      else { window.members = Object.values(val).filter(Boolean); }
+      cb?.();
+    })
+    .catch(() => { window.members = []; cb?.(); });
 }
 
 /* ══════════════════════════════════════════════
@@ -963,6 +1200,16 @@ document.getElementById('timerStopBtn').addEventListener('click', () => {
   renderAllAssessment();
 });
 window.openTimeTracker = openTimeTracker;
+// Stop timer if time modal is closed without clicking Stop
+document.getElementById('timeModal')?.addEventListener('hide.bs.modal', function() {
+  if (timerRunning) {
+    timerRunning = false;
+    clearInterval(timerInterval);
+    document.getElementById('timerStartBtn').disabled = false;
+    document.getElementById('timerPauseBtn').disabled = true;
+    document.getElementById('timerStopBtn').disabled  = true;
+  }
+});
 
 /* ══════════════════════════════════════════════
    NOTIFICATIONS
@@ -1075,7 +1322,7 @@ function renderTable(list) {
       <td>${esc(t.project || '-')}</td>
       <td>${esc(t.description || '')}${t.recurring ? `<span class="badge-recurring ms-1">↻</span>` : ''}${subTotal ? `<br><small style="color:var(--muted)">${subDone}/${subTotal} subtasks</small>` : ''}</td>
       <td>${esc(t.target || '')}</td>
-      <td><span class="task-chip ${t.priority || ''}" style="margin:0">${t.priority || 'low'}</span></td>
+      <td>${priorityBadge(t.priority)}</td>
       <td>${statusHtml}</td>
       <td><div style="display:flex;gap:3px;flex-wrap:wrap">${assigneeHtml}</div></td>
       <td style="font-size:var(--font-size-xs);color:var(--muted)">${totalSecs ? fmtHours(totalSecs) : '—'}</td>
@@ -1122,21 +1369,37 @@ function renderCharts(list) {
   list.forEach(t => { if (t.completed) status.completed++; else status.pending++; if (prio[t.priority] != null) prio[t.priority]++; });
   if (statusChart)   statusChart.destroy();
   if (priorityChart) priorityChart.destroy();
-  statusChart = new Chart(document.getElementById('statusChart').getContext('2d'), { type:'doughnut', data:{ labels:['Completed','Pending'], datasets:[{ data:[status.completed,status.pending], backgroundColor:['#10b981','#f59e0b'] }] }, options:{ cutout:'70%', plugins:{ legend:{ position:'bottom', labels:{ boxWidth:8, boxHeight:8 } } } } });
-  priorityChart = new Chart(document.getElementById('priorityChart').getContext('2d'), { type:'bar', data:{ labels:['Low','Medium','High'], datasets:[{ data:[prio.low,prio.medium,prio.high], backgroundColor:['#3ddc84','#f59e0b','#ef4444'], barThickness:16 }] }, options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } } });
+  try {
+    statusChart = new Chart(document.getElementById('statusChart').getContext('2d'), { type:'doughnut', data:{ labels:['Completed','Pending'], datasets:[{ data:[status.completed,status.pending], backgroundColor:['#10b981','#f59e0b'] }] }, options:{ cutout:'70%', plugins:{ legend:{ position:'bottom', labels:{ boxWidth:8, boxHeight:8 } } } } });
+    priorityChart = new Chart(document.getElementById('priorityChart').getContext('2d'), { type:'bar', data:{ labels:['Low','Medium','High'], datasets:[{ data:[prio.low,prio.medium,prio.high], backgroundColor:['#3ddc84','#f59e0b','#ef4444'], barThickness:16 }] }, options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } } });
+  } catch(e) { console.warn('Chart render error:', e); }
 }
 function renderTrash() {
   const tb = document.getElementById('trashBody'); tb.innerHTML = '';
   (window.trash || []).forEach((t, i) => { tb.insertAdjacentHTML('beforeend', `<tr><td>${i+1}</td><td>${esc(t.description||'')}</td><td>${new Date(t.deletedAt||'').toLocaleString()}</td><td><button class="btn btn-sm btn-success me-1" onclick="restore(${i})">Restore</button><button class="btn btn-sm btn-danger" onclick="permanentDeleteConfirm(${i})">Delete</button></td></tr>`); });
 }
 function restore(i) {
-  if (typeof restoreFromTrash === 'function') { restoreFromTrash(i); if (typeof loadAllData === 'function') loadAllData(() => { renderProjects(); renderCalendar(); renderAllAssessment(); renderKanban(); }); }
-  else { const item = (window.trash || []).splice(i, 1)[0]; if (item) { delete item.deletedAt; (window.tasks = window.tasks || []).push(item); if (typeof saveTasks === 'function') saveTasks(); renderProjects(); renderCalendar(); renderAllAssessment(); renderKanban(); } }
+  if (typeof restoreFromTrash === 'function') {
+    restoreFromTrash(i);
+  } else {
+    const item = (window.trash || []).splice(i, 1)[0];
+    if (!item) return;
+    delete item.deletedAt;
+    (window.tasks = window.tasks || []).push(item);
+    if (typeof saveTasks === 'function') saveTasks();
+    if (typeof saveTrash === 'function') saveTrash();
+  }
+  renderProjects(); renderCalendar(); renderAllAssessment(); renderKanban();
 }
 function permanentDeleteConfirm(i) {
   if (!confirm('Permanently delete?')) return;
-  if (typeof deletePermanently === 'function') deletePermanently(i); else (window.trash || []).splice(i, 1);
-  if (typeof loadAllData === 'function') loadAllData(() => { renderProjects(); renderCalendar(); renderAllAssessment(); });
+  if (typeof deletePermanently === 'function') {
+    deletePermanently(i);
+  } else {
+    (window.trash || []).splice(i, 1);
+    if (typeof saveTrash === 'function') saveTrash();
+  }
+  renderTrash(); renderKPIs(window.tasks || []);
 }
 document.getElementById('applyFilters').addEventListener('click', renderAllAssessment);
 document.getElementById('resetFilters').addEventListener('click', () => {
@@ -1171,6 +1434,7 @@ function renderReports() {
   const days30 = Array.from({ length: 30 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - 29 + i); return d.toISOString().split('T')[0]; });
   const burnData = days30.map(day => tasks.filter(t => !t.completed || (t.completedAt && t.completedAt > day)).length);
   if (burndownChart) burndownChart.destroy();
+  try {
   burndownChart = new Chart(document.getElementById('burndownChart').getContext('2d'), {
     type: 'line',
     data: { labels: days30.map(d => d.slice(5)), datasets: [{ label: 'Remaining', data: burnData, borderColor: 'var(--accent)', backgroundColor: 'rgba(11,116,255,.1)', fill: true, tension: .3, pointRadius: 2 }] },
@@ -1202,11 +1466,9 @@ function renderReports() {
   const byProj = {};
   tasks.forEach(t => { const s = (t.timeLogs || []).reduce((a, l) => a + l.secs, 0); if (s) byProj[t.project] = (byProj[t.project] || 0) + s; });
   ts.innerHTML = Object.entries(byProj).sort((a, b) => b[1] - a[1]).map(([p, s]) => `<div class="time-log-row"><span>${esc(p)}</span><span style="color:var(--accent);font-weight:600">${fmtHours(s)}</span></div>`).join('');
+  } catch(e) { console.warn('Reports chart error:', e); }
 }
 
-/* ══════════════════════════════════════════════
-   CSV EXPORT / IMPORT
-══════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════
    BACKUP, RESTORE & CSV
    Full backup = JSON containing every field from
@@ -1424,8 +1686,7 @@ function exportToCSV() {
       t.recurring       || '',
       t.dependsOn       || '',
       t.estHours        || '',
-      (t.notes          || '').replace(/
-/g,' '),
+      (t.notes          || '').replace(/\n/g,' '),
       subTotal,
       subDone,
       (totalSecs / 3600).toFixed(2),
@@ -1523,11 +1784,19 @@ document.getElementById('importCsvBtn')?.addEventListener('click', () => {
 document.getElementById('clearDataBtn')?.addEventListener('click', () => {
   if (!confirm('Clear ALL projects, tasks and trash? This cannot be undone.')) return;
   window.projects = []; window.tasks = []; window.trash = [];
+  window.members  = [];
   if (typeof saveProjects === 'function') saveProjects();
   if (typeof saveTasks    === 'function') saveTasks();
   if (typeof saveTrash    === 'function') saveTrash();
+  saveMembers();
+  // Clear milestones too
+  if (userId) {
+    try { firebase.database().ref('users/' + userId + '/milestones').remove(); } catch(e){}
+  }
+  milestones = [];
   renderProjects(); renderCalendar(); renderAllAssessment(); renderKanban();
-  addNotification('Data cleared', 'All projects and tasks removed', 'bi-trash3');
+  renderTeam(); refreshSettingsStats();
+  addNotification('Data cleared', 'All data removed', 'bi-trash3');
 });
 
 /* ══════════════════════════════════════════════
@@ -1660,14 +1929,18 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ══════════════════════════════════════════════
    TIMELINE
 ══════════════════════════════════════════════ */
-const timelineSearch = document.getElementById('timelineSearch');
-const projectFilter  = document.getElementById('projectFilter');
-if (timelineSearch) timelineSearch.addEventListener('input', e => { currentTimelineSearch = e.target.value.toLowerCase(); renderTimeline(); });
-if (projectFilter)  projectFilter.addEventListener('change', e => { currentTimelineProject = e.target.value; renderTimeline(); });
-document.querySelectorAll("input[name='typeFilter']").forEach(btn => btn.addEventListener('change', e => { currentTimelineType = e.target.value; renderTimeline(); }));
+// Timeline filter listeners — safe, element may not exist until view is shown
+document.addEventListener('DOMContentLoaded', function() {
+  var tsEl = document.getElementById('timelineSearch');
+  var pfEl = document.getElementById('projectFilter');
+  if (tsEl) tsEl.addEventListener('input', function(e) { currentTimelineSearch = e.target.value.toLowerCase(); renderTimeline(); });
+  if (pfEl) pfEl.addEventListener('change', function(e) { currentTimelineProject = e.target.value; renderTimeline(); });
+  document.querySelectorAll("input[name='typeFilter']").forEach(function(btn) {
+    btn.addEventListener('change', function(e) { currentTimelineType = e.target.value; renderTimeline(); });
+  });
+});
 
-firebase.auth().onAuthStateChanged(user => { if (user) { userId = user.uid; loadMilestones(); } });
-firebase.auth().onAuthStateChanged(user => { if (user) showUpdateNotice(user); });
+/* Auth handled in main AUTH + LOAD block above */
 
 function showUpdateNotice(user) {
   const notice = document.getElementById('timelineUpdateNotice');
@@ -1706,39 +1979,57 @@ document.getElementById('saveMilestoneBtn').addEventListener('click', async () =
   if (existing && existing.completedAt) payload.completedAt = existing.completedAt;
   if (done && (!existing || !existing.completed)) payload.completedAt = new Date().toISOString();
   if (!done) payload.completedAt = null;
+  if (!userId) { alert('Not logged in — cannot save milestone'); return; }
   try {
     await firebase.database().ref(`users/${userId}/milestones/${id}`).set(payload);
     if (document.activeElement) document.activeElement.blur();
     setTimeout(() => milestoneModal.hide(), 80);
     await loadMilestones();
     populateAssessControls();
-  } catch (err) { console.error('Milestone save failed:', err); alert('Error saving milestone.'); }
+  } catch (err) { console.error('Milestone save failed:', err); alert('Error saving milestone: ' + err.message); }
 });
 async function loadMilestones() {
-  if (!userId) return;
-  const snap = await firebase.database().ref(`users/${userId}/milestones`).once('value');
-  milestones = snap.val() ? Object.values(snap.val()) : [];
+  if (!userId) { renderTimeline(); return; }
+  try {
+    const snap = await firebase.database().ref(`users/${userId}/milestones`).once('value');
+    const val = snap.val();
+    if (!val)                 milestones = [];
+    else if (Array.isArray(val)) milestones = val.filter(Boolean);
+    else                      milestones = Object.values(val).filter(Boolean);
+  } catch(e) {
+    console.warn('[loadMilestones]', e.message);
+    milestones = milestones || [];
+  }
   renderTimeline();
 }
 async function deleteMilestone(id) {
   if (!confirm('Delete this milestone?')) return;
-  await firebase.database().ref(`users/${userId}/milestones/${id}`).remove();
+  try {
+    await firebase.database().ref(`users/${userId}/milestones/${id}`).remove();
+  } catch(e) { console.warn('[deleteMilestone]', e.message); }
   loadMilestones();
 }
 async function toggleMilestoneDone(id, current) {
-  const updates = { completed: !current, completedAt: !current ? new Date().toISOString() : null };
-  await firebase.database().ref(`users/${userId}/milestones/${id}`).update(updates);
+  try {
+    const updates = { completed: !current, completedAt: !current ? new Date().toISOString() : null };
+    await firebase.database().ref(`users/${userId}/milestones/${id}`).update(updates);
+  } catch(e) { console.warn('[toggleMilestoneDone]', e.message); }
   loadMilestones();
 }
 function renderTimeline() {
+  try {
   const tc = document.getElementById('timelineContainer');
+  if (!tc) return;
   tc.innerHTML = '';
 
-  // Sync project filter dropdown
-  const prev = projectFilter ? projectFilter.value : 'all';
-  projectFilter.innerHTML = '<option value="all">All Projects</option>';
-  (window.projects||[]).forEach(p => { const opt=document.createElement('option'); opt.value=p.name; opt.textContent=p.name; projectFilter.append(opt); });
-  if (prev) projectFilter.value = prev;
+  // Re-query projectFilter each time (it may not exist if view hidden on first load)
+  const pf = document.getElementById('projectFilter');
+  const prev = pf ? pf.value : 'all';
+  if (pf) {
+    pf.innerHTML = '<option value="all">All Projects</option>';
+    (window.projects||[]).forEach(p => { const opt=document.createElement('option'); opt.value=p.name; opt.textContent=p.name; pf.append(opt); });
+    if (prev) pf.value = prev;
+  }
 
   const nowStr  = today();
   const visible = (window.projects||[]).filter(p => currentTimelineProject==='all' || p.name===currentTimelineProject);
@@ -1843,9 +2134,8 @@ function renderTimeline() {
 
       if (item.isTask && item.priority) {
         const priBadge = document.createElement('span');
-        priBadge.className = `task-chip ${item.priority}`;
-        priBadge.style.cssText = 'margin:0;padding:1px 5px;font-size:.55rem;flex-shrink:0';
-        priBadge.textContent = item.priority;
+        priBadge.innerHTML = priorityBadge(item.priority, '.55rem');
+        priBadge.style.cssText = 'display:inline-flex;flex-shrink:0';
         titleRow.append(titleEl, typeBadge, priBadge);
       } else {
         titleRow.append(titleEl, typeBadge);
@@ -1914,6 +2204,7 @@ function renderTimeline() {
     card.appendChild(list);
     tc.appendChild(card);
   });
+  } catch(err) { console.error('[renderTimeline]', err); }
 }
 async function editMilestone(id) {
   const m = milestones.find(x => x.id === id); if (!m) return;
@@ -1934,7 +2225,9 @@ window.loadMilestones  = loadMilestones;
 function generateRecurringTasks() {
   const now = today();
   (window.tasks || []).filter(t => t.recurring && t.completed && t.completedAt).forEach(t => {
-    const next = getNextRecurringDate(t.completedAt, t.recurring);
+    // completedAt may be full ISO string — extract date part only
+    const completedDate = String(t.completedAt).slice(0,10);
+    const next = getNextRecurringDate(completedDate, t.recurring);
     if (next && next <= now) {
       const exists = (window.tasks || []).some(x => x.description === t.description && x.project === t.project && x.target === next && !x.completed);
       if (!exists) {
@@ -1972,47 +2265,174 @@ function checkOverdueNotifications() {
 /* ══════════════════════════════════════════════
    AUTH + LOAD
 ══════════════════════════════════════════════ */
-showLoader();
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) return location.href = 'login.html';
-  let name = (user.email || 'user').split('@')[0];
-  name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-  document.getElementById('userName').textContent     = name;
-  document.getElementById('userIcon').textContent     = name[0].toUpperCase();
-  const hr = new Date().getHours();
-  document.getElementById('userGreeting').textContent = (hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening') + ' 👋';
-  userId = user.uid;
-  loadMembers();
-  if (typeof loadAllData === 'function') {
+window.projects = window.projects || [];
+window.tasks    = window.tasks    || [];
+window.trash    = window.trash    || [];
+window.members  = window.members  || [];
+
+/* Show UI immediately — empty but not stuck */
+switchView('calendar');
+
+function doRender() {
+  try { renderProjects(); } catch(e) { console.warn('renderProjects:', e); }
+  try { renderCalendar(); } catch(e) { console.warn('renderCalendar:', e); }
+  try { renderAllAssessment(); } catch(e) { console.warn('renderAssessment:', e); }
+  try { renderKanban(); } catch(e) { console.warn('renderKanban:', e); }
+}
+
+/* fbToArr: handles Firebase object-keyed arrays and real arrays */
+function fbToArr(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val.filter(Boolean);
+  return Object.keys(val).sort(function(a,b){return Number(a)-Number(b);}).map(function(k){return val[k];}).filter(Boolean);
+}
+
+/* safeRead: Firebase .once() that always resolves (never rejects, never hangs) */
+function safeRead(path) {
+  return new Promise(function(resolve) {
+    var done = false;
+    function finish(v) { if (!done) { done = true; resolve(v); } }
+    /* 7s hard timeout per read */
+    var t = setTimeout(function() {
+      console.warn('[db timeout]', path);
+      finish(null);
+    }, 7000);
     try {
-      loadAllData(() => {
-        window.projects = window.projects || [];
-        window.tasks    = window.tasks    || [];
-        window.trash    = window.trash    || [];
-        const now = today(); let updated = false;
-        window.tasks.forEach(t => {
-          if (t.completed && !t.completedAt) { t.completedAt = t.target || now; updated = true; }
-          if (!t.kanbanStatus) { t.kanbanStatus = t.completed ? 'done' : 'todo'; updated = true; }
-        });
-        if (updated && typeof saveTasks === 'function') saveTasks();
-        generateRecurringTasks();
-        checkOverdueNotifications();
-        renderProjects(); renderCalendar(); renderAllAssessment(); renderKanban();
-        hideLoader();
-      });
+      firebase.database()
+        .ref('users/' + userId + '/' + path)
+        .once('value')
+        .then(function(s) { clearTimeout(t); finish(s ? s.val() : null); })
+        .catch(function(e) { clearTimeout(t); console.warn('[db error]', path, e.message); finish(null); });
     } catch(e) {
-      console.error('loadAllData error', e);
-      window.projects = window.projects || []; window.tasks = window.tasks || []; window.trash = window.trash || [];
-      renderProjects(); renderCalendar(); renderAllAssessment(); renderKanban();
-      hideLoader();
+      clearTimeout(t);
+      console.warn('[db catch]', path, e.message);
+      finish(null);
     }
-  } else {
-    window.projects = window.projects || []; window.tasks = window.tasks || []; window.trash = window.trash || [];
-    renderProjects(); renderCalendar(); renderAllAssessment(); renderKanban();
-    hideLoader();
+  });
+}
+
+/* Convert any date string to YYYY-MM-DD regardless of input format */
+function toISODate(d) {
+  if (!d || typeof d !== 'string') return d;
+  d = d.trim();
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+  // DD-MM-YYYY  or  DD/MM/YYYY
+  var m = d.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+  if (m) return m[3] + '-' + m[2].padStart(2,'0') + '-' + m[1].padStart(2,'0');
+  // MM-DD-YYYY  or  MM/DD/YYYY (less common, keep as fallback)
+  var m2 = d.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+  if (m2) return m2[3] + '-' + m2[1].padStart(2,'0') + '-' + m2[2].padStart(2,'0');
+  return d;
+}
+
+function normaliseTask(t, nameToId, now) {
+  if (!t || typeof t !== 'object') return null;
+  if (!t.id)           t.id           = 'id-' + Math.random().toString(36).substr(2,9);
+  if (!t.projectId && t.project && nameToId[t.project]) t.projectId = nameToId[t.project];
+  if (!t.kanbanStatus) t.kanbanStatus = t.completed ? 'done' : 'todo';
+  if (!t.assignees)    t.assignees    = [];
+  if (!t.subtasks)     t.subtasks     = [];
+  if (!t.timeLogs)     t.timeLogs     = [];
+  if (!t.attachments)  t.attachments  = [];
+  // Normalise date to YYYY-MM-DD so calendar and date inputs work correctly
+  if (t.target)      t.target      = toISODate(t.target);
+  if (t.completedAt) t.completedAt = toISODate(t.completedAt);
+  if (t.completed && !t.completedAt) t.completedAt = t.target || now;
+  return t;
+}
+
+/* Main init — runs after Firebase auth resolves */
+function initApp(user) {
+  userId = user.uid;
+
+  /* User display */
+  var rawName = (user.email || 'user').split('@')[0];
+  var name = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
+  var el;
+  el = document.getElementById('userName');  if (el) el.textContent = name;
+  el = document.getElementById('userIcon');  if (el) el.textContent = name[0].toUpperCase();
+  el = document.getElementById('userGreeting');
+  if (el) {
+    var hr = new Date().getHours();
+    el.textContent = (hr<12?'Good morning':hr<18?'Good afternoon':'Good evening') + ' 👋';
   }
-});
-document.getElementById('logoutBtn').addEventListener('click', () => firebase.auth().signOut().then(() => location.href = 'login.html'));
+
+  /* Show a subtle top bar loader instead of blocking overlay */
+  showTopBarLoader();
+  showUpdateNotice(user);
+
+  var now = today();
+
+  /* Step 1: projects */
+  safeRead('projects').then(function(raw) {
+    var arr = fbToArr(raw);
+    window.projects = arr.map(function(p) {
+      if (typeof p === 'string') return { id: 'id-'+Math.random().toString(36).substr(2,9), name: p };
+      if (p && !p.id) p.id = 'id-'+Math.random().toString(36).substr(2,9);
+      return p;
+    }).filter(Boolean);
+    doRender();
+
+    /* Step 2: tasks */
+    return safeRead('tasks');
+  }).then(function(raw) {
+    var nameToId = {};
+    (window.projects||[]).forEach(function(p){ if(p.name) nameToId[p.name]=p.id; });
+    window.tasks = fbToArr(raw).map(function(t){ return normaliseTask(t, nameToId, now); }).filter(Boolean);
+    // Write normalised dates back to Firebase (one-time migration)
+    if (typeof saveTasks === 'function') {
+      try { saveTasks(); } catch(e) {}
+    }
+    doRender();
+
+    /* Step 3: rest in parallel */
+    return Promise.all([safeRead('trash'), safeRead('members'), safeRead('milestones')]);
+  }).then(function(res) {
+    window.trash   = fbToArr(res[0]);
+    window.members = fbToArr(res[1]);
+    milestones     = fbToArr(res[2]);
+
+    try { generateRecurringTasks(); } catch(e){}
+    try { checkOverdueNotifications(); } catch(e){}
+    doRender();
+    hideTopBarLoader();
+  }).catch(function(err) {
+    console.error('[app] initApp chain failed:', err);
+    doRender();
+    hideTopBarLoader();
+  });
+}
+
+/* Single onAuthStateChanged listener */
+(function() {
+  var authReady = false;
+  try {
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (authReady) return;   /* ignore repeat fires */
+      authReady = true;
+      if (!user) {
+        hideLoader();
+        location.href = 'login.html';
+        return;
+      }
+      initApp(user);
+    });
+  } catch(e) {
+    console.error('[app] firebase.auth() failed:', e);
+    /* Firebase not available — show data-less UI */
+    doRender();
+    hideTopBarLoader();
+  }
+})();
+
+var logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', function() {
+    try { firebase.auth().signOut().then(function(){ location.href='login.html'; }); }
+    catch(e) { location.href='login.html'; }
+  });
+}
 
 /* ── NAV wiring ── */
 window.refreshUI = function() { populateAssessControls(); renderProjects(); renderCalendar(); renderAllAssessment(); renderKanban(); };
@@ -2025,4 +2445,4 @@ document.getElementById('navTeam').addEventListener('click',       () => switchV
 document.getElementById('navReports').addEventListener('click',    () => switchView('reports'));
 document.getElementById('navSettings').addEventListener('click',   () => { switchView('settings'); refreshSettingsStats(); });
 document.getElementById('navHelp').addEventListener('click',       () => switchView('help'));
-switchView('calendar');
+/* initial view set after auth in main block */
