@@ -262,19 +262,55 @@
   /* ────────────────────────────────────────
      Tree Cover & CB-Loft
   ──────────────────────────────────────── */
-  function TreeCover() {
-    const landAreaBoundary      = parseFloat(document.getElementById('land-area')?.textContent.replace(/,/g, '').split(' ')[0]);
-    const totalfloorarea        = parseFloat(document.getElementById('total-fees-area')?.textContent.replace(/,/g, '').split(' ')[0]);
-    const treecover             = (0.0025 * totalfloorarea) * landAreaBoundary / 100;
-    const permissibleTreePct    = (0.0025 * totalfloorarea);
-    const cbloftArea            = 0.03 * totalfloorarea;
-
-    const treecoverCell = document.getElementById('per-tree');
-    if (treecoverCell) treecoverCell.textContent = `${treecover.toFixed(3)} Sq. m. (${permissibleTreePct.toFixed(3)}%)`;
-
-    const cbloftCell = document.getElementById('per-cb');
-    if (cbloftCell) cbloftCell.textContent = `${cbloftArea.toFixed(3)} Sq. m. (3.000%)`;
-  }
+   function TreeCover() {
+   
+     const landAreaBoundary = parseFloat(
+       document.getElementById('land-area')?.textContent
+         .replace(/,/g, '')
+         .split(' ')[0]
+     ) || 0;
+   
+     const totalfloorarea = parseFloat(
+       document.getElementById('total-fees-area')?.textContent
+         .replace(/,/g, '')
+         .split(' ')[0]
+     ) || 0;
+   
+     // Tree cover percentage calculation
+     let permissibleTreePct;
+   
+     if (totalfloorarea >= 6000) {
+       permissibleTreePct = 15;
+     } else {
+       permissibleTreePct = (totalfloorarea / 6000) * 15;
+     }
+   
+     // Safety cap
+     permissibleTreePct = Math.min(permissibleTreePct, 15);
+   
+     // Tree cover area
+     const treecover =
+       (landAreaBoundary * permissibleTreePct) / 100;
+   
+     // CB loft
+     const cbloftArea = 0.03 * totalfloorarea;
+   
+     // Display Tree Cover
+     const treecoverCell = document.getElementById('per-tree');
+   
+     if (treecoverCell) {
+       treecoverCell.textContent =
+         `${treecover.toFixed(3)} Sq. m. (${permissibleTreePct.toFixed(3)}%)`;
+     }
+   
+     // Display CB Loft
+     const cbloftCell = document.getElementById('per-cb');
+   
+     if (cbloftCell) {
+       cbloftCell.textContent =
+         `${cbloftArea.toFixed(3)} Sq. m. (3.000%)`;
+     }
+   }
 
   /* ────────────────────────────────────────
      Open Spaces lookup table
