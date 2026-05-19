@@ -611,17 +611,10 @@
   var MS=new Set(MLYR),BS=new Set(BLYR),SS=new Set(SLYR),TS=new Set(MLYR.concat(BLYR).concat(SLYR));
   var M2M=0.001,M2M2=0.000001;
 
-  /* Valid layer names for validation */
-  var VALID_LAYERS=new Set(['Column','Plot','Road','Splay','Strip','Ground Coverage','Tree Cover','Open Space','Open Space_Ext_1','Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional','Storage','Assembly','Hazardous','Industrial','Educational','Internal Road','Alignment','Stair','Lift','Lift_Ext_1','Loft','Cupboard','Tenement','Tenement_Ext_1','Tenement_Single','Tenement_Single_Ext_1','Height','Floor Height','Roof_Structure','Terrace','Parking','Parking_Area','Waterbody','Heritage','Existing','Service_floor','Common Area','Fire Refuge','Triple_Balcony','Goomty','Court Yard','Shaft','Corridor','STP','RWH','Pavement','EVCP','Solar','Baby Care Room','GFPlanExistingStructure','Sanctioned Alignment']);
-  var BYLAYER_LW=new Set(['Common Area','Cupboard','Ground Coverage','Open Space','Roof_Structure','Terrace','Internal Road','Loft']);
-  var NEVER_BYLAYER=new Set(['Existing','Floor Height','Height','Parking','Parking_Area','Stair','Tenement','Tenement_Single','Tenement_Ext_1','Tenement_Single_Ext_1','Tree Cover','Shaft','Court Yard','Heritage','Waterbody','Splay','Strip','Corridor','Lift']);
-  var OCC_LAYERS=['Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional','Storage','Assembly','Hazardous','Industrial','Educational'];
-
   /* ═══════════════════════════════════════════════
      7. UPLOAD UI
   ═══════════════════════════════════════════════ */
   var DXF={master:null,blocks:{}},_slots=['A'],_pendingFn=null;
-  var _allErrors={};  // stores error messages per view for Check Errors
 
   function renderGrid(){
     var g=document.getElementById('blk-grid');if(!g)return;g.innerHTML='';
@@ -717,9 +710,30 @@
   function mkCSV(rows){return'Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed\n'+rows.map(function(r){return[r.count,r.name,r.colorRaw,r.layer,r.length,r.linetype,r.lineweight,r.area,r.closed].join(',');}).join('\n');}
 
   /* ═══════════════════════════════════════════════
-     9. HOME DATA TABLE — same validation as index_kmc.js
+     9. HOME DATA TABLE — full validation identical to index_kmc.js / displayData()
   ═══════════════════════════════════════════════ */
-  var HEADERS=['Count','Name','Color','Layer','Length','Linetype','Lineweight','Area','Closed'];
+
+  /* Layer sets used by validation */
+  var VALID_LAYERS_SET=new Set(["Column","Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
+    "Open Space_Ext_1","Residential","Mercantile_wholesale","Mercantile_retail","Business","Institutional","Storage",
+    "Assembly","Hazardous","Industrial","Educational","Internal Road","Alignment","Stair","Lift","Lift_Ext_1",
+    "Loft","Cupboard","Tenement","Tenement_Ext_1","Tenement_Single","Tenement_Single_Ext_1","Height","Floor Height",
+    "Roof_Structure","Terrace","Parking","Parking_Area","Waterbody","Heritage","Existing","Service_floor",
+    "Common Area","Wall","Text","Dimension","Section","Print","Mis1","Block_Text","Fire Refuge","Triple_Balcony",
+    "Goomty","Court Yard","Shaft","Corridor","STP","RWH","Pavement","EVCP","Solar","Baby Care Room"]);
+  var OCC_LAYERS_SET=new Set(['Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional',
+    'Storage','Assembly','Hazardous','Industrial','Educational']);
+  var BYLAYER_LW_SET=new Set(['Common Area','Cupboard','Ground Coverage','Open Space','Roof_Structure','Terrace',
+    'Internal Road','Loft']);
+  var NEVER_BYLAYER_SET=new Set(['Existing','Floor Height','Height','Parking','Parking_Area','Stair',
+    'Tenement','Tenement_Single','Tenement_Ext_1','Tenement_Single_Ext_1','Tree Cover','Shaft',
+    'Court Yard','Heritage','Waterbody','Splay','Strip','Corridor','Lift']);
+  var LAYERS_TO_BOLD=new Set(["Column","Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
+    "Stair","Lift","Loft","Cupboard","Tenement","Tenement_Single","Height","Floor Height","Roof_Structure",
+    "Terrace","Parking","Parking_Area","Existing","Common Area"]);
+
+  /* Per-view error storage: key → array of {msg, rowIdx} */
+  var _allErrors={};
 
   function renderHomeTable(csv,title,viewKey){
     var hdr=document.getElementById('mb-table-header');
@@ -729,54 +743,260 @@
     if(titleEl)titleEl.textContent=title||'';
     hdr.innerHTML='';body.innerHTML='';
     var errStoreKey=viewKey||title||'';
-    /* Build header */
-    HEADERS.forEach(function(h){var th=document.createElement('th');th.textContent=h;hdr.appendChild(th);});
 
+    if(!csv){_allErrors[errStoreKey]=[];return;}
     var rows=csv.split('\n');
-    /* First pass — find duplicates */
-    var seenRows=new Set(),dupRows=new Set();
-    rows.forEach(function(row,i){if(!i||!row.trim())return;var k=row.trim();if(seenRows.has(k))dupRows.add(k);seenRows.add(k);});
 
-    var errs=[];
-    /* Second pass — render */
+    /* Column index map */
+    var idx={};
+    var headerRow=rows[0]||'';
+    headerRow.split(',').forEach(function(h,i){
+      var k=h.trim();
+      if(k==='Count')idx.count=i;
+      else if(k==='Name')idx.name=i;
+      else if(k==='Color')idx.color=i;
+      else if(k==='Layer')idx.layer=i;
+      else if(k==='Length')idx.length=i;
+      else if(k==='Linetype')idx.linetype=i;
+      else if(k==='Lineweight')idx.lineweight=i;
+      else if(k==='Area')idx.area=i;
+      else if(k==='Closed')idx.closed=i;
+      var th=document.createElement('th');th.textContent=k;hdr.appendChild(th);
+    });
+    /* If no header columns parsed, use defaults */
+    if(Object.keys(idx).length===0){
+      var DEF=['Count','Name','Color','Layer','Length','Linetype','Lineweight','Area','Closed'];
+      DEF.forEach(function(h,i){idx[h.toLowerCase()]=i;var th=document.createElement('th');th.textContent=h;hdr.appendChild(th);});
+      idx={count:0,name:1,color:2,layer:3,length:4,linetype:5,lineweight:6,area:7,closed:8};
+    }
+
+    /* First pass — duplicate detection */
+    var seenRows=new Set(),dupRows=new Set();
+    rows.forEach(function(row,i){
+      if(!i||!row.trim())return;
+      if(seenRows.has(row.trim()))dupRows.add(row.trim());
+      seenRows.add(row.trim());
+    });
+
+    /* Lineweight tracker for Strip/Splay/Plot/Tree Cover */
+    var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set()};
+
+    /* Stair/Lift missing-line checks (computed once before row loop) */
+    var expectedLW=['0.15 mm','0.20 mm','0.25 mm','0.30 mm'];
+    var stairLinesFound={};   // lineweight → bool
+    var liftLineFound=false;
+    rows.forEach(function(r){
+      if(!r.trim())return;
+      var c=r.split(',');
+      var lyr=(c[idx.layer]||'').trim(),nm=(c[idx.name]||'').trim(),lw=(c[idx.lineweight]||'').trim();
+      if(lyr==='Stair'&&nm==='Line')stairLinesFound[lw]=true;
+      if(lyr==='Lift'&&nm==='Line')liftLineFound=true;
+    });
+
+    var allErrors=[];
+    var reportedErrors=new Set();
+    var foundLayers=new Set();
+    var invalidLayers=new Set();
+
+    /* Second pass — render rows */
     rows.forEach(function(row,i){
       if(!i||!row.trim())return;
       var cells=row.split(',');
-      var nm=cells[1],clr=cells[2],lyr=cells[3],ln=cells[5],lw=cells[6],area=cells[7],closed=(cells[8]||'').trim();
-      var isDup=dupRows.has(row.trim());
-      var errMsg='';
-      /* Validation checks (same as index_kmc.js) */
-      if(!VALID_LAYERS.has(lyr))errMsg='Invalid Layer Name';
-      else if(cells[0]!=='1')errMsg='Count must be 1';
-      else if(clr==='ByLayer')errMsg='Color should not be ByLayer';
-      else if(['ByLayer','DASHED','PHANTOM2'].indexOf(ln)<0)errMsg='Invalid Linetype';
-      else if(nm==='Polyline'&&closed==='0')errMsg='Polyline must be closed';
-      else if(['Polyline','Line','Point'].indexOf(nm)<0)errMsg='Invalid Object Name';
-      else if(nm==='Polyline'&&(!area||area.trim()===''))errMsg='Polyline area is missing';
-      else if(OCC_LAYERS.indexOf(lyr)>=0&&['ByLayer','DASHED'].indexOf(ln)<0)errMsg='Linetype should be ByLayer or DASHED';
-      else if(BYLAYER_LW.has(lyr)&&lw!=='ByLayer')errMsg='Lineweight must be ByLayer';
-      else if(NEVER_BYLAYER.has(lyr)&&nm==='Polyline'&&lw==='ByLayer')errMsg='Lineweight must not be ByLayer';
+      var count=(cells[idx.count]||'').trim();
+      var nm=(cells[idx.name]||'').trim();
+      var clr=(cells[idx.color]||'').trim();
+      var lyr=(cells[idx.layer]||'').trim();
+      var lt=(cells[idx.linetype]||'').trim();
+      var lw=(cells[idx.lineweight]||'').trim();
+      var area=(cells[idx.area]||'').trim();
+      var closed=(cells[idx.closed]||'').trim();
       var colorNum=parseInt(clr,10);
-      if(!errMsg&&((nm==='Polyline'&&lyr==='Plot'&&(colorNum!==240||lw!=='0.50 mm'))||(lyr==='Ground Coverage'&&(colorNum<53||colorNum>152)&&nm==='Polyline')))
-        errMsg='Invalid color for Plot or Ground Coverage';
+      var isDup=dupRows.has(row.trim());
 
-      if(errMsg)errs.push('Row '+(i)+': ['+lyr+'] — '+errMsg);
+      if(lyr)foundLayers.add(lyr);
+      if(lyr&&!VALID_LAYERS_SET.has(lyr))invalidLayers.add(lyr);
 
+      var rowErrors=[];
+
+      /* Condition checks — same order as index_kmc.js */
+      if(!VALID_LAYERS_SET.has(lyr))rowErrors.push('In '+lyr+' Layer: Invalid Layer Name');
+      else if(count!=='1')rowErrors.push('In '+lyr+' Layer: Count must be 1');
+      else if(clr==='ByLayer')rowErrors.push('In '+lyr+' Layer: Color should not be ByLayer');
+      else if(['ByLayer','DASHED','PHANTOM2'].indexOf(lt)<0)rowErrors.push('In '+lyr+' Layer: Invalid Linetype');
+      else if(nm==='Polyline'&&closed==='0')rowErrors.push('In '+lyr+' Layer: Polyline must be closed');
+      else if(['Polyline','Line','Point'].indexOf(nm)<0)rowErrors.push('In '+lyr+' Layer: Invalid Object Name');
+      else if(nm==='Polyline'&&area==='')rowErrors.push('In '+lyr+' Layer: Polyline area is missing');
+      else if(OCC_LAYERS_SET.has(lyr)&&['ByLayer','DASHED'].indexOf(lt)<0)rowErrors.push('In '+lyr+' Layer: Linetype should be ByLayer or DASHED');
+      else if(BYLAYER_LW_SET.has(lyr)&&lw!=='ByLayer')rowErrors.push('In '+lyr+' Layer: Lineweight must be ByLayer');
+      else if(NEVER_BYLAYER_SET.has(lyr)&&nm==='Polyline'&&lw==='ByLayer')rowErrors.push('In '+lyr+' Layer: Lineweight must not be ByLayer');
+
+      if(!rowErrors.length&&((nm==='Polyline'&&lyr==='Plot'&&(colorNum!==240||lw!=='0.50 mm'))||
+          (lyr==='Ground Coverage'&&(colorNum<53||colorNum>152)&&nm==='Polyline')))
+        rowErrors.push('In '+lyr+' Layer: Invalid color for Plot or Ground Coverage');
+
+      /* Lineweight tracker for Strip/Splay/Plot/Tree Cover */
+      if(['Strip','Splay','Plot','Tree Cover'].indexOf(lyr)>=0){
+        if(!(lyr==='Tree Cover'&&nm==='Point')){
+          var lwKey=lw+':'+nm;
+          if(lwTracker[lyr].has(lwKey))rowErrors.push('Duplicate lineweight+name for '+lyr+': '+nm+' / '+lw);
+          else lwTracker[lyr].add(lwKey);
+        }
+      }
+
+      /* Stair missing line */
+      if(lyr==='Stair'&&nm==='Polyline'){
+        expectedLW.forEach(function(ew){
+          if(lw===ew&&!stairLinesFound[ew]){
+            var msg='Line of width is missing for the Stair with lineweight '+ew;
+            if(!reportedErrors.has(msg)){reportedErrors.add(msg);rowErrors.push(msg);}
+          }
+        });
+      }
+
+      /* Lift missing line */
+      if(lyr==='Lift'&&nm==='Polyline'&&!liftLineFound){
+        var liftMsg='Line of width is missing for the Lift layer';
+        if(!reportedErrors.has(liftMsg)){reportedErrors.add(liftMsg);rowErrors.push(liftMsg);}
+      }
+
+      /* Build table row */
       var tr=document.createElement('tr');
-      cells.forEach(function(cell,ci){
+      tr.setAttribute('data-row-idx',String(i));
+      cells.forEach(function(cell){
         var td=document.createElement('td');td.textContent=cell||'';
-        if(isDup)td.className='text-orange';
-        if(errMsg)td.className='text-red';
         tr.appendChild(td);
       });
-      /* Error tooltip */
-      if(errMsg){tr.title=errMsg;tr.style.cursor='help';}
+
+      /* Apply colour classes */
+      if(rowErrors.length)tr.classList.add('text-red');
+      else if(isDup)tr.classList.add('duplicate');
+
+      /* Tooltip on hover */
+      if(rowErrors.length)tr.title=rowErrors.join(' | ');
       body.appendChild(tr);
+
+      /* Collect for modal */
+      if(rowErrors.length)allErrors.push({rowIdx:i,msg:'Row '+i+': '+rowErrors.join(', ')});
     });
-    _allErrors[errStoreKey]=errs;
+
+    /* Missing & invalid layers (modal-only, no row highlight) */
+    var missingLayers=Array.from(VALID_LAYERS_SET).filter(function(l){return!foundLayers.has(l);});
+
+    _allErrors[errStoreKey]={rowErrors:allErrors,invalidLayers:invalidLayers,missingLayers:missingLayers};
   }
 
-  /* Home block selector — switches the data table view */
+  /* ── scrollToMbRow: scroll mb-data-table to row and blink it ── */
+  function scrollToMbRow(rowIdx){
+    var tr=document.querySelector('#mb-data-table tbody tr[data-row-idx="'+rowIdx+'"]');
+    if(!tr)return;
+    tr.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(function(){
+      var t2=document.querySelector('#mb-data-table tbody tr[data-row-idx="'+rowIdx+'"]');
+      if(!t2)return;
+      var n=0;
+      var iv=setInterval(function(){
+        t2.classList.toggle('blink-red');
+        n++;if(n>=8){clearInterval(iv);t2.classList.remove('blink-red');}
+      },100);
+    },500);
+  }
+
+  /* Check Errors button — full modal with clickable rows, same as single building */
+  window.mbCheckErrors=function(){
+    var modal=document.getElementById('mb-error-modal');
+    var mbody=document.getElementById('mb-error-body');
+    if(!modal||!mbody)return;
+
+    var activeView=document.querySelector('#home-block-bar .mblk-pill.active');
+    var key=activeView?activeView.dataset.view:'';
+    var stored=_allErrors[key];
+
+    mbody.innerHTML='';
+
+    if(!stored){
+      mbody.innerHTML='<span style="color:var(--muted);">No data loaded for this view.</span>';
+      modal.style.display='flex';return;
+    }
+
+    var rowErrors=stored.rowErrors||[];
+    var invalidLayers=stored.invalidLayers||new Set();
+    var missingLayers=stored.missingLayers||[];
+
+    if(!rowErrors.length&&!invalidLayers.size&&!missingLayers.length){
+      mbody.innerHTML='<span style="color:var(--green);font-weight:600;">✔ No errors detected in this view.</span>';
+      modal.style.display='flex';return;
+    }
+
+    /* Clickable row errors */
+    rowErrors.forEach(function(e){
+      var div=document.createElement('div');
+      div.className='error-item';
+      div.style.cssText='cursor:pointer;padding:5px 4px;border-bottom:1px solid var(--border2);font-size:.8rem;';
+      div.textContent=e.msg;
+      div.title='Click to jump to this row';
+      /* Hover tooltip */
+      div.addEventListener('mouseover',function(ev){
+        var tip=document.createElement('div');
+        tip.className='mb-err-tooltip';
+        tip.textContent='Click to go to row '+e.rowIdx;
+        tip.style.cssText='position:fixed;background:rgba(0,0,0,.75);color:#fff;padding:4px 10px;border-radius:4px;font-size:.75rem;z-index:9999;pointer-events:none;';
+        tip.style.left=(ev.clientX+12)+'px';tip.style.top=(ev.clientY+6)+'px';
+        document.body.appendChild(tip);
+      });
+      div.addEventListener('mousemove',function(ev){
+        var tip=document.querySelector('.mb-err-tooltip');
+        if(tip){tip.style.left=(ev.clientX+12)+'px';tip.style.top=(ev.clientY+6)+'px';}
+      });
+      div.addEventListener('mouseleave',function(){
+        var tip=document.querySelector('.mb-err-tooltip');if(tip)tip.remove();
+      });
+      div.addEventListener('click',function(){
+        var tip=document.querySelector('.mb-err-tooltip');if(tip)tip.remove();
+        modal.style.display='none';
+        scrollToMbRow(e.rowIdx);
+      });
+      mbody.appendChild(div);
+    });
+
+    /* Invalid layers section */
+    if(invalidLayers.size){
+      var hr=document.createElement('hr');
+      hr.style.cssText='border:none;border-top:1px solid rgba(231,76,60,.25);margin:10px 0;';
+      mbody.appendChild(hr);
+      var h1=document.createElement('div');
+      h1.style.cssText='font-weight:700;color:#e74c3c;margin-bottom:6px;font-size:.8rem;';
+      h1.textContent='Invalid Layers or Misspelled:';
+      mbody.appendChild(h1);
+      var d1=document.createElement('div');
+      d1.style.cssText='font-size:.8rem;line-height:1.6;';
+      d1.textContent=Array.from(invalidLayers).join(' , ');
+      mbody.appendChild(d1);
+    }
+
+    /* Missing layers section */
+    if(missingLayers.length){
+      var hr2=document.createElement('hr');
+      hr2.style.cssText='border:none;border-top:1px solid rgba(231,76,60,.25);margin:10px 0;';
+      mbody.appendChild(hr2);
+      var h2=document.createElement('div');
+      h2.style.cssText='font-weight:700;color:#e74c3c;margin-bottom:6px;font-size:.8rem;';
+      h2.textContent='Below Layers Are Not In This Drawing:';
+      mbody.appendChild(h2);
+      var d2=document.createElement('div');
+      d2.style.cssText='font-size:.8rem;line-height:1.8;';
+      missingLayers.forEach(function(l,i){
+        var sp=document.createElement('span');
+        sp.style.color=i%2===0?'blue':'green';
+        if(LAYERS_TO_BOLD.has(l)){sp.style.fontWeight='bold';sp.style.color='magenta';}
+        sp.textContent=l;
+        d2.appendChild(sp);
+        if(i<missingLayers.length-1){var comma=document.createTextNode(' , ');d2.appendChild(comma);}
+      });
+      mbody.appendChild(d2);
+    }
+
+    modal.style.display='flex';
+  };
   function renderHomeBlockBar(){
     var bar=document.getElementById('home-block-bar');if(!bar)return;
     var blks=KMCMulti.getBlocks(),active=KMCMulti.getActiveBlock();
@@ -804,19 +1024,6 @@
   window._mbRenderHomeBlockBar = renderHomeBlockBar;
   window._mbRenderHomeTable    = renderHomeTable;
   window._mbSetHomePillActive  = setHomePillActive;
-
-  /* Check Errors button */
-  window.mbCheckErrors=function(){
-    var modal=document.getElementById('mb-error-modal');
-    var body=document.getElementById('mb-error-body');
-    if(!modal||!body)return;
-    var activeView=document.querySelector('#home-block-bar .mblk-pill.active');
-    var key=activeView?activeView.dataset.view:'';
-    var errs=_allErrors[key]||[];
-    if(!errs.length){body.innerHTML='<span style="color:var(--green);font-weight:600;">✔ No errors detected in this view.</span>';}
-    else{body.innerHTML=errs.map(function(e){return'<div style="padding:4px 0;border-bottom:1px solid var(--border2);">'+e+'</div>';}).join('');}
-    modal.style.display='flex';
-  };
 
   /* mRefreshHome — called when Home tab is clicked after extraction */
   function mRefreshHome(){
@@ -1009,7 +1216,7 @@
     var seen=new Set(),data=[];
     rowsRaw.forEach(function(row,i){
       if(!i||!row.trim())return;var cells=row.split(','),lyr=cells[3];
-      if(OCC_LAYERS.indexOf(lyr)>=0&&!seen.has(lyr)){
+      if(OCC_LAYERS_SET.has(lyr)&&!seen.has(lyr)){
         seen.add(lyr);var tf=0,td=0;
         parsed.forEach(function(d){if(d.layer===lyr){if(d.lt==='ByLayer')tf+=d.area;if(d.lt==='DASHED')td+=d.area;}});
         data.push({layer:lyr,tf:tf,td:td,net:tf-td});
