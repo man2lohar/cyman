@@ -47,6 +47,7 @@
         data.push({
           column4: cells[3],  // Layer
           column6: cells[5],  // Linetype
+          column7: cells[6],  // Lineweight
           column8: parseFloat(cells[7]) || 0  // Area
         });
       }
@@ -56,13 +57,13 @@
 
   function calculateTotalFloorArea(layerName, parsedData) {
     return parsedData
-      .filter(d => d.column4 === layerName && d.column6 === 'ByLayer')
+      .filter(d => d.column4 === layerName && d.column6 === 'ByLayer' && d.column7 === 'ByLayer')
       .reduce((sum, d) => sum + d.column8, 0);
   }
 
   function calculateDeductedArea(layerName, parsedData) {
     return parsedData
-      .filter(d => d.column4 === layerName && d.column6 === 'DASHED')
+      .filter(d => d.column4 === layerName && d.column6 === 'DASHED' && d.column7 === 'ByLayer')
       .reduce((sum, d) => sum + d.column8, 0);
   }
 
