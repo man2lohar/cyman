@@ -90,13 +90,18 @@
         ParkingAreaSum += area;
 
       /* ── GROUND COVERAGE: sum ALL blocks (colour 53…53+N-1) ── */
-      if (name === 'Polyline' && layer === 'Ground Coverage' && closed === '-1') {
-        if (!isNaN(colourNum) && colourNum >= 53 && colourNum <= 52 + blockCount) {
-          linetype === 'DASHED'
-            ? (GroundCoverageSum -= area)
-            : (GroundCoverageSum += area);
-        }
-      }
+      if (
+           name === 'Polyline' &&
+           layer === 'Ground Coverage' &&
+           closed === '-1'
+         ) {
+           if (!isNaN(colourNum) && colourNum >= 53 && colourNum <= 152) {
+             
+             linetype === 'DASHED'
+               ? (GroundCoverageSum -= area)
+               : (GroundCoverageSum += area);
+           }
+         }
 
       /* ── HEIGHT: per-block max — block i uses LW_LIST[i] ── */
       if (name === 'Line' && layer === htLayer && linetype === 'ByLayer') {
