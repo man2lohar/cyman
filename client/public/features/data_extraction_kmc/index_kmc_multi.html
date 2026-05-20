@@ -452,16 +452,9 @@
     var fn=MAP[id];if(fn)setTimeout(fn,60);
   };
   window.initLayerTables=function(){mRefreshTables();};
-  window.initFilteredTables=function(){mRefreshFiltered();};
-  window.initSanctionTables=function(){mRefreshSanction();};
-  window.initParkingTables=function(){mRefreshParking();};
-  window.initOccupancy=function(){mRefreshOccupancy();};
-  window.initMasterTab=function(){mRefreshMaster();};
-  window.generateTables=function(){mRefreshTables();};
-  window.generateFilteredTables=function(){mRefreshFiltered();};
-  window.generateSanctionTables=function(){mRefreshSanction();};
-  window.generateParkingTables=function(){mRefreshParking();};
-  window.generateMasterTable=function(){mRefreshMaster();};
+  /* NOTE: No stubs here — mRefresh* functions use the real function names exposed
+     by the external scripts (kmc_sanction.js etc.) as load-guards.
+     Stubs would cause infinite recursion because typeof check is always true. */
 
   /* ═══════════════════════════════════════════════
      4. CSV INJECTION
@@ -1137,7 +1130,7 @@
 
   function doClear(){
     KMCMulti.clearAll();
-    DXF.master=null;DXF.blocks={};_slots=['A'];_allErrors={};
+    DXF.master=null;DXF.blocks={};_slots=['A'];_allErrors={};_mbTabView={tables:null,filtered:null,parking:null};
     document.getElementById('mb-upload-panel').style.display='block';
     document.getElementById('mb-data-card').style.display='none';
     document.getElementById('home-hero').style.display='block';
@@ -1158,29 +1151,92 @@
   /* ═══════════════════════════════════════════════
      12. BLOCK SELECTOR BAR (per-block tabs)
   ═══════════════════════════════════════════════ */
+  /* Inject master CSV into shared localStorage keys so tab scripts read it */
+  function injectMasterCSV(){
+    var csv=KMCMulti.getMasterCSV();
+    if(csv)localStorage.setItem('csvData',csv);
+    /* Clear per-block computed keys so scripts don't use stale block values */
+    localStorage.removeItem('treeCoverNetArea');
+    localStorage.removeItem('cbLoftNetArea');
+    localStorage.removeItem('layerSumTotal');
+    localStorage.removeItem('mainTableData');
+    localStorage.removeItem('highestPercentageItem');
+    localStorage.removeItem('totalParkingArea');
+    localStorage.removeItem('totalParkingNos');
+    localStorage.removeItem('totalParkingRequired');
+    localStorage.removeItem('totalReqCarParking');
+    localStorage.removeItem('effectiveFloorAreaSum');
+    localStorage.removeItem('netFloorAreaSum');
+  }
+
+  /* Per-tab view state — tracks whether 'master' or a block label is active for each tab */
+  var _mbTabView={tables:null,filtered:null,parking:null}; // null = use active block
+
   function renderBar(barId,fnName){
     var bar=document.getElementById(barId);if(!bar)return;
     var blks=KMCMulti.getBlocks(),active=KMCMulti.getActiveBlock();
-    if(!blks.length){bar.innerHTML='';bar.className='';return;}
+    if(!blks.length&&!KMCMulti.getMasterCSV()){bar.innerHTML='';bar.className='';return;}
     bar.className='multi-block-bar';
+    var tabKey=barId==='bb-tables'?'tables':barId==='bb-filtered'?'filtered':barId==='bb-parking'?'parking':null;
+    var activePill=(tabKey&&_mbTabView[tabKey]!=null)?_mbTabView[tabKey]:(active||(blks[0]||''));
     var html='<span style="font-family:var(--font-mono);font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Block:</span>';
-    blks.forEach(function(b){html+='<button class="mblk-pill'+(b===active?' active':'')+'" onclick="selBlk(\''+b+'\',\''+fnName+'\')">'+b+'</button>';});
+    /* Master pill for tables/filtered only */
+    if(barId==='bb-tables'||barId==='bb-filtered'){
+      html+='<button class="mblk-pill'+(activePill==='master'?' active':'')+'" onclick="selBlk(\'master\',\''+fnName+'\')">Master</button>';
+    }
+    blks.forEach(function(b){
+      html+='<button class="mblk-pill'+(b===activePill?' active':'')+'" onclick="selBlk(\''+b+'\',\''+fnName+'\')">'+b+'</button>';
+    });
+    /* Provided Parkings pill for parking bar only */
+    if(barId==='bb-parking'){
+      html+='<button class="mblk-pill'+(activePill==='provided'?' active':'')+
+        '" style="margin-left:12px;border-color:rgba(26,153,212,.4);color:var(--accent);"'+
+        ' onclick="selBlk(\'provided\',\''+fnName+'\')">🅿 Provided Parkings</button>';
+    }
     bar.innerHTML=html;
   }
-  window.selBlk=function(lbl,fnName){KMCMulti.setActiveBlock(lbl);injectBlockCSV(lbl);var fn=window[fnName];if(typeof fn==='function')fn();};
+  window.selBlk=function(lbl,fnName){
+    /* Track per-tab view */
+    if(fnName==='mRefreshTables')  _mbTabView.tables  =lbl;
+    if(fnName==='mRefreshFiltered')_mbTabView.filtered=lbl;
+    if(fnName==='mRefreshParking') _mbTabView.parking =lbl;
+    /* Set active block for real block selections */
+    if(lbl!=='master'&&lbl!=='provided')KMCMulti.setActiveBlock(lbl);
+    var fn=window[fnName];if(typeof fn==='function')fn();
+  };
 
   /* ═══════════════════════════════════════════════
      13. PER-BLOCK TAB REFRESHES
   ═══════════════════════════════════════════════ */
   window.mRefreshTables=function(){
-    var a=KMCMulti.getActiveBlock();renderBar('bb-tables','mRefreshTables');if(!a)return;injectBlockCSV(a);
-    if(typeof generateTables==='function')generateTables();
-    else loadScript('../../../src/js/data_extraction_kmc/kmc_tables.js',function(){if(typeof generateTables==='function')generateTables();});
+    var view=_mbTabView.tables!=null?_mbTabView.tables:KMCMulti.getActiveBlock();
+    renderBar('bb-tables','mRefreshTables');
+    var csv=(view==='master')?KMCMulti.getMasterCSV():KMCMulti.getBlockCSV(view);
+    if(!csv)return;
+    localStorage.setItem('csvData',csv);
+    /* Pass block index so multi script knows colour offset */
+    var blkIndex=(view==='master')?-1:KMCMulti.getBlocks().indexOf(view);
+    localStorage.setItem('MB_currentBlockIndex',String(blkIndex));
+    localStorage.setItem('MB_blockCount',String(KMCMulti.getBlocks().length));
+    if(typeof generateTablesMulti==='function'){generateTablesMulti();}
+    else loadScript('../../../src/js/data_extraction_kmc/kmc_tables_multi.js',function(){if(typeof generateTablesMulti==='function')generateTablesMulti();});
   };
   window.mRefreshFiltered=function(){
-    var a=KMCMulti.getActiveBlock();renderBar('bb-filtered','mRefreshFiltered');if(!a)return;injectBlockCSV(a);
-    function run(){if(typeof generateFilteredTables!=='function')return;generateFilteredTables();saveFilteredKeys(a);}
-    if(typeof generateFilteredTables==='function')run();else loadScript('../../../src/js/data_extraction_kmc/kmc_filtered.js',run);
+    var view=_mbTabView.filtered!=null?_mbTabView.filtered:KMCMulti.getActiveBlock();
+    renderBar('bb-filtered','mRefreshFiltered');
+    var csv=(view==='master')?KMCMulti.getMasterCSV():KMCMulti.getBlockCSV(view);
+    if(!csv)return;
+    localStorage.setItem('csvData',csv);
+    var blkIndex=(view==='master')?-1:KMCMulti.getBlocks().indexOf(view);
+    localStorage.setItem('MB_currentBlockIndex',String(blkIndex));
+    localStorage.setItem('MB_blockCount',String(KMCMulti.getBlocks().length));
+    function run(){
+      if(typeof generateFilteredTablesMulti!=='function')return;
+      generateFilteredTablesMulti();
+      if(view!=='master')saveFilteredKeys(view);
+    }
+    if(typeof generateFilteredTablesMulti==='function')run();
+    else loadScript('../../../src/js/data_extraction_kmc/kmc_filtered_multi.js',run);
   };
   window.mRefreshSanction=function(){
     var a=KMCMulti.getActiveBlock();renderBar('bb-sanction','mRefreshSanction');
@@ -1190,9 +1246,70 @@
     if(typeof generateSanctionTables==='function')run();else loadScript('../../../src/js/data_extraction_kmc/kmc_sanction.js',run);
   };
   window.mRefreshParking=function(){
-    var a=KMCMulti.getActiveBlock();renderBar('bb-parking','mRefreshParking');
-    var l=document.getElementById('lbl-parking');if(l)l.textContent=a||'—';
-    if(!a)return;injectBlockCSV(a);
+    var view=_mbTabView.parking!=null?_mbTabView.parking:KMCMulti.getActiveBlock();
+    renderBar('bb-parking','mRefreshParking');
+    var lbl=document.getElementById('lbl-parking');
+
+    /* ── Provided Parkings view — all blocks combined ── */
+    if(view==='provided'){
+      if(lbl)lbl.textContent='All Blocks Combined';
+      /* Show/hide sections */
+      var tenCard =document.querySelector('#p-tenement-table')?.closest('.data-card');
+      var othCard =document.getElementById('p-other-layers-container')?.closest('.data-card');
+      var provCard=document.getElementById('p-parking-provided-table')?.closest('.data-card');
+      if(tenCard) tenCard.style.display='none';
+      if(othCard) othCard.style.display='none';
+      if(provCard){
+        provCard.style.display='block';
+        /* Add "All blocks combined" note in card title */
+        var titleEl=provCard.querySelector('.data-card-title');
+        if(titleEl&&!titleEl.dataset.mbModified){
+          titleEl.innerHTML+=' <span style="font-family:var(--font-mono);font-size:.72rem;color:var(--accent);font-weight:400;">(all blocks combined)</span>';
+          titleEl.dataset.mbModified='1';
+        }
+      }
+      /* Inject combined CSV so _buildProvidedParking reads all blocks */
+      injectAllCSV();
+      function runProvided(){
+        if(typeof generateParkingTables!=='function')return;
+        /* Only run the provided parking section */
+        if(typeof _buildProvidedParking==='function'){
+          /* Reset only provided section first */
+          var ppH=document.getElementById('p-parking-provided-header');
+          var ppF=document.getElementById('p-parking-provided-footer');
+          var ppT=document.getElementById('p-parking-provided-table');
+          if(ppH)ppH.innerHTML='';
+          if(ppF)ppF.innerHTML='';
+          if(ppT){var tb=ppT.querySelector('tbody');if(tb)tb.innerHTML='';}
+          _buildProvidedParking(localStorage.getItem('csvData')||'');
+        } else {
+          generateParkingTables();
+        }
+      }
+      if(typeof _buildProvidedParking==='function')runProvided();
+      else loadScript('../../../src/js/data_extraction_kmc/kmc_parking.js',runProvided);
+      return;
+    }
+
+    /* ── Normal block view ── */
+    var a=view;
+    if(lbl)lbl.textContent=a||'—';
+    /* Restore all three sections */
+    var tenCard2 =document.querySelector('#p-tenement-table')?.closest('.data-card');
+    var othCard2 =document.getElementById('p-other-layers-container')?.closest('.data-card');
+    var provCard2=document.getElementById('p-parking-provided-table')?.closest('.data-card');
+    if(tenCard2) tenCard2.style.display='block';
+    if(othCard2) othCard2.style.display='block';
+    if(provCard2){
+      provCard2.style.display='block';
+      var titleEl2=provCard2.querySelector('.data-card-title');
+      if(titleEl2&&titleEl2.dataset.mbModified){
+        titleEl2.innerHTML='Provided Parking';
+        delete titleEl2.dataset.mbModified;
+      }
+    }
+    if(!a)return;
+    injectBlockCSV(a);
     function run(){if(typeof generateParkingTables!=='function')return;generateParkingTables();saveParkingKeys(a);}
     if(typeof generateParkingTables==='function')run();else loadScript('../../../src/js/data_extraction_kmc/kmc_parking.js',run);
   };
@@ -1241,11 +1358,10 @@
     var blks=KMCMulti.getBlocks();
     var lbl=document.getElementById('master-blocks-label');if(lbl)lbl.textContent=blks.length?blks.join(', '):'—';
     if(!blks.length)return;
-    /* Aggregate ALL per-block computed values before injecting */
+    localStorage.setItem('MB_blockCount',String(blks.length));
     injectAllCSV();
-    if(typeof initMasterTab==='function')initMasterTab();
-    else if(typeof generateMasterTable==='function')generateMasterTable();
-    else loadScript('../../../src/js/data_extraction_kmc/kmc_master.js',function(){if(typeof initMasterTab==='function')initMasterTab();});
+    if(typeof _runMasterMulti==='function')_runMasterMulti();
+    else loadScript('../../../src/js/data_extraction_kmc/kmc_master_multi.js',function(){if(typeof _runMasterMulti==='function')_runMasterMulti();});
   };
 
   /* ═══════════════════════════════════════════════
