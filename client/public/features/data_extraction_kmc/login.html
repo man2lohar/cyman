@@ -286,8 +286,26 @@
 
     /* ── URL params ── */
     const params   = new URLSearchParams(location.search);
-    const redirect = params.get('redirect') || 'index_kmc.html';
     const feature  = params.get('feature')  || 'Feature';
+    const DEFAULT_REDIRECT = 'index_kmc.html';
+    const ALLOWED_REDIRECTS = new Set([
+      '/features/data_extraction_kmc/index_kmc.html',
+      '/features/data_extraction_kmc/login.html'
+    ]);
+
+    function getSafeRedirect(value) {
+      if (!value) return DEFAULT_REDIRECT;
+      try {
+        const url = new URL(value, location.origin);
+        if (url.origin !== location.origin) return DEFAULT_REDIRECT;
+        if (!ALLOWED_REDIRECTS.has(url.pathname)) return DEFAULT_REDIRECT;
+        return url.pathname + url.search + url.hash;
+      } catch (_) {
+        return DEFAULT_REDIRECT;
+      }
+    }
+
+    const redirect = getSafeRedirect(params.get('redirect'));
     document.getElementById('featureLabel').textContent = feature;
     document.title = 'Sign In | ' + feature;
 
