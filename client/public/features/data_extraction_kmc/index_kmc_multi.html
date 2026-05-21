@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>KMC Tool Suite | Multiple Building</title>
+  <link rel="icon" href="../../assets/images/cymansquare_logo.svg" type="image/svg+xml"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../../../src/styles/data_extraction_kmc/style_kmc.css"/>
+  <style>
+    .multi-block-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;margin-bottom:14px;background:var(--paper);border:1px solid var(--border2);border-radius:8px;}
+    .mblk-pill{padding:4px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--paper);color:var(--muted);font-family:var(--font-mono);font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.05em;}
+    .mblk-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 8px rgba(26,153,212,.3);}
+    .mblk-pill:hover:not(.active){color:var(--ink2);border-color:var(--accent);}
+    .mblk-pill-special{padding:4px 14px;border-radius:20px;border:1.5px solid rgba(26,153,212,.45);background:rgba(26,153,212,.07);color:var(--accent);font-family:var(--font-mono);font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.05em;margin-left:10px;}
+    .mblk-pill-special.active{background:rgba(26,153,212,.15);color:var(--accent);border-color:var(--accent);box-shadow:0 2px 8px rgba(26,153,212,.15);}
+    .mblk-pill-special:hover{background:rgba(26,153,212,.13);border-color:var(--accent);}
+    .blk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px;}
+    .blk-wrap{position:relative;}
+    .blk-remove{position:absolute;top:4px;right:4px;z-index:2;width:18px;height:18px;border-radius:50%;border:none;background:#ef4444;color:#fff;font-size:11px;line-height:18px;text-align:center;cursor:pointer;display:none;}
+    .blk-wrap:hover .blk-remove{display:block;}
+    .dxf-add-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;border:1px dashed var(--accent);background:transparent;color:var(--accent);font-family:var(--font-mono);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s;}
+    .dxf-add-btn:hover{background:rgba(26,153,212,.07);}
+    .all-blocks-note{font-family:var(--font-mono);font-size:.72rem;color:var(--muted);margin-bottom:12px;padding:7px 12px;background:rgba(124,58,237,.07);border-radius:6px;border-left:3px solid #7c3aed;}
+    /* Data table (home) */
+    #mb-data-card .data-card-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+    .text-red{color:#e74c3c!important;}
+    .text-orange{color:#d4501a!important;}
+    .blink-red{animation:blinkRow .15s step-end 8;}
+    @keyframes blinkRow{50%{background:rgba(231,76,60,.18);}}
+  </style>
+</head>
+<body>
+
+  <div class="bg-vector">
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <ellipse class="blob b1" cx="25%" cy="35%" rx="320" ry="220"/>
+      <ellipse class="blob b2" cx="75%" cy="65%" rx="280" ry="200"/>
+      <g id="gridLines"></g><g id="geoShapes"></g>
+    </svg>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <!-- ══ KMCMulti API — ALL keys use MB_ prefix, isolated from single-building ══ -->
+  <script>
+  var MB={
+    blk:function(l){return'MB_blk_'+l;},
+    master:'MB_master', list:'MB_list', active:'MB_active',
+    unlocked:'MB_unlocked', mUnlocked:'MB_mUnlocked', names:'MB_names', unlockLvl:'MB_unlockLvl',
+    /* per-block computed keys */
+    tc:function(l){return'MB_tc_'+l;},   cb:function(l){return'MB_cb_'+l;},
+    ls:function(l){return'MB_ls_'+l;},   mtd:function(l){return'MB_mtd_'+l;},
+    hpct:function(l){return'MB_hpct_'+l;}, park:function(l){return'MB_park_'+l;},
+    parkArea:function(l){return'MB_parkArea_'+l;},
+    parkNos:function(l){return'MB_parkNos_'+l;}, parkReq:function(l){return'MB_parkReq_'+l;},
+    parkReqCar:function(l){return'MB_parkReqCar_'+l;}, efa:function(l){return'MB_efa_'+l;},
+    nfa:function(l){return'MB_nfa_'+l;},
+    /* all-blocks combined */
+    mtdAll:'MB_mtdAll', hpctAll:'MB_hpctAll'
+  };
+
+  window.KMCMulti={
+    getBlocks:function(){try{return JSON.parse(localStorage.getItem(MB.list)||'[]');}catch(e){return[];}},
+    getBlockCSV:function(l){return localStorage.getItem(MB.blk(l))||'';},
+    getMasterCSV:function(){return localStorage.getItem(MB.master)||'';},
+    saveBlock:function(l,csv){localStorage.setItem(MB.blk(l),csv);var b=this.getBlocks();if(!b.includes(l)){b.push(l);b.sort();localStorage.setItem(MB.list,JSON.stringify(b));}},
+    saveMaster:function(csv){localStorage.setItem(MB.master,csv);},
+    getActiveBlock:function(){var b=this.getBlocks(),s=localStorage.getItem(MB.active);return(s&&b.includes(s))?s:(b[0]||null);},
+    setActiveBlock:function(l){localStorage.setItem(MB.active,l);},
+    getBlockCombined:function(l){
+      var mc=this.getMasterCSV(),bc=this.getBlockCSV(l);
+      if(!mc&&!bc)return'';if(!mc)return bc;if(!bc)return mc;
+      var ml=mc.split('\n'),bl=bc.split('\n'),hdr=ml[0],
+          md=ml.slice(1).filter(function(r){return r.trim();}),
+          bd=bl.slice(1).filter(function(r){return r.trim();});
+      return[hdr].concat(md).concat(bd).join('\n');
+    },
+    getAllCombined:function(){
+      var mc=this.getMasterCSV(),blks=this.getBlocks();
+      var ml=mc?mc.split('\n'):['Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed'],
+          hdr=ml[0],md=mc?ml.slice(1).filter(function(r){return r.trim();}):[],bd=[];
+      blks.forEach(function(l){var bc=localStorage.getItem(MB.blk(l))||'';if(bc){var bl=bc.split('\n');bd=bd.concat(bl.slice(1).filter(function(r){return r.trim();}));}});
+      return[hdr].concat(md).concat(bd).join('\n');
+    },
+    getAllBlocksOnly:function(){
+      /* Combined CSV of all blocks WITHOUT master rows — used by Final Summary
+         to avoid double-counting layers that exist in both master and blocks */
+      var blks=this.getBlocks();
+      var hdr='Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed',bd=[];
+      blks.forEach(function(l){var bc=localStorage.getItem(MB.blk(l))||'';if(bc){var bl=bc.split('\n');if(bl[0]&&bl[0].includes('Count'))hdr=bl[0];bd=bd.concat(bl.slice(1).filter(function(r){return r.trim();}));}});
+      return[hdr].concat(bd).join('\n');
+    },
+    isUnlocked:function(){return localStorage.getItem(MB.unlocked)==='1';},
+    unlock:function(){localStorage.setItem(MB.unlocked,'1');},
+    isMasterUnlocked:function(){return localStorage.getItem(MB.mUnlocked)==='1';},
+    unlockMaster:function(){localStorage.setItem(MB.mUnlocked,'1');},
+    clearAll:function(){
+      var b=this.getBlocks();
+      b.forEach(function(l){
+        [MB.blk(l),MB.tc(l),MB.cb(l),MB.ls(l),MB.mtd(l),MB.hpct(l),
+         MB.park(l),MB.parkArea(l),MB.parkNos(l),MB.parkReq(l),MB.parkReqCar(l),MB.efa(l),MB.nfa(l)
+        ].forEach(function(k){localStorage.removeItem(k);});
+      });
+      [MB.master,MB.list,MB.active,MB.unlocked,MB.mUnlocked,MB.names,MB.unlockLvl,
+       MB.mtdAll,MB.hpctAll
+      ].forEach(function(k){localStorage.removeItem(k);});
+    }
+  };
+  window.initHome=function(){};
+  </script>
+
+  <script src="../../../src/js/feature-shell.js"
+          data-feature="KMC Data Extraction / V-2.1.0 — Multiple Building"
+          data-login="login.html"
+          data-home="../../../../index.html">
+  </script>
+
+  <!-- Shell bar -->
+  <script>
+  (function(){
+    function doInject(){
+      var bar=document.getElementById('_cymShellBar');if(!bar)return;
+      if(!document.getElementById('kmc-nav-pills')){
+        var nav=document.createElement('div');nav.className='sh-nav';
+        nav.innerHTML='<nav class="sh-nav-pills" id="kmc-nav-pills">'+
+          '<button class="sh-pill active" onclick="kmcSwitchNav(\'home\',this)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>Home</button>'+
+          '<button class="sh-pill" onclick="kmcSwitchNav(\'guide\',this)"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Guide</button>'+
+          '<button class="sh-pill" onclick="kmcSwitchNav(\'updates\',this)"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Updates</button>'+
+          '</nav>';
+        var fc=bar.firstElementChild;if(fc&&fc.nextSibling)bar.insertBefore(nav,fc.nextSibling);else bar.appendChild(nav);
+      }
+      if(!document.getElementById('kmc-shell-right')){
+        var r=document.createElement('div');r.id='kmc-shell-right';r.className='sh-right';
+        r.innerHTML='<div class="status-bar"><div class="status-dot" id="status-dot"></div><span id="status-text">No files loaded — upload to begin</span></div>'+
+          '<button id="clearStorageBtn" class="btn btn-danger" style="display:none">'+
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+
+          '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'+
+          '<path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Clear Data</button>';
+        bar.appendChild(r);
+      }
+      bar.style.cssText='display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px';
+      mbUpdateShellBar();
+    }
+    function tryInject(){
+      if(document.getElementById('_cymShellBar'))doInject();
+      else{var t=0,p=setInterval(function(){t++;if(document.getElementById('_cymShellBar')){doInject();clearInterval(p);}else if(t>80)clearInterval(p);},50);}
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tryInject);else tryInject();
+  })();
+  </script>
+
+  <div class="app-wrapper">
+
+    <!-- TAB BAR -->
+    <nav class="tab-bar" id="mainTabBar">
+      <button class="tab-btn active" data-tab="section-home"     onclick="switchTab('section-home')"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>Home</button>
+      <button class="tab-btn" data-tab="section-tables"          onclick="switchTab('section-tables')"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>Layer Tables</button>
+      <button class="tab-btn" data-tab="section-filtered"        onclick="switchTab('section-filtered')"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Filtered Tables</button>
+      <button class="tab-btn" data-tab="section-sanction"        onclick="switchTab('section-sanction')"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Floor Area</button>
+      <button class="tab-btn" data-tab="section-parking"         onclick="switchTab('section-parking')"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Parking</button>
+      <button class="tab-btn" data-tab="section-occupancy"       onclick="switchTab('section-occupancy')"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Occupancy</button>
+      <button class="tab-btn" data-tab="section-master"          onclick="switchTab('section-master')"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Final Summary</button>
+    </nav>
+
+    <!-- ══ HOME ══ -->
+    <div id="section-home" class="tab-section active">
+      <div class="page">
+        <div class="home-hero" id="home-hero">
+          <h2>Multiple Building Sanction Calculation for <span class="c-blue">KMC</span> Professionals.</h2>
+          <p>Upload Master Sheet.dxf + one Block DXF per building (A, B, C …). Per-block results in first four tabs; Occupancy &amp; Final Summary show all blocks combined.</p>
+        </div>
+
+        <!-- UPLOAD PANEL -->
+        <div id="mb-upload-panel" style="max-width:760px;margin:0 auto;">
+          <div class="home-col home-col-right" style="max-width:100%">
+            <div class="col-icon" aria-hidden="true"><div class="col-icon-ring r-purple"><svg viewBox="0 0 48 48" fill="none"><rect x="6" y="2" width="28" height="38" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><path d="M26 2v10h8" fill="none" stroke="#7c3aed" stroke-width="1.5"/><rect x="4" y="26" width="32" height="16" rx="3" fill="#7c3aed"/><text x="20" y="38" text-anchor="middle" fill="#fff" font-weight="800" font-size="9" font-family="monospace">DXF</text></svg></div></div>
+            <div class="col-badge b-purple" aria-hidden="true">MB</div>
+            <div class="col-card-title"><h2>Multiple Building <span class="c-purple">DXF Extractor</span></h2><p>Upload Master Sheet once, then add Block files (A, B, C …) as needed.</p></div>
+            <div class="col-inner">
+              <div class="dxf-panel">
+                <div class="dxf-panel-body">
+                  <div style="margin-bottom:14px;">
+                    <div style="font-family:var(--font-mono);font-size:.72rem;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">📐 Step 1 — Master Sheet</div>
+                    <div class="dxf-dropzone" id="dz-master" style="cursor:pointer;"
+                         onclick="document.getElementById('inp-master').click()"
+                         ondragover="event.preventDefault();this.classList.add('drag')"
+                         ondragleave="this.classList.remove('drag')"
+                         ondrop="event.preventDefault();this.classList.remove('drag');masterChosen(event.dataTransfer.files[0])">
+                      <input type="file" id="inp-master" accept=".dxf" style="display:none" onchange="masterChosen(this.files[0])"/>
+                      <span class="dxf-dz-icon" id="ico-master">📂</span>
+                      <div class="dxf-dz-label">Master Sheet.dxf</div>
+                      <div class="dxf-dz-hint" id="hint-master">any capitalisation</div>
+                      <div class="dxf-dz-err"  id="err-master"></div>
+                    </div>
+                  </div>
+                  <div style="font-family:var(--font-mono);font-size:.72rem;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">🏢 Step 2 — Block Files (A, B, C …)</div>
+                  <div class="blk-grid" id="blk-grid"></div>
+                  <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                    <button class="dxf-add-btn" onclick="addBlock()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Block</button>
+                    <span id="blk-count-lbl" style="font-family:var(--font-mono);font-size:.68rem;color:var(--muted);">Block A ready</span>
+                  </div>
+                  <div class="dxf-divider"></div>
+                  <button class="dxf-btn-extract" id="btn-extract" disabled onclick="doExtract()">⚡ Extract All Layers</button>
+                  <div class="dxf-info-text">Upload Master Sheet.dxf + at least one Block file to enable extraction.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /mb-upload-panel -->
+
+        <!-- DATA CARD: shown after extraction, replaces upload panel -->
+        <div id="mb-data-card" class="data-card" style="display:none;max-width:1200px;margin:0 auto;">
+          <div class="data-card-actions">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:.9rem;font-weight:600;margin-bottom:2px;">Extracted Data — <span id="mb-data-title" style="color:var(--accent);font-family:var(--font-mono);font-weight:500;font-size:.88em;"></span></div>
+              <div style="font-size:.75rem;color:var(--muted);"><span style="color:#d4501a;font-weight:700;">'Orange'</span> = duplicate &nbsp;|&nbsp; <span style="color:#e74c3c;font-weight:700;">'Red'</span> = error</div>
+            </div>
+            <!-- Block selector pills for home data view -->
+            <div id="home-block-bar" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"></div>
+            <button class="btn" onclick="mbCheckErrors()" style="font-size:.75rem;padding:6px 14px;gap:5px;white-space:nowrap;">
+              <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Check Errors
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table id="mb-data-table">
+              <thead><tr id="mb-table-header"></tr></thead>
+              <tbody id="mb-table-body"></tbody>
+            </table>
+          </div>
+          <p style="font-family:var(--font-mono);font-size:.72rem;color:var(--muted);margin-top:12px;">💡 Click the tabs above to view calculations. Use <strong>Block: [A] [B] [C]</strong> in each tab to switch between buildings.</p>
+        </div>
+
+        <!-- Error modal -->
+        <div id="mb-error-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;align-items:center;justify-content:center;">
+          <div style="background:var(--paper);border-radius:14px;padding:24px 28px;max-width:540px;width:92%;max-height:70vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.2);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <h3 style="margin:0;font-size:15px;font-weight:700;">Data Errors &amp; Warnings</h3>
+              <button onclick="document.getElementById('mb-error-modal').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);">&times;</button>
+            </div>
+            <div id="mb-error-body" style="overflow-y:auto;flex:1;font-size:.82rem;line-height:1.7;"></div>
+          </div>
+        </div>
+
+        <!-- DXF validation popup -->
+        <div id="dxf-popup" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:1000;align-items:center;justify-content:center;">
+          <div style="background:var(--paper);border:1px solid #fecaca;border-radius:14px;padding:26px 30px;max-width:540px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.15);max-height:80vh;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><span style="font-size:22px;">⚠️</span><h3 style="color:#dc2626;font-size:15px;font-weight:700;margin:0;">Validation Warnings</h3></div>
+            <p style="color:#64748b;font-size:12px;margin-bottom:12px;line-height:1.6;">Issues found. Fix them or click <strong>Show anyway</strong> to continue.</p>
+            <div id="dxf-popup-body" style="overflow-y:auto;flex:1;font-size:12px;"></div>
+            <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+              <button onclick="closePopup(true)"  style="padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;cursor:pointer;font-size:12px;">Show anyway</button>
+              <button onclick="closePopup(false)" style="padding:8px 18px;border-radius:8px;border:none;background:#ef4444;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">Close</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /page -->
+
+      <!-- Feature strip — OUTSIDE .page so it spans full width, same as single building -->
+      <div class="feature-strip" id="feature-strip">
+        <div class="feature-item"><div class="feature-icon-wrap fi-green"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div><div class="feature-txt"><strong>Per-Block Calculations</strong><span>Layer Tables, Filtered, Floor Area &amp; Parking — switch between blocks.</span></div></div>
+        <div class="feature-item"><div class="feature-icon-wrap fi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div><div class="feature-txt"><strong>Combined Summary</strong><span>Occupancy &amp; Final Summary combine all blocks for the full project.</span></div></div>
+        <div class="feature-item"><div class="feature-icon-wrap fi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="feature-txt"><strong>Isolated Storage</strong><span>Multi-building data (MB_ prefix) never mixes with single-building data.</span></div></div>
+        <div class="feature-item"><div class="feature-icon-wrap fi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg></div><div class="feature-txt"><strong>Data Validation</strong><span>Color-coded table shows duplicates (orange) and errors (red) after extraction.</span></div></div>
+      </div>
+
+    </div><!-- /section-home -->
+
+    <!-- UPDATES -->
+    <div id="kmc-updates-section" style="display:none;">
+      <div class="kmc-nav-section narrow">
+        <div class="kns-hero"><h2>⚡ Updates &amp; Changelog</h2><p>What's new in KMC Tool Suite — Multiple Building.</p></div>
+        <div class="kns-timeline">
+          <div class="kns-entry">
+            <div class="kns-entry-meta"><span class="kns-badge latest">v2.1.0 — Latest</span><span class="kns-date">May 2026</span></div>
+            <h4>Multiple Building Support</h4>
+            <ul class="kns-list">
+              <li>New Multiple Building page with Master + Block DXF upload</li>
+              <li>Per-block results in Layer Tables, Filtered, Floor Area &amp; Parking</li>
+              <li>Combined Occupancy &amp; Final Summary across all blocks</li>
+              <li>Fully isolated storage (MB_ prefix) — no cross-page data mixing</li>
+              <li>Color-coded data validation table on Home tab</li>
+            </ul>
+          </div>
+          <div class="kns-entry">
+            <div class="kns-entry-meta"><span class="kns-badge">v2.0.0</span><span class="kns-date">March 2026</span></div>
+            <h4>DXF Layer Extractor — Single Building</h4>
+            <ul class="kns-list">
+              <li>Full DXF parser with geometry calculations</li>
+              <li>Validation engine for layer placement and printable flags</li>
+              <li>Sequential tab unlock with lock/badge system</li>
+            </ul>
+          </div>
+          <div class="kns-entry">
+            <div class="kns-entry-meta"><span class="kns-badge">v1.5.0</span><span class="kns-date">January 2026</span></div>
+            <h4>Floor Area &amp; Occupancy</h4>
+            <ul class="kns-list"><li>Floor Area Table with F.A.R. calculation</li><li>Occupancy tab added</li><li>Parking improvements</li></ul>
+          </div>
+          <div class="kns-entry">
+            <div class="kns-entry-meta"><span class="kns-badge">v1.0.0</span><span class="kns-date">October 2025</span></div>
+            <h4>Initial Release</h4>
+            <ul class="kns-list"><li>KMC Excel upload with layer extraction</li><li>Layer Tables and Filtered Tables</li></ul>
+          </div>
+        </div>
+      </div>
+    </div><!-- /updates -->
+
+    <!-- GUIDE -->
+    <div id="kmc-guide-section" style="display:none;">
+      <div class="kmc-nav-section">
+        <div class="kns-hero"><h2>📋 Multiple Building Instructions</h2><p>Step-by-step guide for Multiple Building DXF extraction.</p></div>
+        <div class="kns-block"><div class="kns-block-header"><div class="kns-num np">01</div><div><h3>Upload <span class="cp">Master Sheet.dxf</span></h3></div></div><div class="kns-steps"><div class="kns-step"><div class="kns-snum sp">1</div><div><h4>Drop into the Master zone</h4><p>Any capitalisation accepted. Contains site-level data shared by all blocks.</p></div></div></div></div>
+        <div class="kns-block"><div class="kns-block-header"><div class="kns-num nb">02</div><div><h3>Upload <span class="cb">Block Files</span> (A.dxf, B.dxf …)</h3></div></div><div class="kns-steps"><div class="kns-step"><div class="kns-snum sb">1</div><div><h4>Exact filename required</h4><p>A.dxf, B.dxf, C.dxf — capital letter only. Click <strong>+ Add Block</strong> for each additional building.</p></div></div></div></div>
+        <div class="kns-block"><div class="kns-block-header"><div class="kns-num np">03</div><div><h3>After Extraction</h3></div></div><div class="kns-steps"><div class="kns-step"><div class="kns-snum sp">1</div><div><h4>Data table on Home</h4><p>After extraction, the Home tab shows the full extracted data table with color-coded validation. Switch between Master, Block A, B, C using the pills.</p></div></div><div class="kns-step"><div class="kns-snum sp">2</div><div><h4>Per-block: Layer Tables / Filtered / Floor Area / Parking</h4><p>Use the Block selector to switch between buildings.</p></div></div><div class="kns-step"><div class="kns-snum sp">3</div><div><h4>Combined: Occupancy &amp; Final Summary</h4><p>Data from ALL blocks is merged — giving the full project summary.</p></div></div></div></div>
+      </div>
+    </div>
+
+    <!-- LAYER TABLES -->
+    <div id="section-tables" class="tab-section">
+      <div class="page">
+        <div class="section-header"><span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>Every <span>Layer</span> Tables</span><div class="section-actions"><button class="btn" onclick="mRefreshTables()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div></div>
+        <div id="bb-tables"></div><div id="tables-container"></div>
+      </div>
+    </div>
+
+    <!-- FILTERED TABLES -->
+    <div id="section-filtered" class="tab-section">
+      <div class="page">
+        <div class="section-header"><span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg><span>Filtered</span> Tables</span><div class="section-actions"><button class="btn" onclick="mRefreshFiltered()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div></div>
+        <div id="bb-filtered"></div><div id="filtered-section-container"></div>
+      </div>
+      <div id="filteredAlertModal" class="filtered-alert-overlay"><div class="filtered-alert-box"><button class="modal-close-x" id="filteredAlertClose">&times;</button><div class="icon-container"><img src="https://img.icons8.com/?size=100&id=523&format=png&color=228BE6" alt="Alert" class="alert-icon"><h3>Please Check Below Parameters!</h3></div><div id="filteredAlertBody" style="text-align:left;max-height:260px;overflow-y:auto;font-size:.85rem;line-height:1.6;margin-top:10px;color:#e74c3c;"></div><div style="text-align:right;margin-top:16px;"><button class="close-btn" id="filteredAlertCloseBtn">Close</button></div></div></div>
+    </div>
+
+    <!-- FLOOR AREA -->
+    <div id="section-sanction" class="tab-section">
+      <div class="page">
+        <div class="section-header"><span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Floor Area For <span>F.A.R.</span> Calculation</span><div class="section-actions"><button class="btn" onclick="mRefreshSanction()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div></div>
+        <div id="bb-sanction"></div>
+        <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Floor Area — Block <span id="lbl-sanction" style="color:var(--accent);">—</span></div><div class="table-wrap"><table id="sanction-floor-table"><thead><tr><th>Floor</th><th>Total Floor Area</th><th>Stair Well</th><th>Lift Well</th><th>Duct / Cutout</th><th>Effective Floor Area</th><th>Stairway</th><th>Lift Lobby</th><th>Net Floor Area</th></tr></thead><tbody></tbody><tfoot><tr><td>Total</td><td id="s-total-floor-area">0.000</td><td id="s-total-stair-well">0.000</td><td id="s-total-lift-well">0.000</td><td id="s-total-duct-cutout">0.000</td><td id="s-total-effective-floor-area">0.000</td><td id="s-total-stairway">0.000</td><td id="s-total-lift-lobby">0.000</td><td id="s-total-net-floor-area">0.000</td></tr></tfoot></table></div></div>
+        <div class="data-card" id="sanction-compare-container" style="display:none;"><div class="data-card-title">Comparative Table — Block <span id="lbl-sanction-cmp" style="color:var(--accent);">—</span></div><p style="font-size:.78rem;color:var(--muted);margin-bottom:4px;">Below Comparative Area Statement for Residential Use-Group Only*</p><p style="font-size:.74rem;color:var(--muted2);margin-bottom:12px;">(If You Have Another Use-Group, Please Calculate it manually)</p><div class="table-wrap"><table id="sanction-compare-table"><thead><tr><th>Floor</th><th>Gross Floor Area of Residential</th><th>Gross of Common Area, Parking Area &amp; Tenement Area</th><th>Difference</th></tr></thead><tbody></tbody><tfoot><tr><td>Total</td><td id="s-total-floor-area-secondary">0.000</td><td id="s-total-common-parking-tenements">0.000</td><td id="s-difference">0.000</td></tr></tfoot></table></div><div class="warn-strip" id="sanction-warn-strip" style="display:none;margin-top:14px;"><svg style="width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Total residential area is not equal to total common, parking &amp; tenements area.</div></div>
+      </div>
+    </div>
+
+    <!-- PARKING -->
+    <div id="section-parking" class="tab-section">
+      <div class="page">
+        <div class="section-header"><span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg><span>Parking</span> Calculation</span><div class="section-actions"><button class="btn" onclick="mRefreshParking()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div></div>
+        <div id="bb-parking"></div>
+        <div style="font-family:var(--font-mono);font-size:.72rem;color:var(--muted);margin-bottom:12px;padding:6px 10px;background:rgba(26,153,212,.06);border-radius:6px;border-left:3px solid var(--accent);">Block: <strong id="lbl-parking" style="color:var(--accent);">—</strong></div>
+        <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Parking Required For Tenements</div><p style="font-size:.76rem;color:var(--muted);margin-bottom:12px;">(In flat names: A, B, … for 0.15, 0.20, … &amp; 1, 2, … for 1st floor, 2nd floor, …)</p><div class="table-wrap" style="margin-bottom:16px;"><table id="p-tenement-table"><thead><tr id="p-tenement-header"></tr></thead><tbody></tbody><tfoot></tfoot></table></div><div class="table-wrap" id="p-common-area-wrap" style="display:none;"><table id="p-common-area-table"><thead><tr id="p-common-area-header"><th>Floor</th><th>Total Area</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div></div>
+        <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Parking Required For Other Use-Groups</div><div id="p-other-layers-container"></div></div>
+        <div class="data-card"><div class="data-card-title">Provided Parking</div><div class="table-wrap"><table id="p-parking-provided-table"><thead><tr id="p-parking-provided-header"></tr></thead><tbody></tbody><tfoot><tr id="p-parking-provided-footer"></tr></tfoot></table></div></div>
+      </div>
+    </div>
+
+    <!-- OCCUPANCY — all blocks combined -->
+    <div id="section-occupancy" class="tab-section">
+      <div class="page">
+        <div class="section-header"><span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Occupancy</span> Data</span><div class="section-actions"><button class="btn" onclick="mRefreshOccupancy()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div></div>
+        <div class="all-blocks-note">🏢 Combined occupancy for all blocks: <strong id="occ-blocks-label">—</strong></div>
+        <div class="data-card"><div class="data-card-title">Occupancy Table — All Blocks Combined</div><div class="table-wrap"><table id="occ-table"><thead><tr><th>Layer</th><th>Total Floor Area</th><th>Deducted Area</th><th>Net Area</th><th>Percentage</th></tr></thead><tbody></tbody><tfoot><tr><th>Total</th><th id="occ-total-floor-area">0.000</th><th id="occ-total-deducted-area">0.000</th><th id="occ-total-net-area">0.000</th><th id="occ-total-percentage">100%</th></tr></tfoot></table></div><div style="margin-top:20px;text-align:right;"><button class="btn" onclick="proceedToFinalSummary()"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>Proceed to Final Summary</button></div></div>
+        <div id="occ-alert-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;"><div style="background:var(--card-bg,#1a1f2e);border-radius:12px;padding:28px 32px;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.5);"><img src="https://img.icons8.com/ios-filled/50/ff0000/error.png" alt="Alert" style="width:40px;margin-bottom:12px;"><p id="occ-alert-message" style="color:var(--text,#e2e8f0);margin-bottom:18px;font-size:.9rem;"></p><button onclick="document.getElementById('occ-alert-modal').style.display='none'" class="btn btn-danger" style="padding:8px 22px;">Close</button></div></div>
+      </div>
+    </div>
+
+    <!-- FINAL SUMMARY — all blocks combined -->
+    <div id="section-master" class="tab-section">
+      <div class="page">
+        <div class="section-header"><span class="section-title"><svg style="width:15px;height:15px;vertical-align:middle;margin-right:6px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Final</span> Summary</span><div class="section-actions"><button class="btn" id="master-update-btn" onclick="document.getElementById('master-popup').style.display='flex'"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Update Values</button></div></div>
+        <div class="all-blocks-note">🏢 Final Summary — all blocks combined: <strong id="master-blocks-label">—</strong></div>
+        <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Comparison Table</div><div class="table-wrap"><table id="master-table"><thead><tr><th>Particulars</th><th>Data</th><th>Particulars</th><th>Data</th></tr></thead><tbody><tr><td class="head">Road Width</td><td id="roadwidth">0.00</td><td class="head">Building Use - Group</td><td id="usegroup">No data available</td></tr><tr><td class="head">Land Area as per Boundary Declaration</td><td id="land-area">0.000</td><td class="head">Land Area as per Document (min.)</td><td id="land-area-doc">0.000</td></tr><tr><td class="head">Permissible Ground Coverage</td><td id="per-ground-coverage">0.000</td><td class="head">Proposed Ground Coverage</td><td id="pro-ground-coverage">0.000</td></tr><tr><td class="head">Permissible F.A.R.</td><td id="per-far">0.000</td><td class="head">Proposed F.A.R</td><td id="pro-far">0.000</td></tr><tr><td class="head">Permissible Height</td><td id="per-height">0.000</td><td class="head">Proposed Height</td><td id="pro-height">0.000</td></tr><tr><td class="head">Required Tree Cover Area</td><td id="per-tree">0.000</td><td class="head">Proposed Tree Cover Area</td><td id="pro-tree">0.000</td></tr><tr><td class="head">Permissible C.B./Loft/Ledge Area</td><td id="per-cb">0.000</td><td class="head">Proposed C.B./Loft/Ledge Area</td><td id="pro-cb">0.000</td></tr></tbody></table></div></div>
+        <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Open Spaces</div><div class="table-wrap"><table id="master-open-spaces"><thead><tr><th>Open Spaces</th><th>Required</th><th>Proposed</th></tr></thead><tbody><tr><td class="head">Front</td><td id="per-front">0.000</td><td id="pro-front">0.000</td></tr><tr><td class="head">Side 1</td><td id="per-side1">0.000</td><td id="pro-side1">0.000</td></tr><tr><td class="head">Side 2</td><td id="per-side2">0.000</td><td id="pro-side2">0.000</td></tr><tr><td class="head">Rear</td><td id="per-rear">0.000</td><td id="pro-rear">0.000</td></tr></tbody></table></div></div>
+        <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Car Parking</div><div class="table-wrap"><table id="master-parking"><thead><tr><th>Particulars</th><th>Required</th><th>Proposed</th></tr></thead><tbody><tr><td class="head">Nos. of Car Parking</td><td id="per-car">0</td><td id="pro-car">0</td></tr><tr><td class="head">Car Parking Area</td><td id="per-park-area">0.000</td><td id="pro-park-area">0.000</td></tr></tbody></table></div></div>
+        <div class="data-card"><div class="data-card-title">Feesable Floor Area</div><div class="table-wrap"><table id="master-fees"><thead><tr><th>Total Floor Area</th><th>Total Additional Floor Area</th><th>Total Floor Area For Fees</th></tr></thead><tbody><tr><td id="total-floor">0.000</td><td id="additional-floor">0.000</td><td id="total-fees-area">0.000</td></tr></tbody></table></div></div>
+      </div>
+    </div>
+
+    <div id="master-popup"><div class="master-popup-box"><div class="master-popup-header"><div><div class="master-popup-title">Update Values</div><div class="master-popup-sub">Override auto-calculated fields if needed</div></div><button class="master-popup-close" onclick="document.getElementById('master-popup').style.display='none'" aria-label="Close">&times;</button></div><div class="master-popup-body"><div class="master-popup-field"><label class="master-popup-label">Land Area as per Document (min.) <span class="req">*</span></label><input class="master-popup-input" type="number" id="manual-land-area" step="0.01" placeholder="Enter value if different from Boundary Area"/></div><div class="master-popup-field"><label class="master-popup-label">Permissible F.A.R.</label><input class="master-popup-input" type="number" id="manual-far" step="0.01" placeholder="Enter value if different from F.A.R. Table-3"/></div><div class="master-popup-field"><label class="master-popup-label">Car Parking Bonus</label><input class="master-popup-input" type="number" id="manual-parking-area" step="0.01" placeholder="Enter car parking bonus area"/></div></div><div class="master-popup-footer"><button class="btn" id="master-update-confirm"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Update</button><button class="btn btn-danger" onclick="document.getElementById('master-popup').style.display='none'">Cancel</button></div></div></div>
+
+  </div><!-- /app-wrapper -->
+  <button id="scrollTopBtn" title="Back to top"><svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></button>
+
+  <script src="../../../src/js/data_extraction_kmc/kmc_whats_new.js"></script>
+  <script src="../../../src/js/data_extraction_kmc/kmc-multi-tracker.js"></script>
+  <script src="../../../src/library/xlsx.full.min.js"></script>
+  <script src="../../../src/js/data_extraction_kmc/kmc_core.js"></script>
+
+  <script>
+  (function(){
+  'use strict';
+
+  /* ═══════════════════════════════════════════════
+     1. INTERCEPT loadScript — skip kmc_home.js
+  ═══════════════════════════════════════════════ */
+  var HOME_JS='../../../src/js/data_extraction_kmc/kmc_home.js';
+  var OCC_JS ='../../../src/js/data_extraction_kmc/kmc_occupancy.js';
+  var _ols=window.loadScript;
+  window.loadScript=function(src,cb){
+    if(src===HOME_JS||src===OCC_JS){if(cb)cb();return;}
+    if(typeof _ols==='function')_ols(src,cb);
+  };
+  var _olss=window.loadScriptsSequential;
+  window.loadScriptsSequential=function(scripts,cb){
+    var f=(scripts||[]).filter(function(s){return s!==HOME_JS&&s!==OCC_JS;});
+    if(typeof _olss==='function')_olss(f,cb);else if(cb)cb();
+  };
+
+  /* ═══════════════════════════════════════════════
+     2. TAB STATES — isolated (uses MB_ keys only)
+  ═══════════════════════════════════════════════ */
+  var TAB_PIPELINE=['section-home','section-tables','section-filtered','section-sanction','section-parking','section-occupancy','section-master'];
+  function getUL(){return Math.max(2,parseInt(localStorage.getItem(MB.unlockLvl)||'2',10));}
+  function setUL(n){localStorage.setItem(MB.unlockLvl,String(n));}
+  window._mbSetUL = setUL;
+  function _rmBadge(btn){var o=btn.querySelector('.tab-status-badge');if(o)o.remove();}
+  function _badge(btn,type){
+    _rmBadge(btn);var s=document.createElement('span');
+    s.className='tab-status-badge '+(type==='lock'?'tab-badge-lock':'tab-badge-done');
+    s.innerHTML=type==='lock'
+      ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+      :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg>';
+    btn.appendChild(s);
+  }
+  window.applyTabStates=function(forceUnlock){
+    if(forceUnlock)setUL(Math.max(getUL(),2));
+    var has=KMCMulti.isUnlocked(),level=getUL();
+    TAB_PIPELINE.forEach(function(sid,idx){
+      var btn=document.querySelector('.tab-btn[data-tab="'+sid+'"]');if(!btn)return;
+      if(sid==='section-home'){btn.style.display='';btn.disabled=false;btn.classList.remove('tab-locked');_rmBadge(btn);return;}
+      if(!has){btn.style.display='none';btn.disabled=true;btn.classList.remove('tab-locked');_rmBadge(btn);return;}
+      if(sid==='section-master'){
+        var mu=KMCMulti.isMasterUnlocked();btn.style.display='';btn.disabled=!mu;
+        if(mu){btn.classList.remove('tab-locked');_rmBadge(btn);}else{btn.classList.add('tab-locked');_badge(btn,'lock');}return;
+      }
+      btn.style.display='';
+      var unlocked=idx<level;
+      if(unlocked){btn.disabled=false;btn.classList.remove('tab-locked');if(idx<level-1)_badge(btn,'done');else _rmBadge(btn);}
+      else{btn.disabled=true;btn.classList.add('tab-locked');_badge(btn,'lock');}
+    });
+  };
+  window.resetTabUnlocks=function(){setUL(2);applyTabStates();};
+
+  /* ═══════════════════════════════════════════════
+     3. OVERRIDE switchTab
+  ═══════════════════════════════════════════════ */
+  var _origSwitch=window.switchTab;
+  window.switchTab=function(id){
+    if(id==='section-occupancy'||id==='section-master')injectAllCSV();
+    else{var a=KMCMulti.getActiveBlock();if(a&&id!=='section-home')injectBlockCSV(a);}
+    if(typeof _origSwitch==='function')_origSwitch(id);
+    var idx=TAB_PIPELINE.indexOf(id);
+    if(idx>0&&idx<TAB_PIPELINE.length-1){var nxt=idx+2;if(nxt>getUL())setUL(nxt);applyTabStates();}
+    var MAP={
+      'section-home':mRefreshHome,
+      'section-tables':mRefreshTables,'section-filtered':mRefreshFiltered,
+      'section-sanction':mRefreshSanction,'section-parking':mRefreshParking,
+      'section-occupancy':mRefreshOccupancy,'section-master':mRefreshMaster
+    };
+    var fn=MAP[id];if(fn)setTimeout(fn,60);
+  };
+  window.initLayerTables=function(){mRefreshTables();};
+  /* NOTE: No stubs here — mRefresh* functions use the real function names exposed
+     by the external scripts (kmc_sanction.js etc.) as load-guards.
+     Stubs would cause infinite recursion because typeof check is always true. */
+
+  /* ═══════════════════════════════════════════════
+     4. CSV INJECTION
+  ═══════════════════════════════════════════════ */
+  function injectBlockCSV(lbl){
+    var c=KMCMulti.getBlockCombined(lbl);if(c)localStorage.setItem('csvData',c);
+    localStorage.setItem('treeCoverNetArea',  localStorage.getItem(MB.tc(lbl))||'');
+    localStorage.setItem('cbLoftNetArea',     localStorage.getItem(MB.cb(lbl))||'');
+    localStorage.setItem('layerSumTotal',     localStorage.getItem(MB.ls(lbl))||'');
+    localStorage.setItem('mainTableData',     localStorage.getItem(MB.mtd(lbl))||'[]');
+    localStorage.setItem('highestPercentageItem', localStorage.getItem(MB.hpct(lbl))||'{}');
+    localStorage.setItem('totalParkingArea',  localStorage.getItem(MB.park(lbl))||'0');
+    localStorage.setItem('totalParkingNos',   localStorage.getItem(MB.parkNos(lbl))||'0');
+    localStorage.setItem('totalParkingRequired', localStorage.getItem(MB.parkReq(lbl))||'0');
+    localStorage.setItem('totalReqCarParking',   localStorage.getItem(MB.parkReqCar(lbl))||'0');
+    localStorage.setItem('effectiveFloorAreaSum', localStorage.getItem(MB.efa(lbl))||'0');
+    localStorage.setItem('netFloorAreaSum',       localStorage.getItem(MB.nfa(lbl))||'0');
+  }
+  window._mbInjectBlockCSV = injectBlockCSV;
+  function injectAllCSV(){
+    var blks=KMCMulti.getBlocks();
+    var c=KMCMulti.getAllCombined();if(c)localStorage.setItem('csvData',c);
+    function sumKey(fn){return blks.reduce(function(s,l){return s+(parseFloat(localStorage.getItem(fn(l)))||0);},0);}
+
+    /* Tree Cover → master sheet only */
+    var masterCSV=KMCMulti.getMasterCSV();
+    if(masterCSV){
+      var masterRows=_parseBlockCSVRows(masterCSV);
+      localStorage.setItem('treeCoverNetArea',_calcNetArea(masterRows,'Tree Cover'));
+    } else {
+      localStorage.setItem('treeCoverNetArea','0');
+    }
+
+    /* Cupboard/Loft/Roof_Structure → each block sheet — sum across all blocks */
+    var cbTotal=0,lsTotal=0;
+    blks.forEach(function(lbl){
+      var bcsv=KMCMulti.getBlockCSV(lbl);
+      if(!bcsv)return;
+      var brows=_parseBlockCSVRows(bcsv);
+      cbTotal+=parseFloat(_calcCBLoft(brows,['Cupboard','Loft']))||0;
+      lsTotal+=parseFloat(_calcLayerSum(brows,['Cupboard','Loft','Roof_Structure']))||0;
+    });
+    localStorage.setItem('cbLoftNetArea',   cbTotal.toFixed(3));
+    localStorage.setItem('layerSumTotal',   lsTotal.toFixed(3));
+
+    /* EFA/NFA, Parking: per-block — sum across blocks */
+    localStorage.setItem('effectiveFloorAreaSum', sumKey(MB.efa).toFixed(3));
+    localStorage.setItem('netFloorAreaSum',       sumKey(MB.nfa).toFixed(3));
+    localStorage.setItem('totalParkingArea',      sumKey(MB.parkArea).toFixed(3));
+    localStorage.setItem('totalParkingNos',       Math.round(sumKey(MB.parkNos)).toString());
+    localStorage.setItem('totalParkingRequired',  Math.round(sumKey(MB.parkReq)).toString());
+    localStorage.setItem('totalReqCarParking',    Math.round(sumKey(MB.parkReqCar)).toString());
+    localStorage.setItem('mainTableData',         localStorage.getItem(MB.mtdAll)||'[]');
+    localStorage.setItem('highestPercentageItem', localStorage.getItem(MB.hpctAll)||'{}');
+  }
+
+  /* ═══════════════════════════════════════════════
+     5. SAVE per-block computed keys after each tab
+  ═══════════════════════════════════════════════ */
+  function saveFilteredKeys(lbl){
+    /* cbLoftNetArea and layerSumTotal are per-block (Cupboard/Loft/Roof_Structure in block sheets) */
+    localStorage.setItem(MB.cb(lbl), localStorage.getItem('cbLoftNetArea')||'');
+    localStorage.setItem(MB.ls(lbl), localStorage.getItem('layerSumTotal')||'');
+    /* treeCoverNetArea is from master sheet only — do NOT save per-block */
+  }
+  function saveSanctionKeys(lbl){
+    localStorage.setItem(MB.efa(lbl), localStorage.getItem('effectiveFloorAreaSum')||'0');
+    localStorage.setItem(MB.nfa(lbl), localStorage.getItem('netFloorAreaSum')||'0');
+  }
+  function saveParkingKeys(lbl){
+    localStorage.setItem(MB.park(lbl),       localStorage.getItem('totalParkingArea')||'0');
+    localStorage.setItem(MB.parkArea(lbl),   localStorage.getItem('totalParkingArea')||'0');
+    localStorage.setItem(MB.parkNos(lbl),    localStorage.getItem('totalParkingNos')||'0');
+    localStorage.setItem(MB.parkReq(lbl),    localStorage.getItem('totalParkingRequired')||'0');
+    localStorage.setItem(MB.parkReqCar(lbl), localStorage.getItem('totalReqCarParking')||'0');
+  }
+
+  /* ═══════════════════════════════════════════════
+     5b. PRE-COMPUTE HELPERS (module-scope so Section 19 can access via window)
+  ═══════════════════════════════════════════════ */
+  function _parseBlockCSVRows(csv){
+    var rows=[];
+    csv.split('\n').slice(1).forEach(function(r){
+      if(!r.trim())return;
+      var c=r.split(',');
+      rows.push({col2:c[1]||'',col3:(c[2]||'').trim(),col4:c[3]||'',
+                 col5:parseFloat(c[4])||0,col6:c[5]||'',col7:c[6]||'',
+                 col8:parseFloat(c[7])||0,col9:(c[8]||'').trim()});
+    });
+    return rows;
+  }
+  function _calcNetArea(rows,layerName){
+    var t=0,d=0;
+    rows.forEach(function(r){if(r.col4!==layerName)return;t+=r.col8;if(r.col6==='DASHED')d+=r.col8;});
+    return(t-d).toFixed(3);
+  }
+  function _calcCBLoft(rows,layerNames){
+    var t=0,d=0;
+    rows.forEach(function(r){if(layerNames.indexOf(r.col4)<0)return;t+=r.col8;if(r.col6==='DASHED')d+=r.col8;});
+    return(t-d).toFixed(3);
+  }
+  function _calcLayerSum(rows,layers){
+    var s=0;
+    rows.forEach(function(r){
+      if(layers.indexOf(r.col4)<0)return;
+      if(r.col4==='Roof_Structure'&&r.col3.toLowerCase()==='cyan')return;
+      if(!isNaN(r.col8))s+=r.col8;
+    });
+    return s.toFixed(3);
+  }
+  function _calcEfaNfa(rows){
+    var totalAreas={},stairWell={},liftWell={},ductCutout={},stairway={},liftLobby={},colors=new Set();
+    var VALID=['Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional','Storage','Assembly','Hazardous','Industrial','Educational'];
+    rows.forEach(function(r){
+      if(VALID.indexOf(r.col4)<0)return;
+      var color=r.col3;colors.add(color);
+      if(!totalAreas[color])totalAreas[color]=0;
+      if(r.col6==='ByLayer'&&r.col7==='ByLayer'&&r.col2==='Polyline'&&r.col9==='-1')totalAreas[color]+=r.col8;
+    });
+    rows.forEach(function(r){
+      var color=r.col3;
+      if(r.col4==='Stair'&&r.col6==='DASHED'&&r.col2==='Polyline'&&r.col9==='-1'){if(!stairWell[color])stairWell[color]=0;stairWell[color]+=r.col8;}
+      if(r.col4==='Lift'&&r.col6==='ByLayer'&&r.col2==='Polyline'&&r.col9==='-1'){if(!liftWell[color])liftWell[color]=0;liftWell[color]+=r.col8;}
+      if(VALID.indexOf(r.col4)>=0&&r.col6==='DASHED'&&r.col2==='Polyline'&&r.col9==='-1'){if(!ductCutout[color])ductCutout[color]=0;ductCutout[color]+=r.col8;}
+      if(r.col4==='Stair'&&r.col6!=='DASHED'&&r.col2==='Polyline'&&r.col9==='-1'){if(!stairway[color])stairway[color]=0;stairway[color]+=r.col8;}
+      if(r.col4==='Lift'&&r.col6==='DASHED'&&r.col2==='Polyline'&&r.col9==='-1'){if(!liftLobby[color])liftLobby[color]=0;liftLobby[color]+=r.col8;}
+    });
+    rows.forEach(function(r){
+      if(r.col4==='Stair'&&r.col6==='DASHED'&&r.col2==='Polyline'&&r.col9==='-1'){var c=r.col3;if(stairway[c])stairway[c]-=r.col8;}
+    });
+    colors.forEach(function(c){
+      var td=ductCutout[c]||0,sw=stairWell[c]||0,lw=liftWell[c]||0;
+      ductCutout[c]=td-sw-lw;
+    });
+    var efa=0,nfa=0;
+    colors.forEach(function(c){
+      var ef=(totalAreas[c]||0)-(stairWell[c]||0)-(liftWell[c]||0)-(ductCutout[c]||0);
+      var nf=ef-(stairway[c]||0)-(liftLobby[c]||0);
+      efa+=ef;nfa+=nf;
+    });
+    return{efa:efa.toFixed(3),nfa:nfa.toFixed(3)};
+  }
+  /* Compute parking nos/area from a CSV string — mirrors kmc_parking.js logic */
+  function _calcParkingFromCSV(csv){
+    var parkingMap={};
+    var rows=csv.split('\n');
+    var idx={count:0,color:2,lineweight:6,layer:3};
+    rows.forEach(function(row,i){
+      if(!i||!row.trim())return;
+      var cells=row.split(',');
+      var layer=(cells[idx.layer]||'').trim();
+      if(layer!=='Parking')return;
+      var count=parseInt(cells[idx.count],10)||0;
+      var color=(cells[idx.color]||'').trim();
+      var lw=(cells[idx.lineweight]||'').trim();
+      var key=color+'-'+lw;
+      if(parkingMap[key])parkingMap[key].count+=count;
+      else parkingMap[key]={count:count,color:color,lw:lw};
+    });
+    var nos=0,area=0;
+    var nosMap={'20':1,'30':2,'40':3,'50':4,'60':5};
+    Object.values(parkingMap).forEach(function(p){
+      var n=(nosMap[p.color]||0)*p.count;
+      var a=(['20','30','40','50','60'].indexOf(p.color)>=0&&p.lw==='0.20 mm')?25*p.count:40*p.count;
+      nos+=n;area+=a;
+    });
+    return{nos:nos,area:area};
+  }
+
+  function precomputeAllBlockKeys(labels){
+    labels.forEach(function(lbl){
+      var blkCSV=KMCMulti.getBlockCSV(lbl); // block-only, no master rows
+      if(!blkCSV)return;
+      var blkRows=_parseBlockCSVRows(blkCSV);
+
+      /* cb (Cupboard/Loft) and ls (layerSum) — in block sheets */
+      if(!localStorage.getItem(MB.cb(lbl))){
+        localStorage.setItem(MB.cb(lbl), _calcCBLoft(blkRows,['Cupboard','Loft']));
+        localStorage.setItem(MB.ls(lbl), _calcLayerSum(blkRows,['Cupboard','Loft','Roof_Structure']));
+      }
+
+      /* EFA/NFA — computed from block-only CSV */
+      if(!localStorage.getItem(MB.efa(lbl))){
+        var en=_calcEfaNfa(blkRows);
+        localStorage.setItem(MB.efa(lbl),en.efa);
+        localStorage.setItem(MB.nfa(lbl),en.nfa);
+      }
+
+      /* Parking — computed from block-only CSV */
+      if(!localStorage.getItem(MB.parkNos(lbl))||localStorage.getItem(MB.parkNos(lbl))==='0'){
+        var pk=_calcParkingFromCSV(blkCSV);
+        localStorage.setItem(MB.parkNos(lbl),  pk.nos.toString());
+        localStorage.setItem(MB.parkArea(lbl), pk.area.toFixed(3));
+        if(!localStorage.getItem(MB.parkReq(lbl)))    localStorage.setItem(MB.parkReq(lbl),'0');
+        if(!localStorage.getItem(MB.parkReqCar(lbl))) localStorage.setItem(MB.parkReqCar(lbl),'0');
+      }
+    });
+  }
+  window._mbPrecomputeAllBlockKeys = precomputeAllBlockKeys;
+
+  /* ═══════════════════════════════════════════════
+     6. DXF LAYER SETS
+  ═══════════════════════════════════════════════ */
+  var MASTER_RE=/^master\s+sheet\.dxf$/i;
+  var MLYR=['Plot','Road','Splay','Strip','Ground Coverage','Tree Cover','Open Space','Waterbody','Goomty','Alignment','GFPlanExistingStructure','Sanctioned Alignment','STP','RWH','Pavement'];
+  var BLYR=['Column','Open Space_Ext_1','Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional','Storage','Assembly','Hazardous','Industrial','Educational','Internal Road','Stair','Lift','Lift_Ext_1','Loft','Cupboard','Tenement','Tenement_Ext_1','Tenement_Single','Tenement_Single_Ext_1','Height','Floor Height','Roof_Structure','Terrace','Parking_Area','Heritage','Existing','Service_floor','Common Area','Fire Refuge','Triple_Balcony','Court Yard','Shaft','Corridor','EVCP','Solar','Baby Care Room'];
+  var SLYR=['Parking'];
+  var MS=new Set(MLYR),BS=new Set(BLYR),SS=new Set(SLYR),TS=new Set(MLYR.concat(BLYR).concat(SLYR));
+  var M2M=0.001,M2M2=0.000001;
+
+  /* ═══════════════════════════════════════════════
+     7. UPLOAD UI
+  ═══════════════════════════════════════════════ */
+  var DXF={master:null,blocks:{}},_slots=['A'],_pendingFn=null;
+
+  function renderGrid(){
+    var g=document.getElementById('blk-grid');if(!g)return;g.innerHTML='';
+    _slots.forEach(function(lbl){
+      var w=document.createElement('div');w.className='blk-wrap';
+      if(_slots.length>1){var rb=document.createElement('button');rb.className='blk-remove';rb.title='Remove '+lbl;rb.innerHTML='&times;';rb.onclick=function(e){e.stopPropagation();removeSlot(lbl);};w.appendChild(rb);}
+      var f=DXF.blocks[lbl],ok=!!f;
+      var dz=document.createElement('div');dz.className='dxf-dropzone'+(ok?' ok':'');dz.style.cursor='pointer';
+      dz.innerHTML='<input type="file" id="bi-'+lbl+'" accept=".dxf" style="display:none"/>'+
+        '<span class="dxf-dz-icon">'+(ok?'✅':'📂')+'</span>'+
+        '<div class="dxf-dz-label">'+lbl+'.dxf</div>'+
+        '<div class="dxf-dz-hint" id="bh-'+lbl+'">'+(ok?f.name:'capital '+lbl+', exact')+'</div>'+
+        '<div class="dxf-dz-err" id="be-'+lbl+'"></div>';
+      dz.onclick=function(){document.getElementById('bi-'+lbl).click();};
+      dz.ondragover=function(e){e.preventDefault();dz.classList.add('drag');};
+      dz.ondragleave=function(){dz.classList.remove('drag');};
+      dz.ondrop=function(e){e.preventDefault();dz.classList.remove('drag');blockChosen(lbl,e.dataTransfer.files[0]);};
+      dz.querySelector('input').onchange=function(){blockChosen(lbl,this.files[0]);};
+      w.appendChild(dz);g.appendChild(w);
+    });
+    var cl=document.getElementById('blk-count-lbl');if(cl)cl.textContent=_slots.length===1?'Block A ready':_slots.length+' blocks ('+_slots.join(', ')+')';
+    chkBtn();
+  }
+  function chkBtn(){var btn=document.getElementById('btn-extract');if(!btn)return;var r=!!(DXF.master&&Object.keys(DXF.blocks).length>0);btn.disabled=!r;btn.style.opacity=r?'1':'0.45';btn.style.cursor=r?'pointer':'not-allowed';}
+  window.addBlock=function(){var all='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),nxt=all.find(function(l){return!_slots.includes(l);});if(!nxt)return;_slots.push(nxt);_slots.sort();renderGrid();};
+  function removeSlot(l){_slots=_slots.filter(function(x){return x!==l;});delete DXF.blocks[l];renderGrid();}
+  window.masterChosen=function(file){
+    if(!file)return;var v=MASTER_RE.test(file.name);
+    document.getElementById('dz-master').classList.remove('ok','err');document.getElementById('dz-master').classList.add(v?'ok':'err');
+    document.getElementById('ico-master').textContent=v?'✅':'📂';
+    document.getElementById('hint-master').innerHTML=v?'<span style="color:#16a34a;font-family:monospace;font-size:11px">'+file.name+'</span>':'any capitalisation';
+    document.getElementById('err-master').textContent=v?'':'Expected "Master Sheet.dxf" — got "'+file.name+'"';
+    DXF.master=v?file:null;chkBtn();
+  };
+  function blockChosen(lbl,file){
+    if(!file)return;var exp=lbl+'.dxf',v=file.name===exp;
+    var inp=document.getElementById('bi-'+lbl),dz=inp?inp.closest('.dxf-dropzone'):null,ic=dz?dz.querySelector('.dxf-dz-icon'):null;
+    if(dz){dz.classList.remove('ok','err');dz.classList.add(v?'ok':'err');}
+    if(ic)ic.textContent=v?'✅':'📂';
+    var ht=document.getElementById('bh-'+lbl),er=document.getElementById('be-'+lbl);
+    if(ht)ht.innerHTML=v?'<span style="color:#16a34a;font-family:monospace;font-size:11px">'+file.name+'</span>':'must be exactly '+exp;
+    if(er)er.textContent=v?'':'Expected "'+exp+'" — got "'+file.name+'"';
+    if(v)DXF.blocks[lbl]=file;else delete DXF.blocks[lbl];chkBtn();
+  }
+
+  /* ═══════════════════════════════════════════════
+     8. DXF PARSER
+  ═══════════════════════════════════════════════ */
+  function rf(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsText(f);});}
+  function tok(txt){var c=txt.replace(/^\uFEFF/,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n'),p=[];for(var i=0;i+1<c.length;i+=2){var cd=c[i].trim(),vl=c[i+1].trim();if(cd!=='')p.push({code:cd,val:vl});}return p;}
+  function parseDXF(txt){
+    var pairs=tok(txt),n=pairs.length,ld={},inT=false,inLT=false,cur=null;
+    for(var i=0;i<n;i++){var p=pairs[i],c=p.code,v=p.val;
+      if(c==='0'&&v==='TABLE'){inT=true;continue;}
+      if(c==='0'&&v==='ENDTAB'){if(cur&&cur.name)ld[cur.name]={color:cur.color,linetype:cur.linetype,lineweight:cur.lineweight,plot:cur.plot};cur=null;inT=false;inLT=false;continue;}
+      if(inT&&c==='2'&&v==='LAYER'){inLT=true;continue;}if(!inLT)continue;
+      if(c==='0'&&v==='LAYER'){if(cur&&cur.name)ld[cur.name]={color:cur.color,linetype:cur.linetype,lineweight:cur.lineweight,plot:cur.plot};cur={};continue;}
+      if(cur){if(c==='2')cur.name=v;if(c==='62')cur.color=parseInt(v);if(c==='6')cur.linetype=v||'Continuous';if(c==='370')cur.lineweight=parseInt(v);if(c==='290')cur.plot=v==='1';}
+    }
+    var ET=new Set(['LINE','LWPOLYLINE','POLYLINE','POINT','INSERT']),raw=[],sec='',ent=null;
+    for(var i=0;i<n;i++){var p=pairs[i],c=p.code,v=p.val;
+      if(c==='0'&&v==='SECTION')continue;
+      if(c==='2'&&(v==='BLOCKS'||v==='ENTITIES')){if(ent)raw.push(finE(ent,ld));ent=null;sec=v;continue;}
+      if(c==='0'&&v==='ENDSEC'){if(ent)raw.push(finE(ent,ld));ent=null;sec='';continue;}
+      if(sec!=='BLOCKS'&&sec!=='ENTITIES')continue;
+      if(c==='0'){if(ent)raw.push(finE(ent,ld));ent=null;if(ET.has(v))ent={type:v,layer:'0',color:null,linetype:null,lineweight:null,closed:false,length:0,area:0,x1:null,y1:null,x2:null,y2:null,vertices:[],curX:null,curY:null};continue;}
+      if(!ent)continue;
+      if(c==='8')ent.layer=v;if(c==='62')ent.color=parseInt(v);if(c==='6')ent.linetype=v;if(c==='370')ent.lineweight=parseInt(v);
+      if(c==='70'&&(ent.type==='LWPOLYLINE'||ent.type==='POLYLINE'))ent.closed=(parseInt(v)&1)===1;
+      if(ent.type==='LINE'){if(c==='10')ent.x1=parseFloat(v);if(c==='20')ent.y1=parseFloat(v);if(c==='11')ent.x2=parseFloat(v);if(c==='21')ent.y2=parseFloat(v);}
+      if(ent.type==='LWPOLYLINE'){if(c==='10'){if(ent.curX!==null&&ent.curY!==null)ent.vertices.push([ent.curX,ent.curY]);ent.curX=parseFloat(v);ent.curY=null;}if(c==='20')ent.curY=parseFloat(v);}
+    }
+    if(ent)raw.push(finE(ent,ld));
+    function dd(ax,ay,bx,by){return Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));}
+    function per(vv,cl){var l=0;for(var i=0;i<vv.length-1;i++)l+=dd(vv[i][0],vv[i][1],vv[i+1][0],vv[i+1][1]);if(cl&&vv.length>1)l+=dd(vv[vv.length-1][0],vv[vv.length-1][1],vv[0][0],vv[0][1]);return l;}
+    function sho(vv){var a=0,m=vv.length;for(var i=0;i<m;i++){var j=(i+1)%m;a+=vv[i][0]*vv[j][1]-vv[j][0]*vv[i][1];}return Math.abs(a)/2;}
+    raw.forEach(function(e){
+      if(e.type==='LINE'&&e.x1!==null)e.length=dd(e.x1,e.y1,e.x2,e.y2);
+      if(e.type==='LWPOLYLINE'){if(e.curX!==null&&e.curY!==null)e.vertices.push([e.curX,e.curY]);if(e.vertices.length>=2){e.length=per(e.vertices,e.closed);if(e.closed&&e.vertices.length>=3)e.area=sho(e.vertices);}}
+    });
+    var rows=[];
+    raw.forEach(function(e){
+      if(!TS.has(e.layer))return;
+      var nm=e.type==='LINE'?'Line':(e.type==='LWPOLYLINE'||e.type==='POLYLINE')?'Polyline':e.type==='POINT'?'Point':e.type==='INSERT'?'Insert':e.type;
+      var isP=(e.type==='LWPOLYLINE'||e.type==='POLYLINE'),isL=(e.type==='LINE'),isCl=e.closed||false;
+      var sL=(isL||isP)&&(e.length||0)>0,sA=isP&&isCl&&(e.area||0)>0;
+      var lw=e.lineweight,lwL=(!lw||lw===-3||lw===0)?'ByLayer':lw===-1?'ByLayer':lw===-2?'ByBlock':lw>0?(lw/100).toFixed(2)+' mm':'ByLayer';
+      rows.push({count:1,name:nm,colorRaw:String(e.color||7),layer:e.layer,length:sL?(e.length*M2M).toFixed(3):'',area:sA?(e.area*M2M2).toFixed(3):'',linetype:e.linetype||'ByLayer',lineweight:lwL,closed:isCl?-1:0});
+    });
+    return rows;
+  }
+  function finE(e,layerDefs){var l=layerDefs[e.layer]||{};if(e.color===null)e.color=l.color||7;return e;}
+  function mkCSV(rows){return'Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed\n'+rows.map(function(r){return[r.count,r.name,r.colorRaw,r.layer,r.length,r.linetype,r.lineweight,r.area,r.closed].join(',');}).join('\n');}
+
+  /* ═══════════════════════════════════════════════
+     9. HOME DATA TABLE — full validation identical to index_kmc.js / displayData()
+  ═══════════════════════════════════════════════ */
+
+  /* Layer sets used by validation */
+  var VALID_LAYERS_SET=new Set(["Column","Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
+    "Open Space_Ext_1","Residential","Mercantile_wholesale","Mercantile_retail","Business","Institutional","Storage",
+    "Assembly","Hazardous","Industrial","Educational","Internal Road","Alignment","Stair","Lift","Lift_Ext_1",
+    "Loft","Cupboard","Tenement","Tenement_Ext_1","Tenement_Single","Tenement_Single_Ext_1","Height","Floor Height",
+    "Roof_Structure","Terrace","Parking","Parking_Area","Waterbody","Heritage","Existing","Service_floor",
+    "Common Area","Wall","Text","Dimension","Section","Print","Mis1","Block_Text","Fire Refuge","Triple_Balcony",
+    "Goomty","Court Yard","Shaft","Corridor","STP","RWH","Pavement","EVCP","Solar","Baby Care Room"]);
+  var OCC_LAYERS_SET=new Set(['Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional',
+    'Storage','Assembly','Hazardous','Industrial','Educational']);
+  var BYLAYER_LW_SET=new Set(['Common Area','Cupboard','Ground Coverage','Open Space','Roof_Structure','Terrace',
+    'Internal Road','Loft']);
+  var NEVER_BYLAYER_SET=new Set(['Existing','Floor Height','Height','Parking','Parking_Area','Stair',
+    'Tenement','Tenement_Single','Tenement_Ext_1','Tenement_Single_Ext_1','Tree Cover','Shaft',
+    'Court Yard','Heritage','Waterbody','Splay','Strip','Corridor','Lift']);
+  var LAYERS_TO_BOLD=new Set(["Column","Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
+    "Stair","Lift","Loft","Cupboard","Tenement","Tenement_Single","Height","Floor Height","Roof_Structure",
+    "Terrace","Parking","Parking_Area","Existing","Common Area"]);
+
+  /* Per-view error storage: key → array of {msg, rowIdx} */
+  var _allErrors={};
+
+  function renderHomeTable(csv,title,viewKey){
+    var hdr=document.getElementById('mb-table-header');
+    var body=document.getElementById('mb-table-body');
+    var titleEl=document.getElementById('mb-data-title');
+    if(!hdr||!body)return;
+    if(titleEl)titleEl.textContent=title||'';
+    hdr.innerHTML='';body.innerHTML='';
+    var errStoreKey=viewKey||title||'';
+
+    if(!csv){_allErrors[errStoreKey]=[];return;}
+    var rows=csv.split('\n');
+
+    /* Column index map */
+    var idx={};
+    var headerRow=rows[0]||'';
+    headerRow.split(',').forEach(function(h,i){
+      var k=h.trim();
+      if(k==='Count')idx.count=i;
+      else if(k==='Name')idx.name=i;
+      else if(k==='Color')idx.color=i;
+      else if(k==='Layer')idx.layer=i;
+      else if(k==='Length')idx.length=i;
+      else if(k==='Linetype')idx.linetype=i;
+      else if(k==='Lineweight')idx.lineweight=i;
+      else if(k==='Area')idx.area=i;
+      else if(k==='Closed')idx.closed=i;
+      var th=document.createElement('th');th.textContent=k;hdr.appendChild(th);
+    });
+    /* If no header columns parsed, use defaults */
+    if(Object.keys(idx).length===0){
+      var DEF=['Count','Name','Color','Layer','Length','Linetype','Lineweight','Area','Closed'];
+      DEF.forEach(function(h,i){idx[h.toLowerCase()]=i;var th=document.createElement('th');th.textContent=h;hdr.appendChild(th);});
+      idx={count:0,name:1,color:2,layer:3,length:4,linetype:5,lineweight:6,area:7,closed:8};
+    }
+
+    /* First pass — duplicate detection */
+    var seenRows=new Set(),dupRows=new Set();
+    rows.forEach(function(row,i){
+      if(!i||!row.trim())return;
+      if(seenRows.has(row.trim()))dupRows.add(row.trim());
+      seenRows.add(row.trim());
+    });
+
+    /* Lineweight tracker for Strip/Splay/Plot/Tree Cover */
+    var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set()};
+
+    /* Stair/Lift missing-line checks (computed once before row loop) */
+    var expectedLW=['0.15 mm','0.20 mm','0.25 mm','0.30 mm'];
+    var stairLinesFound={};   // lineweight → bool
+    var liftLineFound=false;
+    rows.forEach(function(r){
+      if(!r.trim())return;
+      var c=r.split(',');
+      var lyr=(c[idx.layer]||'').trim(),nm=(c[idx.name]||'').trim(),lw=(c[idx.lineweight]||'').trim();
+      if(lyr==='Stair'&&nm==='Line')stairLinesFound[lw]=true;
+      if(lyr==='Lift'&&nm==='Line')liftLineFound=true;
+    });
+
+    var allErrors=[];
+    var reportedErrors=new Set();
+    var foundLayers=new Set();
+    var invalidLayers=new Set();
+
+    /* Second pass — render rows */
+    rows.forEach(function(row,i){
+      if(!i||!row.trim())return;
+      var cells=row.split(',');
+      var count=(cells[idx.count]||'').trim();
+      var nm=(cells[idx.name]||'').trim();
+      var clr=(cells[idx.color]||'').trim();
+      var lyr=(cells[idx.layer]||'').trim();
+      var lt=(cells[idx.linetype]||'').trim();
+      var lw=(cells[idx.lineweight]||'').trim();
+      var area=(cells[idx.area]||'').trim();
+      var closed=(cells[idx.closed]||'').trim();
+      var colorNum=parseInt(clr,10);
+      var isDup=dupRows.has(row.trim());
+
+      if(lyr)foundLayers.add(lyr);
+      if(lyr&&!VALID_LAYERS_SET.has(lyr))invalidLayers.add(lyr);
+
+      var rowErrors=[];
+
+      /* Condition checks — same order as index_kmc.js */
+      if(!VALID_LAYERS_SET.has(lyr))rowErrors.push('In '+lyr+' Layer: Invalid Layer Name');
+      else if(count!=='1')rowErrors.push('In '+lyr+' Layer: Count must be 1');
+      else if(clr==='ByLayer')rowErrors.push('In '+lyr+' Layer: Color should not be ByLayer');
+      else if(['ByLayer','DASHED','PHANTOM2'].indexOf(lt)<0)rowErrors.push('In '+lyr+' Layer: Invalid Linetype');
+      else if(nm==='Polyline'&&closed==='0')rowErrors.push('In '+lyr+' Layer: Polyline must be closed');
+      else if(['Polyline','Line','Point'].indexOf(nm)<0)rowErrors.push('In '+lyr+' Layer: Invalid Object Name');
+      else if(nm==='Polyline'&&area==='')rowErrors.push('In '+lyr+' Layer: Polyline area is missing');
+      else if(OCC_LAYERS_SET.has(lyr)&&['ByLayer','DASHED'].indexOf(lt)<0)rowErrors.push('In '+lyr+' Layer: Linetype should be ByLayer or DASHED');
+      else if(BYLAYER_LW_SET.has(lyr)&&lw!=='ByLayer')rowErrors.push('In '+lyr+' Layer: Lineweight must be ByLayer');
+      else if(NEVER_BYLAYER_SET.has(lyr)&&nm==='Polyline'&&lw==='ByLayer')rowErrors.push('In '+lyr+' Layer: Lineweight must not be ByLayer');
+
+      if(!rowErrors.length&&((nm==='Polyline'&&lyr==='Plot'&&(colorNum!==240||lw!=='0.50 mm'))||
+          (lyr==='Ground Coverage'&&(colorNum<53||colorNum>152)&&nm==='Polyline')))
+        rowErrors.push('In '+lyr+' Layer: Invalid color for Plot or Ground Coverage');
+
+      /* Lineweight tracker for Strip/Splay/Plot/Tree Cover */
+      if(['Strip','Splay','Plot','Tree Cover'].indexOf(lyr)>=0){
+        if(!(lyr==='Tree Cover'&&nm==='Point')){
+          var lwKey=lw+':'+nm;
+          if(lwTracker[lyr].has(lwKey))rowErrors.push('Duplicate lineweight+name for '+lyr+': '+nm+' / '+lw);
+          else lwTracker[lyr].add(lwKey);
+        }
+      }
+
+      /* Stair missing line */
+      if(lyr==='Stair'&&nm==='Polyline'){
+        expectedLW.forEach(function(ew){
+          if(lw===ew&&!stairLinesFound[ew]){
+            var msg='Line of width is missing for the Stair with lineweight '+ew;
+            if(!reportedErrors.has(msg)){reportedErrors.add(msg);rowErrors.push(msg);}
+          }
+        });
+      }
+
+      /* Lift missing line */
+      if(lyr==='Lift'&&nm==='Polyline'&&!liftLineFound){
+        var liftMsg='Line of width is missing for the Lift layer';
+        if(!reportedErrors.has(liftMsg)){reportedErrors.add(liftMsg);rowErrors.push(liftMsg);}
+      }
+
+      /* Build table row */
+      var tr=document.createElement('tr');
+      tr.setAttribute('data-row-idx',String(i));
+      cells.forEach(function(cell){
+        var td=document.createElement('td');td.textContent=cell||'';
+        tr.appendChild(td);
+      });
+
+      /* Apply colour classes */
+      if(rowErrors.length)tr.classList.add('text-red');
+      else if(isDup)tr.classList.add('duplicate');
+
+      /* Tooltip on hover */
+      if(rowErrors.length)tr.title=rowErrors.join(' | ');
+      body.appendChild(tr);
+
+      /* Collect for modal */
+      if(rowErrors.length)allErrors.push({rowIdx:i,msg:'Row '+i+': '+rowErrors.join(', ')});
+    });
+
+    /* Missing & invalid layers (modal-only, no row highlight) */
+    var missingLayers=Array.from(VALID_LAYERS_SET).filter(function(l){return!foundLayers.has(l);});
+
+    _allErrors[errStoreKey]={rowErrors:allErrors,invalidLayers:invalidLayers,missingLayers:missingLayers};
+  }
+
+  /* ── scrollToMbRow: scroll mb-data-table to row and blink it ── */
+  function scrollToMbRow(rowIdx){
+    var tr=document.querySelector('#mb-data-table tbody tr[data-row-idx="'+rowIdx+'"]');
+    if(!tr)return;
+    tr.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(function(){
+      var t2=document.querySelector('#mb-data-table tbody tr[data-row-idx="'+rowIdx+'"]');
+      if(!t2)return;
+      var n=0;
+      var iv=setInterval(function(){
+        t2.classList.toggle('blink-red');
+        n++;if(n>=8){clearInterval(iv);t2.classList.remove('blink-red');}
+      },100);
+    },500);
+  }
+
+  /* Check Errors button — full modal with clickable rows, same as single building */
+  window.mbCheckErrors=function(){
+    var modal=document.getElementById('mb-error-modal');
+    var mbody=document.getElementById('mb-error-body');
+    if(!modal||!mbody)return;
+
+    var activeView=document.querySelector('#home-block-bar .mblk-pill.active');
+    var key=activeView?activeView.dataset.view:'';
+    var stored=_allErrors[key];
+
+    mbody.innerHTML='';
+
+    if(!stored){
+      mbody.innerHTML='<span style="color:var(--muted);">No data loaded for this view.</span>';
+      modal.style.display='flex';return;
+    }
+
+    var rowErrors=stored.rowErrors||[];
+    var invalidLayers=stored.invalidLayers||new Set();
+    var missingLayers=stored.missingLayers||[];
+
+    if(!rowErrors.length&&!invalidLayers.size&&!missingLayers.length){
+      mbody.innerHTML='<span style="color:var(--green);font-weight:600;">✔ No errors detected in this view.</span>';
+      modal.style.display='flex';return;
+    }
+
+    /* Clickable row errors */
+    rowErrors.forEach(function(e){
+      var div=document.createElement('div');
+      div.className='error-item';
+      div.style.cssText='cursor:pointer;padding:5px 4px;border-bottom:1px solid var(--border2);font-size:.8rem;';
+      div.textContent=e.msg;
+      div.title='Click to jump to this row';
+      /* Hover tooltip */
+      div.addEventListener('mouseover',function(ev){
+        var tip=document.createElement('div');
+        tip.className='mb-err-tooltip';
+        tip.textContent='Click to go to row '+e.rowIdx;
+        tip.style.cssText='position:fixed;background:rgba(0,0,0,.75);color:#fff;padding:4px 10px;border-radius:4px;font-size:.75rem;z-index:9999;pointer-events:none;';
+        tip.style.left=(ev.clientX+12)+'px';tip.style.top=(ev.clientY+6)+'px';
+        document.body.appendChild(tip);
+      });
+      div.addEventListener('mousemove',function(ev){
+        var tip=document.querySelector('.mb-err-tooltip');
+        if(tip){tip.style.left=(ev.clientX+12)+'px';tip.style.top=(ev.clientY+6)+'px';}
+      });
+      div.addEventListener('mouseleave',function(){
+        var tip=document.querySelector('.mb-err-tooltip');if(tip)tip.remove();
+      });
+      div.addEventListener('click',function(){
+        var tip=document.querySelector('.mb-err-tooltip');if(tip)tip.remove();
+        modal.style.display='none';
+        scrollToMbRow(e.rowIdx);
+      });
+      mbody.appendChild(div);
+    });
+
+    /* Invalid layers section */
+    if(invalidLayers.size){
+      var hr=document.createElement('hr');
+      hr.style.cssText='border:none;border-top:1px solid rgba(231,76,60,.25);margin:10px 0;';
+      mbody.appendChild(hr);
+      var h1=document.createElement('div');
+      h1.style.cssText='font-weight:700;color:#e74c3c;margin-bottom:6px;font-size:.8rem;';
+      h1.textContent='Invalid Layers or Misspelled:';
+      mbody.appendChild(h1);
+      var d1=document.createElement('div');
+      d1.style.cssText='font-size:.8rem;line-height:1.6;';
+      d1.textContent=Array.from(invalidLayers).join(' , ');
+      mbody.appendChild(d1);
+    }
+
+    /* Missing layers section */
+    if(missingLayers.length){
+      var hr2=document.createElement('hr');
+      hr2.style.cssText='border:none;border-top:1px solid rgba(231,76,60,.25);margin:10px 0;';
+      mbody.appendChild(hr2);
+      var h2=document.createElement('div');
+      h2.style.cssText='font-weight:700;color:#e74c3c;margin-bottom:6px;font-size:.8rem;';
+      h2.textContent='Below Layers Are Not In This Drawing:';
+      mbody.appendChild(h2);
+      var d2=document.createElement('div');
+      d2.style.cssText='font-size:.8rem;line-height:1.8;';
+      missingLayers.forEach(function(l,i){
+        var sp=document.createElement('span');
+        sp.style.color=i%2===0?'blue':'green';
+        if(LAYERS_TO_BOLD.has(l)){sp.style.fontWeight='bold';sp.style.color='magenta';}
+        sp.textContent=l;
+        d2.appendChild(sp);
+        if(i<missingLayers.length-1){var comma=document.createTextNode(' , ');d2.appendChild(comma);}
+      });
+      mbody.appendChild(d2);
+    }
+
+    modal.style.display='flex';
+  };
+  function renderHomeBlockBar(){
+    var bar=document.getElementById('home-block-bar');if(!bar)return;
+    var blks=KMCMulti.getBlocks(),active=KMCMulti.getActiveBlock();
+    bar.innerHTML='<span style="font-family:var(--font-mono);font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-right:2px;">View:</span>';
+    /* Master first */
+    var mp=document.createElement('button');mp.className='mblk-pill'+(active===null?'':' ');mp.textContent='Master';mp.dataset.view='master';
+    mp.onclick=function(){renderHomeTable(KMCMulti.getMasterCSV(),'Master Sheet.dxf','master');setHomePillActive('master');};
+    bar.appendChild(mp);
+    blks.forEach(function(b){
+      var bp=document.createElement('button');bp.className='mblk-pill'+(b===active?' active':'');
+      bp.textContent=b;bp.dataset.view=b;
+      bp.onclick=function(){
+        KMCMulti.setActiveBlock(b);
+        renderHomeTable(KMCMulti.getBlockCombined(b),b+'.dxf (with Master)',b);
+        setHomePillActive(b);
+      };
+      bar.appendChild(bp);
+    });
+  }
+  function setHomePillActive(view){
+    document.querySelectorAll('#home-block-bar .mblk-pill').forEach(function(p){
+      p.classList.toggle('active',p.dataset.view===view);
+    });
+  }
+  window._mbRenderHomeBlockBar = renderHomeBlockBar;
+  window._mbRenderHomeTable    = renderHomeTable;
+  window._mbSetHomePillActive  = setHomePillActive;
+
+  /* mRefreshHome — called when Home tab is clicked after extraction */
+  function mRefreshHome(){
+    if(!KMCMulti.isUnlocked())return;
+    var active=KMCMulti.getActiveBlock();
+    renderHomeBlockBar();
+    if(active){
+      renderHomeTable(KMCMulti.getBlockCombined(active),active+'.dxf (with Master)',active);
+      setHomePillActive(active);
+    }else{
+      renderHomeTable(KMCMulti.getMasterCSV(),'Master Sheet.dxf','master');
+      setHomePillActive('master');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════
+     10. EXTRACT
+  ═══════════════════════════════════════════════ */
+  window.doExtract=function(){
+    var btn=document.getElementById('btn-extract');btn.textContent='⏳ Parsing…';btn.disabled=true;
+    var lbls=Object.keys(DXF.blocks).sort();
+    Promise.all([rf(DXF.master)].concat(lbls.map(function(l){return rf(DXF.blocks[l]);}))).then(function(txts){
+      var mr=parseDXF(txts[0]);KMCMulti.saveMaster(mkCSV(mr));
+      var warns=[],seen=new Set();
+      lbls.forEach(function(lbl,i){
+        var br=parseDXF(txts[i+1]);KMCMulti.saveBlock(lbl,mkCSV(br));
+        mr.forEach(function(r){if(BS.has(r.layer)&&!SS.has(r.layer)){var k=r.layer+'|m';if(!seen.has(k)){seen.add(k);warns.push({layer:r.layer,foundIn:DXF.master.name,shouldBeIn:lbl+'.dxf'});}}});
+        br.forEach(function(r){if(MS.has(r.layer)&&!SS.has(r.layer)){var k=r.layer+'|'+lbl;if(!seen.has(k)){seen.add(k);warns.push({layer:r.layer,foundIn:DXF.blocks[lbl].name,shouldBeIn:'Master Sheet.dxf'});}}});
+      });
+      btn.textContent='⚡ Extract All Layers';btn.disabled=false;btn.style.opacity='1';
+
+      /* ── Pre-compute per-block keys from CSV so downstream tabs get correct
+            aggregated values even when the user skips intermediate tabs ── */
+      function doShow(){
+        KMCMulti.unlock();
+        setUL(2);
+        localStorage.setItem(MB.names,'Master + '+lbls.join(', '));
+        KMCMulti.setActiveBlock(lbls[0]);
+        injectBlockCSV(lbls[0]);
+        /* Pre-compute keys for ALL blocks so downstream tabs work even if user skips intermediate tabs */
+        precomputeAllBlockKeys(lbls);
+        /* Track upload to Firebase */
+        if (typeof window.mbTrackUpload === 'function') {
+          window.mbTrackUpload(lbls, DXF.master ? DXF.master.name : 'Master Sheet.dxf');
+        }
+        mbUpdateShellBar();
+        applyTabStates(true);
+        /* Hide upload panel, show data card, hide feature strip */
+        document.getElementById('mb-upload-panel').style.display='none';
+        document.getElementById('mb-data-card').style.display='block';
+        document.getElementById('home-hero').style.display='none';
+        var fs=document.getElementById('feature-strip');if(fs)fs.style.display='none';
+        /* Render home data table for first block */
+        renderHomeBlockBar();
+        renderHomeTable(KMCMulti.getBlockCombined(lbls[0]),lbls[0]+'.dxf (with Master)',lbls[0]);
+        setHomePillActive(lbls[0]);
+      }
+
+      if(warns.length>0){
+        var html='<p style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px">Layers in wrong file</p>';
+        html+=warns.map(function(w){return'<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#dc2626;font-weight:700;flex:1">'+w.layer+'</span><span style="color:#94a3b8;font-size:11px">in <b style="color:#d97706">'+w.foundIn+'</b> → <b style="color:#16a34a">'+w.shouldBeIn+'</b></span></div>';}).join('');
+        document.getElementById('dxf-popup-body').innerHTML=html;
+        document.getElementById('dxf-popup').style.display='flex';
+        _pendingFn=doShow;
+      }else doShow();
+    }).catch(function(err){console.error('[mbExtract]',err);btn.textContent='⚡ Extract All Layers';btn.disabled=false;btn.style.opacity='1';});
+  };
+  window.closePopup=function(ok){document.getElementById('dxf-popup').style.display='none';if(ok&&_pendingFn)_pendingFn();_pendingFn=null;};
+
+  /* ═══════════════════════════════════════════════
+     11. SHELL BAR + CLEAR
+  ═══════════════════════════════════════════════ */
+  window.mbUpdateShellBar=function(){
+    var dot=document.getElementById('status-dot'),txt=document.getElementById('status-text'),cb=document.getElementById('clearStorageBtn');
+    var has=KMCMulti.isUnlocked(),names=localStorage.getItem(MB.names)||'';
+    if(dot)dot.classList.toggle('green',has);
+    if(txt)txt.textContent=has?('Uploaded — '+names):'No files loaded — upload to begin';
+    if(cb)cb.style.display=has?'inline-flex':'none';
+  };
+  function bindClearBtn(){
+    var cb=document.getElementById('clearStorageBtn');if(!cb||cb._mbBound)return;cb._mbBound=true;
+    cb.addEventListener('click',function(){
+      /* Show styled confirm popup (same pattern as single building) */
+      var popup=document.getElementById('mb-confirm-popup');
+      if(!popup){
+        popup=document.createElement('div');
+        popup.id='mb-confirm-popup';
+        popup.style.cssText='position:fixed;inset:0;background:rgba(26,24,20,.6);backdrop-filter:blur(5px);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        popup.innerHTML=
+          '<div style="background:var(--paper,#fdfbf7);border:1px solid var(--border2,rgba(26,24,20,.18));border-radius:14px;padding:28px 32px;max-width:360px;width:92%;box-shadow:0 16px 48px rgba(0,0,0,.2);text-align:center;">'+
+            '<div style="font-size:2rem;margin-bottom:10px;">🗑️</div>'+
+            '<h3 style="font-family:var(--font-mono,monospace);font-size:.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink,#1a1814);margin-bottom:8px;">Clear All Data?</h3>'+
+            '<p style="font-size:.8rem;color:var(--muted,#8c8880);line-height:1.6;margin-bottom:22px;">This will remove all uploaded files and calculated results for Multiple Building. This action cannot be undone.</p>'+
+            '<div style="display:flex;gap:10px;justify-content:center;">'+
+              '<button id="mb-confirm-yes" style="padding:9px 24px;background:#ff5252;color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;">Yes, Clear</button>'+
+              '<button id="mb-confirm-no"  style="padding:9px 24px;background:transparent;color:var(--ink2,#3d3a32);border:1px solid var(--border2,rgba(26,24,20,.18));border-radius:7px;font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;">Cancel</button>'+
+            '</div>'+
+          '</div>';
+        document.body.appendChild(popup);
+        document.getElementById('mb-confirm-no').onclick=function(){popup.style.display='none';};
+        document.getElementById('mb-confirm-yes').onclick=function(){
+          popup.style.display='none';
+          doClear();
+        };
+        popup.addEventListener('click',function(e){if(e.target===popup)popup.style.display='none';});
+      }else{
+        popup.style.display='flex';
+      }
+    });
+  }
+
+  function doClear(){
+    KMCMulti.clearAll();
+    DXF.master=null;DXF.blocks={};_slots=['A'];_allErrors={};_mbTabView={tables:null,filtered:null,parking:null};
+    document.getElementById('mb-upload-panel').style.display='block';
+    document.getElementById('mb-data-card').style.display='none';
+    document.getElementById('home-hero').style.display='block';
+    var fs=document.getElementById('feature-strip');if(fs)fs.style.display='block';
+    renderGrid();
+    document.getElementById('dz-master').classList.remove('ok','err');
+    document.getElementById('ico-master').textContent='📂';
+    document.getElementById('hint-master').innerHTML='any capitalisation';
+    document.getElementById('err-master').textContent='';
+    var inp=document.getElementById('inp-master');if(inp)inp.value='';
+    mbUpdateShellBar();
+    if(typeof resetTabUnlocks==='function')resetTabUnlocks();else applyTabStates();
+    if(typeof switchTab==='function')switchTab('section-home');
+  }
+  bindClearBtn();
+  new MutationObserver(bindClearBtn).observe(document.body,{childList:true,subtree:true});
+
+  /* ═══════════════════════════════════════════════
+     12. BLOCK SELECTOR BAR (per-block tabs)
+  ═══════════════════════════════════════════════ */
+  /* Inject master CSV into shared localStorage keys so tab scripts read it */
+  function injectMasterCSV(){
+    var csv=KMCMulti.getMasterCSV();
+    if(csv)localStorage.setItem('csvData',csv);
+    /* Clear per-block computed keys so scripts don't use stale block values */
+    localStorage.removeItem('treeCoverNetArea');
+    localStorage.removeItem('cbLoftNetArea');
+    localStorage.removeItem('layerSumTotal');
+    localStorage.removeItem('mainTableData');
+    localStorage.removeItem('highestPercentageItem');
+    localStorage.removeItem('totalParkingArea');
+    localStorage.removeItem('totalParkingNos');
+    localStorage.removeItem('totalParkingRequired');
+    localStorage.removeItem('totalReqCarParking');
+    localStorage.removeItem('effectiveFloorAreaSum');
+    localStorage.removeItem('netFloorAreaSum');
+  }
+
+  /* Per-tab view state — tracks whether 'master' or a block label is active for each tab */
+  var _mbTabView={tables:null,filtered:null,parking:null}; // null = use active block
+
+  function renderBar(barId,fnName){
+    var bar=document.getElementById(barId);if(!bar)return;
+    var blks=KMCMulti.getBlocks(),active=KMCMulti.getActiveBlock();
+    if(!blks.length&&!KMCMulti.getMasterCSV()){bar.innerHTML='';bar.className='';return;}
+    bar.className='multi-block-bar';
+    var tabKey=barId==='bb-tables'?'tables':barId==='bb-filtered'?'filtered':barId==='bb-parking'?'parking':null;
+    var activePill=(tabKey&&_mbTabView[tabKey]!=null)?_mbTabView[tabKey]:(active||(blks[0]||''));
+    var html='<span style="font-family:var(--font-mono);font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Block:</span>';
+    /* Master pill for tables/filtered only */
+    if(barId==='bb-tables'||barId==='bb-filtered'){
+      html+='<button class="mblk-pill'+(activePill==='master'?' active':'')+'" onclick="selBlk(\'master\',\''+fnName+'\')">Master</button>';
+    }
+    blks.forEach(function(b){
+      html+='<button class="mblk-pill'+(b===activePill?' active':'')+'" onclick="selBlk(\''+b+'\',\''+fnName+'\')">'+b+'</button>';
+    });
+    /* Provided Parkings pill for parking bar only */
+    if(barId==='bb-parking'){
+      html+='<button class="mblk-pill-special'+(activePill==='provided'?' active':'')+
+        '" onclick="selBlk(\'provided\',\''+fnName+'\')">🅿 Provided Parkings</button>';
+    }
+    bar.innerHTML=html;
+  }
+  window.selBlk=function(lbl,fnName){
+    /* Track per-tab view */
+    if(fnName==='mRefreshTables')  _mbTabView.tables  =lbl;
+    if(fnName==='mRefreshFiltered')_mbTabView.filtered=lbl;
+    if(fnName==='mRefreshParking') _mbTabView.parking =lbl;
+    /* Set active block for real block selections */
+    if(lbl!=='master'&&lbl!=='provided')KMCMulti.setActiveBlock(lbl);
+    var fn=window[fnName];if(typeof fn==='function')fn();
+  };
+
+  /* ═══════════════════════════════════════════════
+     13. PER-BLOCK TAB REFRESHES
+  ═══════════════════════════════════════════════ */
+  window.mRefreshTables=function(){
+    var view=_mbTabView.tables!=null?_mbTabView.tables:KMCMulti.getActiveBlock();
+    renderBar('bb-tables','mRefreshTables');
+    var csv=(view==='master')?KMCMulti.getMasterCSV():KMCMulti.getBlockCSV(view);
+    if(!csv)return;
+    localStorage.setItem('csvData',csv);
+    /* Pass block index so multi script knows colour offset */
+    var blkIndex=(view==='master')?-1:KMCMulti.getBlocks().indexOf(view);
+    localStorage.setItem('MB_currentBlockIndex',String(blkIndex));
+    localStorage.setItem('MB_blockCount',String(KMCMulti.getBlocks().length));
+    if(typeof generateTablesMulti==='function'){generateTablesMulti();}
+    else loadScript('../../../src/js/data_extraction_kmc/kmc_tables_multi.js',function(){if(typeof generateTablesMulti==='function')generateTablesMulti();});
+  };
+  window.mRefreshFiltered=function(){
+    var view=_mbTabView.filtered!=null?_mbTabView.filtered:KMCMulti.getActiveBlock();
+    renderBar('bb-filtered','mRefreshFiltered');
+    /* Use getBlockCombined (master + block) so master-resident layers like
+       Ground Coverage, Terrace, Tree Cover are present for block view.
+       Master pill uses getMasterCSV only. */
+    var csv=(view==='master')?KMCMulti.getMasterCSV():KMCMulti.getBlockCombined(view);
+    if(!csv)return;
+    localStorage.setItem('csvData',csv);
+    var blkIndex=(view==='master')?-1:KMCMulti.getBlocks().indexOf(view);
+    localStorage.setItem('MB_currentBlockIndex',String(blkIndex));
+    localStorage.setItem('MB_blockCount',String(KMCMulti.getBlocks().length));
+    function run(){
+      if(typeof generateFilteredTablesMulti!=='function')return;
+      generateFilteredTablesMulti();
+      if(view!=='master')saveFilteredKeys(view);
+    }
+    if(typeof generateFilteredTablesMulti==='function')run();
+    else loadScript('../../../src/js/data_extraction_kmc/kmc_filtered_multi.js',run);
+  };
+  window.mRefreshSanction=function(){
+    var a=KMCMulti.getActiveBlock();renderBar('bb-sanction','mRefreshSanction');
+    var l1=document.getElementById('lbl-sanction'),l2=document.getElementById('lbl-sanction-cmp');if(l1)l1.textContent=a||'—';if(l2)l2.textContent=a||'—';
+    if(!a)return;injectBlockCSV(a);
+    function run(){if(typeof generateSanctionTables!=='function')return;generateSanctionTables();saveSanctionKeys(a);}
+    if(typeof generateSanctionTables==='function')run();else loadScript('../../../src/js/data_extraction_kmc/kmc_sanction.js',run);
+  };
+  window.mRefreshParking=function(){
+    var view=_mbTabView.parking!=null?_mbTabView.parking:KMCMulti.getActiveBlock();
+    renderBar('bb-parking','mRefreshParking');
+    var lbl=document.getElementById('lbl-parking');
+
+    /* ── Provided Parkings view — all blocks combined ── */
+    if(view==='provided'){
+      if(lbl)lbl.textContent='All Blocks Combined';
+      /* Show/hide sections */
+      var tenCard =document.querySelector('#p-tenement-table')?.closest('.data-card');
+      var othCard =document.getElementById('p-other-layers-container')?.closest('.data-card');
+      var provCard=document.getElementById('p-parking-provided-table')?.closest('.data-card');
+      if(tenCard) tenCard.style.display='none';
+      if(othCard) othCard.style.display='none';
+      if(provCard){
+        provCard.style.display='block';
+        /* Add "All blocks combined" note in card title */
+        var titleEl=provCard.querySelector('.data-card-title');
+        if(titleEl&&!titleEl.dataset.mbModified){
+          titleEl.innerHTML+=' <span style="font-family:var(--font-mono);font-size:.72rem;color:var(--accent);font-weight:400;">(all blocks combined)</span>';
+          titleEl.dataset.mbModified='1';
+        }
+      }
+      /* Inject combined CSV so _buildProvidedParking reads all blocks */
+      injectAllCSV();
+      function runProvided(){
+        if(typeof generateParkingTables!=='function')return;
+        /* Only run the provided parking section */
+        if(typeof _buildProvidedParking==='function'){
+          /* Reset only provided section first */
+          var ppH=document.getElementById('p-parking-provided-header');
+          var ppF=document.getElementById('p-parking-provided-footer');
+          var ppT=document.getElementById('p-parking-provided-table');
+          if(ppH)ppH.innerHTML='';
+          if(ppF)ppF.innerHTML='';
+          if(ppT){var tb=ppT.querySelector('tbody');if(tb)tb.innerHTML='';}
+          _buildProvidedParking(localStorage.getItem('csvData')||'');
+        } else {
+          generateParkingTables();
+        }
+      }
+      if(typeof _buildProvidedParking==='function')runProvided();
+      else loadScript('../../../src/js/data_extraction_kmc/kmc_parking.js',runProvided);
+      return;
+    }
+
+    /* ── Normal block view ── */
+    var a=view;
+    if(lbl)lbl.textContent=a||'—';
+    /* Restore all three sections */
+    var tenCard2 =document.querySelector('#p-tenement-table')?.closest('.data-card');
+    var othCard2 =document.getElementById('p-other-layers-container')?.closest('.data-card');
+    var provCard2=document.getElementById('p-parking-provided-table')?.closest('.data-card');
+    if(tenCard2) tenCard2.style.display='block';
+    if(othCard2) othCard2.style.display='block';
+    if(provCard2){
+      provCard2.style.display='block';
+      var titleEl2=provCard2.querySelector('.data-card-title');
+      if(titleEl2&&titleEl2.dataset.mbModified){
+        titleEl2.innerHTML='Provided Parking';
+        delete titleEl2.dataset.mbModified;
+      }
+    }
+    if(!a)return;
+    injectBlockCSV(a);
+    function run(){if(typeof generateParkingTables!=='function')return;generateParkingTables();saveParkingKeys(a);}
+    if(typeof generateParkingTables==='function')run();else loadScript('../../../src/js/data_extraction_kmc/kmc_parking.js',run);
+  };
+
+  /* ═══════════════════════════════════════════════
+     14. OCCUPANCY — all blocks combined
+  ═══════════════════════════════════════════════ */
+  window.mRefreshOccupancy=function(){
+    var blks=KMCMulti.getBlocks();
+    var lbl=document.getElementById('occ-blocks-label');if(lbl)lbl.textContent=blks.length?blks.join(', '):'—';
+    if(!blks.length)return;
+    /* Always use our combined renderer — kmc_occupancy.js is blocked intentionally
+       because its IIFE grabs stale csvData at load-time and can't be re-run cleanly */
+    injectAllCSV();
+    renderOccAll();
+  };
+  function renderOccAll(){
+    var body=document.querySelector('#occ-table tbody');if(!body)return;body.innerHTML='';
+    var csv=localStorage.getItem('csvData')||'',rowsRaw=csv.split('\n');
+    var parsed=rowsRaw.slice(1).filter(function(r){return r.trim();}).map(function(r){var x=r.split(',');return{layer:x[3]||'',lt:x[5]||'',area:parseFloat(x[7])||0};});
+    var seen=new Set(),data=[];
+    rowsRaw.forEach(function(row,i){
+      if(!i||!row.trim())return;var cells=row.split(','),lyr=cells[3];
+      if(OCC_LAYERS_SET.has(lyr)&&!seen.has(lyr)){
+        seen.add(lyr);var tf=0,td=0;
+        parsed.forEach(function(d){if(d.layer===lyr){if(d.lt==='ByLayer')tf+=d.area;if(d.lt==='DASHED')td+=d.area;}});
+        data.push({layer:lyr,tf:tf,td:td,net:tf-td});
+      }
+    });
+    if(!data.length){body.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">No occupancy data found in uploaded blocks.</td></tr>';return;}
+    var sf=0,sd=0,sn=0;data.forEach(function(d){sf+=d.tf;sd+=d.td;sn+=d.net;});
+    data.forEach(function(d){var pct=sn>0?((d.net/sn)*100).toFixed(2)+'%':'0.00%';var tr=body.insertRow();[d.layer,d.tf.toFixed(3),d.td.toFixed(3),d.net.toFixed(3),pct].forEach(function(v){tr.insertCell().textContent=v;});});
+    function se(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
+    se('occ-total-floor-area',sf.toFixed(3));se('occ-total-deducted-area',sd.toFixed(3));se('occ-total-net-area',sn.toFixed(3));se('occ-total-percentage','100%');
+    var mData=data.map(function(d){return{column4:d.layer,totalFloorArea:d.tf,deductedArea:d.td,netArea:d.net};});
+    localStorage.setItem('mainTableData',JSON.stringify(mData));localStorage.setItem(MB.mtdAll,JSON.stringify(mData));
+    var best=null,bestP=-1;
+    data.forEach(function(d){var p=sn>0?(d.net/sn)*100:0;if(p>bestP){bestP=p;best={layer:d.layer,percentage:p.toFixed(2)};}});
+    if(best){localStorage.setItem('highestPercentageItem',JSON.stringify(best));localStorage.setItem(MB.hpctAll,JSON.stringify(best));}
+  }
+
+  /* ═══════════════════════════════════════════════
+     15. FINAL SUMMARY — all blocks combined
+  ═══════════════════════════════════════════════ */
+  window.mRefreshMaster=function(){
+    var blks=KMCMulti.getBlocks();
+    var lbl=document.getElementById('master-blocks-label');if(lbl)lbl.textContent=blks.length?blks.join(', '):'—';
+    if(!blks.length)return;
+    localStorage.setItem('MB_blockCount',String(blks.length));
+    /* Ensure all per-block keys are computed before aggregating —
+       this handles the case where user jumps directly to Final Summary
+       without visiting Filtered / Floor Area / Parking tabs for each block */
+    precomputeAllBlockKeys(blks);
+    injectAllCSV();
+    if(typeof _runMasterMulti==='function')_runMasterMulti();
+    else loadScript('../../../src/js/data_extraction_kmc/kmc_master_multi.js',function(){if(typeof _runMasterMulti==='function')_runMasterMulti();});
+  };
+
+  /* ═══════════════════════════════════════════════
+     16. PROCEED TO FINAL SUMMARY
+  ═══════════════════════════════════════════════ */
+  window.proceedToFinalSummary=function(){
+    function showAlert(msg){var m=document.getElementById('occ-alert-modal'),e=document.getElementById('occ-alert-message');if(!m)return;if(e)e.textContent=msg;m.style.display='flex';}
+    var ob=document.querySelector('#occ-table tbody');
+    if(!ob||!ob.querySelector('tr')){showAlert('Occupancy table is empty. Run the Occupancy tab first.');return;}
+    var pe=document.getElementById('occ-total-percentage');
+    if(pe){var pct=parseFloat(pe.textContent.replace('%','').trim());if(!isNaN(pct)&&(pct<99||pct>101)){showAlert('Total occupancy is '+pe.textContent+' — expected 100%.');return;}}
+    KMCMulti.unlockMaster();
+    setUL(TAB_PIPELINE.length);
+    applyTabStates();
+    if(typeof switchTab==='function')switchTab('section-master');
+  };
+
+  /* ═══════════════════════════════════════════════
+     17. TOP NAV
+  ═══════════════════════════════════════════════ */
+  window.kmcSwitchNav=function(target,btn){
+    var gs=document.getElementById('kmc-guide-section');
+    var us=document.getElementById('kmc-updates-section');
+    var tb=document.getElementById('mainTabBar');
+    if(gs)gs.style.display=(target==='guide')?'':'none';
+    if(us)us.style.display=(target==='updates')?'':'none';
+    if(target==='guide'||target==='updates'){
+      if(tb)tb.style.display='none';
+      document.querySelectorAll('.tab-section').forEach(function(s){s.style.display='none';});
+    }else{
+      if(tb)tb.style.display='';
+      var ab=document.querySelector('.tab-btn.active');
+      if(ab){var sid=ab.dataset.tab;var s=document.getElementById(sid);if(s)s.style.display='';}
+    }
+    document.querySelectorAll('.sh-pill').forEach(function(p){p.classList.remove('active');});
+    if(btn)btn.classList.add('active');
+  };
+
+  /* ═══════════════════════════════════════════════
+     18. DOM READY
+  ═══════════════════════════════════════════════ */
+  document.addEventListener('DOMContentLoaded',function(){
+    renderGrid();bindClearBtn();
+    var fac=document.getElementById('filteredAlertClose'),facb=document.getElementById('filteredAlertCloseBtn');
+    if(fac)fac.onclick=function(){document.getElementById('filteredAlertModal').classList.remove('show','active');};
+    if(facb)facb.onclick=function(){document.getElementById('filteredAlertModal').classList.remove('show','active');};
+    var stb=document.getElementById('scrollTopBtn');
+    if(stb){window.addEventListener('scroll',function(){stb.classList.toggle('show',window.scrollY>300);},{passive:true});stb.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});}
+
+    /* Restore after page reload */
+    if(KMCMulti.isUnlocked()){
+      var active=KMCMulti.getActiveBlock();if(active)injectBlockCSV(active);
+      /* Ensure per-block computed keys exist for all blocks (fills gaps from skipped tabs) */
+      precomputeAllBlockKeys(KMCMulti.getBlocks());
+      applyTabStates(true);mbUpdateShellBar();
+      document.getElementById('mb-upload-panel').style.display='none';
+      document.getElementById('mb-data-card').style.display='block';
+      document.getElementById('home-hero').style.display='none';
+      var fs=document.getElementById('feature-strip');if(fs)fs.style.display='none';
+      renderHomeBlockBar();
+      if(active){renderHomeTable(KMCMulti.getBlockCombined(active),active+'.dxf (with Master)',active);setHomePillActive(active);}
+      else{renderHomeTable(KMCMulti.getMasterCSV(),'Master Sheet.dxf','master');setHomePillActive('master');}
+    }
+  });
+
+  /* ═══════════════════════════════════════════════
+     19. DASHBOARD VIEW — restore from Firebase
+         Triggered when opened with ?uploadId=kmc_multi_...
+  ═══════════════════════════════════════════════ */
+  (function(){
+    var params   = new URLSearchParams(window.location.search);
+    var uploadId = params.get('uploadId');
+    if(!uploadId||uploadId.indexOf('kmc_multi_')<0)return; // not a multi upload
+
+    function onAuth(cb){
+      if(window.cymUser){cb(window.cymUser);return;}
+      document.addEventListener('cymAuthReady',function(e){cb(e.detail.user);},{once:true});
+    }
+
+    function doRestore(user,meta,csvRec){
+      var blockLabels=(meta.blockLabels&&meta.blockLabels.length)?meta.blockLabels:['A'];
+      var HEADER='Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed';
+
+      /* Clear stale MB_ keys */
+      KMCMulti.clearAll();
+
+      /* Restore master CSV */
+      var masterCsv=(csvRec&&csvRec.master)||'';
+      if(masterCsv)KMCMulti.saveMaster(masterCsv);
+
+      /* Restore per-block CSVs.
+         New format: csvRec.blocks = { A: '...', B: '...', ... }
+         Legacy format (old uploads): csvRec.csv = combined — split by label count */
+      if(csvRec&&csvRec.blocks){
+        /* New format — each block stored separately */
+        blockLabels.forEach(function(l){
+          var bc=(csvRec.blocks[l])||HEADER;
+          KMCMulti.saveBlock(l,bc);
+        });
+      } else {
+        /* Legacy combined CSV — put it all under the first block, others blank */
+        var combined=(csvRec&&csvRec.csv)||'';
+        KMCMulti.saveBlock(blockLabels[0],combined||HEADER);
+        blockLabels.slice(1).forEach(function(l){
+          KMCMulti.saveBlock(l,HEADER);
+        });
+      }
+
+      localStorage.setItem(MB.names,'Master + '+blockLabels.join(', '));
+      KMCMulti.setActiveBlock(blockLabels[0]);
+      /* Unlock BEFORE any UI calls that check isUnlocked() */
+      KMCMulti.unlock();
+      window._mbSetUL(2);
+
+      /* Inject active block into shared keys */
+      window._mbInjectBlockCSV(blockLabels[0]);
+
+      /* Pre-compute downstream keys for all blocks */
+      window._mbPrecomputeAllBlockKeys(blockLabels);
+
+      /* Update shell bar */
+      mbUpdateShellBar();
+      applyTabStates(true);
+
+      /* Show data card, hide upload panel — must happen after unlock */
+      document.getElementById('mb-upload-panel').style.display='none';
+      document.getElementById('mb-data-card').style.display='block';
+      document.getElementById('home-hero').style.display='none';
+      var fs=document.getElementById('feature-strip');if(fs)fs.style.display='none';
+
+      /* Render home table */
+      window._mbRenderHomeBlockBar();
+      window._mbRenderHomeTable(KMCMulti.getBlockCombined(blockLabels[0]),blockLabels[0]+'.dxf (with Master)',blockLabels[0]);
+      window._mbSetHomePillActive(blockLabels[0]);
+
+      /* Info banner */
+      var banner=document.createElement('div');
+      banner.style.cssText='background:rgba(26,153,212,.09);border:1px solid rgba(26,153,212,.3);border-radius:8px;padding:9px 16px;margin:0 auto 16px;max-width:1200px;font-family:var(--font-mono);font-size:.75rem;color:var(--accent);display:flex;align-items:center;gap:8px;';
+      banner.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+        +'<span>Viewing saved upload: <strong>'+(meta.name||uploadId)+'</strong>. Data loaded from dashboard record.</span>';
+      var dc=document.getElementById('mb-data-card');
+      if(dc&&!dc.previousElementSibling?.id?.includes('banner'))dc.parentNode.insertBefore(banner,dc);
+    }
+
+    document.addEventListener('DOMContentLoaded',function(){
+      /* Show loading state immediately — hide upload section */
+      document.getElementById('mb-upload-panel').style.display='none';
+      document.getElementById('home-hero').style.display='none';
+      var fs=document.getElementById('feature-strip');if(fs)fs.style.display='none';
+      var dc=document.getElementById('mb-data-card');
+      if(dc){
+        dc.style.display='block';
+        dc.innerHTML='<div style="padding:30px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:.82rem;">⏳ Loading upload data…</div>';
+      }
+
+      onAuth(function(user){
+        if(!user){console.warn('[mb-view] Not authenticated');return;}
+        var uid=user.uid;
+        var db=firebase.database();
+
+        Promise.all([
+          db.ref('users/'+uid+'/kmc_uploads/'+uploadId).once('value'),
+          db.ref('users/'+uid+'/kmc_csv_data/'+uploadId).once('value')
+        ]).then(function(snaps){
+          var meta=snaps[0].val();
+          var csvRec=snaps[1].val();
+          if(!meta){
+            var dc2=document.getElementById('mb-data-card');
+            if(dc2)dc2.innerHTML='<div style="padding:30px;text-align:center;color:#e74c3c;font-family:var(--font-mono);font-size:.82rem;">Upload record not found.</div>';
+            console.warn('[mb-view] Upload record not found for',uploadId);
+            return;
+          }
+          /* Rebuild data-card HTML (was replaced by loading msg) */
+          var dc3=document.getElementById('mb-data-card');
+          if(dc3){
+            dc3.innerHTML=
+              '<div class="data-card-actions">'+
+                '<div style="flex:1;min-width:0;">'+
+                  '<div style="font-size:.9rem;font-weight:600;margin-bottom:2px;">Extracted Data — <span id="mb-data-title" style="color:var(--accent);font-family:var(--font-mono);font-weight:500;font-size:.88em;"></span></div>'+
+                  '<div style="font-size:.75rem;color:var(--muted);"><span style="color:#d4501a;font-weight:700;">\'Orange\'</span> = duplicate &nbsp;|&nbsp; <span style="color:#e74c3c;font-weight:700;">\'Red\'</span> = error</div>'+
+                '</div>'+
+                '<div id="home-block-bar" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"></div>'+
+                '<button class="btn" onclick="mbCheckErrors()" style="font-size:.75rem;padding:6px 14px;gap:5px;white-space:nowrap;">'+
+                  '<svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Check Errors'+
+                '</button>'+
+              '</div>'+
+              '<div class="table-wrap"><table id="mb-data-table"><thead><tr id="mb-table-header"></tr></thead><tbody id="mb-table-body"></tbody></table></div>'+
+              '<p style="font-family:var(--font-mono);font-size:.72rem;color:var(--muted);margin-top:12px;">💡 Click the tabs above to view calculations. Use <strong>Block: [A] [B] [C]</strong> in each tab to switch between buildings.</p>';
+          }
+          doRestore(user,meta,csvRec);
+        }).catch(function(err){
+          var dc4=document.getElementById('mb-data-card');
+          if(dc4)dc4.innerHTML='<div style="padding:30px;text-align:center;color:#e74c3c;font-family:var(--font-mono);font-size:.82rem;">Failed to load upload data.</div>';
+          console.error('[mb-view] Failed to load upload data:',err);
+        });
+      });
+    });
+  })();
+
+  })();
+  </script>
+</body>
+</html>
