@@ -1893,14 +1893,54 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderSpecificOffList() {
     const list = document.getElementById('specificOffList'); if (!list) return;
     const dates = getSpecificOffDates();
-    if (!dates.length) { list.innerHTML = '<span style="color:var(--muted);font-size:var(--font-size-xs)">No specific dates added yet.</span>'; return; }
-    list.innerHTML = dates.map((item, i) =>
-      `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--soft);color:var(--accent);border:1px solid var(--accent-mid);border-radius:6px;padding:3px 8px;font-size:var(--font-size-xs);font-weight:600">
-        <i class="bi bi-calendar-x" style="font-size:.7rem"></i>
-        ${item.date}${item.label ? ' — ' + esc(item.label) : ''}
-        <button type="button" onclick="removeSpecificOffDate(${i})" style="background:none;border:none;padding:0;margin-left:3px;cursor:pointer;color:inherit;font-size:.75rem;line-height:1;opacity:.7">✕</button>
-      </span>`
-    ).join('');
+    list.textContent = '';
+    if (!dates.length) {
+      const empty = document.createElement('span');
+      empty.style.color = 'var(--muted)';
+      empty.style.fontSize = 'var(--font-size-xs)';
+      empty.textContent = 'No specific dates added yet.';
+      list.appendChild(empty);
+      return;
+    }
+
+    dates.forEach((item, i) => {
+      const chip = document.createElement('span');
+      chip.style.display = 'inline-flex';
+      chip.style.alignItems = 'center';
+      chip.style.gap = '5px';
+      chip.style.background = 'var(--soft)';
+      chip.style.color = 'var(--accent)';
+      chip.style.border = '1px solid var(--accent-mid)';
+      chip.style.borderRadius = '6px';
+      chip.style.padding = '3px 8px';
+      chip.style.fontSize = 'var(--font-size-xs)';
+      chip.style.fontWeight = '600';
+
+      const icon = document.createElement('i');
+      icon.className = 'bi bi-calendar-x';
+      icon.style.fontSize = '.7rem';
+      chip.appendChild(icon);
+
+      const text = document.createTextNode(item.date + (item.label ? ' — ' + item.label : ''));
+      chip.appendChild(text);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.style.background = 'none';
+      removeBtn.style.border = 'none';
+      removeBtn.style.padding = '0';
+      removeBtn.style.marginLeft = '3px';
+      removeBtn.style.cursor = 'pointer';
+      removeBtn.style.color = 'inherit';
+      removeBtn.style.fontSize = '.75rem';
+      removeBtn.style.lineHeight = '1';
+      removeBtn.style.opacity = '.7';
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', () => window.removeSpecificOffDate(i));
+      chip.appendChild(removeBtn);
+
+      list.appendChild(chip);
+    });
     renderCalendar();
   }
   window.removeSpecificOffDate = function(i) {
