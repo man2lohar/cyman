@@ -196,11 +196,28 @@ function loadKmcUploads(user, db) {
   });
 }
 
-window.viewKmcUpload = (uploadId, fileName) => {
-  window.open(
-    `client/public/features/data_extraction_kmc/index_kmc.html?uploadId=${uploadId}`,
-    '_blank'
-  );
+window.viewKmcUpload = async (uploadId, fileName) => {
+  // Determine upload type from Firebase record
+  const database = window._cymDb;
+  const auth = getAuth();
+  const user = auth.currentUser;
+  let uploadType = 'single';
+
+  if (database && user) {
+    try {
+      const { get } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+      const snap = await get(dbRef(database, `users/${user.uid}/kmc_uploads/${uploadId}`));
+      if (snap.exists() && snap.val().type === 'multi') {
+        uploadType = 'multi';
+      }
+    } catch (_) {}
+  }
+
+  const page = uploadType === 'multi'
+    ? 'client/public/features/data_extraction_kmc/index_kmc_multi.html'
+    : 'client/public/features/data_extraction_kmc/index_kmc.html';
+
+  window.open(`${page}?uploadId=${uploadId}`, '_blank');
 };
 
 window.deleteKmcUpload = (uid, key, db_param) => {
