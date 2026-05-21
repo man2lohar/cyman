@@ -1217,6 +1217,7 @@
     mbUpdateShellBar();
     if(typeof resetTabUnlocks==='function')resetTabUnlocks();else applyTabStates();
     if(typeof switchTab==='function')switchTab('section-home');
+    window.history.replaceState({}, '', window.location.pathname);
   }
   bindClearBtn();
   new MutationObserver(bindClearBtn).observe(document.body,{childList:true,subtree:true});
