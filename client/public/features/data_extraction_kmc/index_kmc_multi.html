@@ -1404,13 +1404,13 @@
   function renderOccAll(){
     var body=document.querySelector('#occ-table tbody');if(!body)return;body.innerHTML='';
     var csv=localStorage.getItem('csvData')||'',rowsRaw=csv.split('\n');
-    var parsed=rowsRaw.slice(1).filter(function(r){return r.trim();}).map(function(r){var x=r.split(',');return{layer:x[3]||'',lt:x[5]||'',area:parseFloat(x[7])||0};});
+    var parsed=rowsRaw.slice(1).filter(function(r){return r.trim();}).map(function(r){var x=r.split(',');return{layer:x[3]||'',lt:x[5]||'',lw:x[6]||'',area:parseFloat(x[7])||0};});
     var seen=new Set(),data=[];
     rowsRaw.forEach(function(row,i){
       if(!i||!row.trim())return;var cells=row.split(','),lyr=cells[3];
       if(OCC_LAYERS_SET.has(lyr)&&!seen.has(lyr)){
         seen.add(lyr);var tf=0,td=0;
-        parsed.forEach(function(d){if(d.layer===lyr){if(d.lt==='ByLayer')tf+=d.area;if(d.lt==='DASHED')td+=d.area;}});
+        parsed.forEach(function(d){if(d.layer===lyr){if(d.lt==='ByLayer'&&d.lw==='ByLayer')tf+=d.area;if(d.lt==='DASHED'&&d.lw==='ByLayer')td+=d.area;}});
         data.push({layer:lyr,tf:tf,td:td,net:tf-td});
       }
     });
