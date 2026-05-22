@@ -676,6 +676,7 @@
   var SLYR=['Parking'];
   var MS=new Set(MLYR),BS=new Set(BLYR),SS=new Set(SLYR),TS=new Set(MLYR.concat(BLYR).concat(SLYR));
   var M2M=0.001,M2M2=0.000001;
+  var EXPECTED_PRINTABLE={"Plot":true,"Road":false,"Splay":true,"Strip":true,"Ground Coverage":false,"TreeCover":false,"OpenSpace":false,"Open Space_Ext_1":false,"Residential":false,"Mercantile_wholesale":false,"Mercantile_retail":false,"Business":false,"Institutional":false,"Storage":false,"Assembly":false,"Hazardous":false,"Industrial":false,"Educational":false,"Internal Road":false,"Alignment":false,"Stair":false,"Lift":false,"Lift_Ext_1":false,"Loft":false,"Cupboard":false,"Tenement":false,"Tenement_Ext_1":false,"Tenement_Single":false,"Tenement_Single_Ext_1":false,"Height":false,"Floor Height":false,"Roof_Structure":false,"Terrace":false,"Parking":true,"Parking_Area":false,"Waterbody":true,"Heritage":false,"Existing":false,"Service_floor":false,"Common Area":false,"Fire Refuge":false,"Triple_Balcony":false,"Goomty":false,"Court Yard":false,"Shaft":false,"Corridor":false,"STP":false,"RWH":false,"Pavement":false,"EVCP":false,"Solar":false,"Baby Care Room":false,"Column":true,"GFPlanExistingStructure":false,"Sanctioned Alignment":false};
 
   /* ═══════════════════════════════════════════════
      7. UPLOAD UI
@@ -768,11 +769,11 @@
       var isP=(e.type==='LWPOLYLINE'||e.type==='POLYLINE'),isL=(e.type==='LINE'),isCl=e.closed||false;
       var sL=(isL||isP)&&(e.length||0)>0,sA=isP&&isCl&&(e.area||0)>0;
       var lw=e.lineweight,lwL=(!lw||lw===-3||lw===0)?'ByLayer':lw===-1?'ByLayer':lw===-2?'ByBlock':lw>0?(lw/100).toFixed(2)+' mm':'ByLayer';
-      rows.push({count:1,name:nm,colorRaw:String(e.color||7),layer:e.layer,length:sL?(e.length*M2M).toFixed(3):'',area:sA?(e.area*M2M2).toFixed(3):'',linetype:e.linetype||'ByLayer',lineweight:lwL,closed:isCl?-1:0});
+      rows.push({count:1,name:nm,colorRaw:String(e.color||7),layer:e.layer,length:sL?(e.length*M2M).toFixed(3):'',area:sA?(e.area*M2M2).toFixed(3):'',linetype:e.linetype||'ByLayer',lineweight:lwL,closed:isCl?-1:0,printable:e.printable});
     });
     return rows;
   }
-  function finE(e,layerDefs){var l=layerDefs[e.layer]||{};if(e.color===null)e.color=l.color||7;return e;}
+  function finE(e,layerDefs){var l=layerDefs[e.layer]||{};if(e.color===null)e.color=l.color||7;e.printable=l.plot!==undefined?l.plot:true;return e;}
   function mkCSV(rows){return'Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed\n'+rows.map(function(r){return[r.count,r.name,r.colorRaw,r.layer,r.length,r.linetype,r.lineweight,r.area,r.closed].join(',');}).join('\n');}
 
   /* ═══════════════════════════════════════════════
@@ -1113,11 +1114,17 @@
     var lbls=Object.keys(DXF.blocks).sort();
     Promise.all([rf(DXF.master)].concat(lbls.map(function(l){return rf(DXF.blocks[l]);}))).then(function(txts){
       var mr=parseDXF(txts[0]);KMCMulti.saveMaster(mkCSV(mr));
-      var warns=[],seen=new Set();
+      var warns=[],printWarns=[],seen=new Set(),seen2=new Set();
+      /* Printable mismatches in master */
+      var masterSrcName=DXF.master.name.replace(/\.\w+$/,'');
+      mr.forEach(function(r){var exp=EXPECTED_PRINTABLE[r.layer],act=r.printable!==undefined?r.printable:exp;if(exp!==undefined&&act!==exp){var k=r.layer+'|'+masterSrcName;if(!seen2.has(k)){seen2.add(k);printWarns.push({layer:r.layer,source:masterSrcName,actual:act,expected:exp});}}});
       lbls.forEach(function(lbl,i){
         var br=parseDXF(txts[i+1]);KMCMulti.saveBlock(lbl,mkCSV(br));
         mr.forEach(function(r){if(BS.has(r.layer)&&!SS.has(r.layer)){var k=r.layer+'|m';if(!seen.has(k)){seen.add(k);warns.push({layer:r.layer,foundIn:DXF.master.name,shouldBeIn:lbl+'.dxf'});}}});
         br.forEach(function(r){if(MS.has(r.layer)&&!SS.has(r.layer)){var k=r.layer+'|'+lbl;if(!seen.has(k)){seen.add(k);warns.push({layer:r.layer,foundIn:DXF.blocks[lbl].name,shouldBeIn:'Master Sheet.dxf'});}}});
+        /* Printable mismatches in this block */
+        var blkSrcName=DXF.blocks[lbl].name.replace(/\.\w+$/,'');
+        br.forEach(function(r){var exp=EXPECTED_PRINTABLE[r.layer],act=r.printable!==undefined?r.printable:exp;if(exp!==undefined&&act!==exp){var k=r.layer+'|'+blkSrcName;if(!seen2.has(k)){seen2.add(k);printWarns.push({layer:r.layer,source:blkSrcName,actual:act,expected:exp});}}});
       });
       btn.textContent='⚡ Extract All Layers';btn.disabled=false;btn.style.opacity='1';
 
@@ -1148,9 +1155,10 @@
         setHomePillActive(lbls[0]);
       }
 
-      if(warns.length>0){
-        var html='<p style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px">Layers in wrong file</p>';
-        html+=warns.map(function(w){return'<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#dc2626;font-weight:700;flex:1">'+w.layer+'</span><span style="color:#94a3b8;font-size:11px">in <b style="color:#d97706">'+w.foundIn+'</b> → <b style="color:#16a34a">'+w.shouldBeIn+'</b></span></div>';}).join('');
+      if(warns.length>0||printWarns.length>0){
+        var html='';
+        if(warns.length>0){html+='<p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Layer in wrong file</p>';html+=warns.map(function(w){return'<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#dc2626;font-weight:700;flex:1">'+w.layer+'</span><span style="color:#94a3b8;font-size:11px">in <b style="color:#d97706">'+w.foundIn+'</b> → <b style="color:#16a34a">'+w.shouldBeIn+'</b></span></div>';}).join('');}
+        if(printWarns.length>0){html+='<p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 6px">Printable flag mismatch</p>';html+=printWarns.map(function(m){return'<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#92400e;font-weight:700;flex:1">'+m.layer+'</span><span style="color:#94a3b8;font-size:11px">in <b>'+m.source+'</b> · actual: <b style="color:#dc2626">'+(m.actual?'Yes':'No')+'</b> → expected: <b style="color:#16a34a">'+(m.expected?'Yes':'No')+'</b></span></div>';}).join('');}
         document.getElementById('dxf-popup-body').innerHTML=html;
         document.getElementById('dxf-popup').style.display='flex';
         _pendingFn=doShow;
