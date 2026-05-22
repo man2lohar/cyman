@@ -1299,22 +1299,24 @@ function _kmcCheckMissingLayers() {
         if(section!=='BLOCKS'&&section!=='ENTITIES')continue;
         if(code==='0'){
           if(ent){rawEnts.push(finalise(ent,layerDefs));ent=null;}
-          if(ETYPES.has(val)){ent={type:val,layer:'0',color:null,linetype:null,lineweight:null,closed:false,length:0,area:0,x1:null,y1:null,x2:null,y2:null,vertices:[],curX:null,curY:null};}else ent=null;
+          if(ETYPES.has(val)){ent={type:val,layer:'0',color:null,linetype:null,lineweight:null,closed:false,length:0,area:0,x1:null,y1:null,x2:null,y2:null,vertices:[],curX:null,curY:null,curBulge:0};}
           continue;
         }
         if(!ent)continue;
         if(code==='8')ent.layer=val;if(code==='62')ent.color=parseInt(val);if(code==='6')ent.linetype=val;if(code==='370')ent.lineweight=parseInt(val);
         if(code==='70'&&(ent.type==='LWPOLYLINE'||ent.type==='POLYLINE'))ent.closed=(parseInt(val)&1)===1;
         if(ent.type==='LINE'){if(code==='10')ent.x1=parseFloat(val);if(code==='20')ent.y1=parseFloat(val);if(code==='11')ent.x2=parseFloat(val);if(code==='21')ent.y2=parseFloat(val);}
-        if(ent.type==='LWPOLYLINE'){if(code==='10'){if(ent.curX!==null&&ent.curY!==null)ent.vertices.push([ent.curX,ent.curY]);ent.curX=parseFloat(val);ent.curY=null;}if(code==='20')ent.curY=parseFloat(val);}
+        if(ent.type==='LWPOLYLINE'){if(code==='10'){if(ent.curX!==null&&ent.curY!==null)ent.vertices.push([ent.curX,ent.curY,ent.curBulge]);ent.curX=parseFloat(val);ent.curY=null;ent.curBulge=0;}if(code==='20')ent.curY=parseFloat(val);if(code==='42')ent.curBulge=parseFloat(val);}
       }
       if(ent)rawEnts.push(finalise(ent,layerDefs));
       function dist(ax,ay,bx,by){return Math.sqrt((bx-ax)**2+(by-ay)**2);}
-      function perimeter(v,closed){let l=0;for(let i=0;i<v.length-1;i++)l+=dist(v[i][0],v[i][1],v[i+1][0],v[i+1][1]);if(closed&&v.length>1)l+=dist(v[v.length-1][0],v[v.length-1][1],v[0][0],v[0][1]);return l;}
-      function shoelace(v){let a=0;const m=v.length;for(let i=0;i<m;i++){const j=(i+1)%m;a+=v[i][0]*v[j][1]-v[j][0]*v[i][1];}return Math.abs(a)/2;}
+      function arcLen(x1,y1,x2,y2,b){const ch=dist(x1,y1,x2,y2);if(!b||ch===0)return ch;const th=4*Math.atan(Math.abs(b));return(ch/(2*Math.sin(th/2)))*th;}
+      function perimeter(v,closed){let l=0;for(let i=0;i<v.length-1;i++)l+=arcLen(v[i][0],v[i][1],v[i+1][0],v[i+1][1],v[i][2]||0);if(closed&&v.length>1){const last=v[v.length-1];l+=arcLen(last[0],last[1],v[0][0],v[0][1],last[2]||0);}return l;}
+      function arcSegArea(x1,y1,x2,y2,b){if(!b)return 0;const ch=dist(x1,y1,x2,y2);if(ch===0)return 0;const th=4*Math.atan(Math.abs(b));const R=ch/(2*Math.sin(th/2));const sa=R*R/2*(th-Math.sin(th));return b>0?sa:-sa;}
+      function shoelace(v){let a=0;const m=v.length;for(let i=0;i<m;i++){const j=(i+1)%m;a+=v[i][0]*v[j][1]-v[j][0]*v[i][1];}a/=2;for(let i=0;i<m-1;i++)a+=arcSegArea(v[i][0],v[i][1],v[i+1][0],v[i+1][1],v[i][2]||0);const last=v[m-1];a+=arcSegArea(last[0],last[1],v[0][0],v[0][1],last[2]||0);return Math.abs(a);}
       for(const e of rawEnts){
         if(e.type==='LINE'&&e.x1!==null&&e.y1!==null&&e.x2!==null&&e.y2!==null)e.length=dist(e.x1,e.y1,e.x2,e.y2);
-        if(e.type==='LWPOLYLINE'){if(e.curX!==null&&e.curY!==null)e.vertices.push([e.curX,e.curY]);if(e.vertices.length>=2){e.length=perimeter(e.vertices,e.closed);if(e.closed&&e.vertices.length>=3)e.area=shoelace(e.vertices);}}
+        if(e.type==='LWPOLYLINE'){if(e.curX!==null&&e.curY!==null)e.vertices.push([e.curX,e.curY,e.curBulge||0]);if(e.vertices.length>=2){e.length=perimeter(e.vertices,e.closed);if(e.closed&&e.vertices.length>=3)e.area=shoelace(e.vertices);}}
       }
       const rows=[];
       for(const e of rawEnts){
