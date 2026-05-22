@@ -555,13 +555,11 @@ function _calcCarParkingRequired(layerData) {
   const totalCarpetArea = layerData.reduce((s, d) => s + parseFloat(d.carpetArea), 0);
   const totalNetArea = layerData.reduce((s, d) => s + parseFloat(d.netArea), 0);
 
-  if (layer === 'Business') {
-    let spaces;
-    if      (totalCarpetArea <= 1500) spaces = totalCarpetArea / 50;
-    else if (totalCarpetArea <= 5000) spaces = (totalCarpetArea - 1500) / 75 + 30;
-    else                              spaces = (totalCarpetArea - 5000) / 100 + 76;
-    return Math.floor(spaces);
-  }
+   if (layer === 'Business') {
+     if (totalNetArea <= 50) return 0;
+     if (totalNetArea <= 70) return 1;
+     return Math.floor(totalNetArea / 70);
+   }
   if (layer === 'Mercantile_retail') {
     let parkingSlots = 0;
 
