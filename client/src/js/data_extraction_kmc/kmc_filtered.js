@@ -245,8 +245,8 @@ function _buildOtherTables(csv, parsedData) {
                p.column8 > 5) {
              const lw = (p.column7 || '').trim() || 'unknown';
              _filteredErrors.push(
-               `${_filteredErrCount++}. Lift Lobby Area (Lineweight: ${lw}) exceeds limit of 5 sq.m (Value: ${p.column8.toFixed(3)} sq.m)`
-             );
+              `${_filteredErrCount++}. Lift Lobby Area (Floor: ${d.floor}, Lineweight: ${lw}) exceeds limit of 5 sq.m (Value: ${p.column8.toFixed(3)} sq.m)`
+            );
            }
          });
         totals.totalFloorArea += parseFloat(d.totalFloorArea) || 0;
