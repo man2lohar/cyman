@@ -553,6 +553,7 @@ function _calcCarParkingRequired(layerData) {
   if (!layerData.length) return 'N/A';
   const layer           = layerData[0].layer;
   const totalCarpetArea = layerData.reduce((s, d) => s + parseFloat(d.carpetArea), 0);
+  const totalNetArea = layerData.reduce((s, d) => s + parseFloat(d.netArea), 0);
 
   if (layer === 'Business') {
     let spaces;
