@@ -115,4 +115,58 @@
 
   onAuthReady(user => attach(user));
 
+  /* ── DXF drawing upload tracker ─────────────────────────────────
+     Called from index_kmc.html → doShow() after successful DXF extraction.
+     Records the two DXF files (Master Sheet + A.dxf) to Firebase,
+     matching the same schema as kmc-multi-tracker so the dashboard
+     shows them consistently alongside multi-building uploads.
+  ── */
+  async function trackDxfUpload(user, masterFile, aFile, csvData) {
+    const uid = user.uid;
+    const db  = dbUploads(uid);
+    if (!db) { console.warn('[kmc-tracker] Firebase DB not available'); return; }
+
+    const now      = Date.now();
+    const id       = 'kmc_dxf_' + now;
+    const fileNames = [masterFile.name, aFile.name];
+    const csvBytes  = csvData ? new Blob([csvData]).size : 0;
+    const sizeLabel = csvBytes > 1024 * 1024
+      ? (csvBytes / (1024 * 1024)).toFixed(1) + ' MB'
+      : Math.round(csvBytes / 1024) + ' KB';
+
+    const record = {
+      id,
+      name:       masterFile.name + ' + ' + aFile.name,
+      type:       'single',
+      files:      fileNames,
+      masterFile: masterFile.name,
+      size:       csvBytes,
+      sizeLabel,
+      uploadedAt: now,
+      expiresAt:  now + ONE_MONTH_MS,
+      uploadPage: location.pathname,
+    };
+
+    try {
+      await db.child(id).set(record);
+      console.log('[kmc-tracker] DXF upload recorded:', record.name);
+
+      try { window.opener?.postMessage({ cymKmcUpload: record }, '*'); } catch (_) {}
+      try { window.parent?.postMessage({ cymKmcUpload: record }, '*'); } catch (_) {}
+
+      if (csvData) {
+        const csvRef = firebase.database().ref(`users/${uid}/kmc_csv_data/${id}`);
+        await csvRef.set({ csv: csvData, expiresAt: now + ONE_MONTH_MS });
+        console.log('[kmc-tracker] DXF CSV data saved for uploadId:', id);
+      }
+    } catch (err) {
+      console.warn('[kmc-tracker] Failed to save DXF upload record:', err);
+    }
+  }
+
+  /* Public API — called from index_kmc.html after DXF extraction */
+  window.kmcTrackDxfUpload = function (masterFile, aFile, csvData) {
+    onAuthReady(user => trackDxfUpload(user, masterFile, aFile, csvData));
+  };
+
 })();
