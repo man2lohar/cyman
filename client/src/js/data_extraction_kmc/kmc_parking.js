@@ -564,13 +564,13 @@ function _calcCarParkingRequired(layerData) {
   if (layer === 'Mercantile_retail') {
     let parkingSlots = 0;
 
-    if (totalCarpetArea <= 5000) {
+    if (totalNetArea <= 5000) {
       // Rule 1: 1 slot per 50 for the first 5000
-      parkingSlots = totalCarpetArea / 50;
+      parkingSlots = totalNetArea / 50;
     } else {
       // Rule 2: First 5000 at 1 per 50, PLUS excess at 1 per 75
       const baseParking = 5000 / 50; // This equals 100 slots
-      const excessArea = totalCarpetArea - 5000;
+      const excessArea = totalNetArea - 5000;
       const excessParking = excessArea / 75;
       
       parkingSlots = baseParking + excessParking;
