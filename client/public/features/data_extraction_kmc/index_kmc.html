@@ -1228,8 +1228,8 @@ function _kmcCheckMissingLayers() {
   (function(){
     'use strict';
     const MASTER_PATTERN = /^master\s+sheet\.dxf$/i;
-    const MASTER_LAYERS = ["Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space","Waterbody","Goomty","Alignment","GFPlanExistingStructure","Sanctioned Alignment","STP","RWH","Pavement"];
-    const A_LAYERS = ["Column","Open Space_Ext_1","Residential","Mercantile_wholesale","Mercantile_retail","Business","Institutional","Storage","Assembly","Hazardous","Industrial","Educational","Internal Road","Stair","Lift","Lift_Ext_1","Loft","Cupboard","Tenement","Tenement_Ext_1","Tenement_Single","Tenement_Single_Ext_1","Height","Floor Height","Roof_Structure","Terrace","Parking_Area","Heritage","Existing","Service_floor","Common Area","Fire Refuge","Triple_Balcony","Court Yard","Shaft","Corridor","EVCP","Solar","Baby Care Room"];
+    const MASTER_LAYERS = ["Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space","Waterbody","Goomty","Alignment","Existing","Sanctioned Alignment","STP","RWH","Pavement"];
+    const A_LAYERS = ["Column","Open Space_Ext_1","Residential","Mercantile_wholesale","Mercantile_retail","Business","Institutional","Storage","Assembly","Hazardous","Industrial","Educational","Internal Road","Stair","Lift","Lift_Ext_1","Loft","Cupboard","Tenement","Tenement_Ext_1","Tenement_Single","Tenement_Single_Ext_1","Height","Floor Height","Roof_Structure","Terrace","Parking_Area","Heritage","Service_floor","Common Area","Fire Refuge","Triple_Balcony","Court Yard","Shaft","Corridor","EVCP","Solar","Baby Care Room"];
     const SHARED_LAYERS = ["Parking"];
     const MASTER_SET = new Set(MASTER_LAYERS);
     const A_SET      = new Set(A_LAYERS);
