@@ -671,8 +671,8 @@
      6. DXF LAYER SETS
   ═══════════════════════════════════════════════ */
   var MASTER_RE=/^master\s+sheet\.dxf$/i;
-  var MLYR=['Plot','Road','Splay','Strip','Ground Coverage','Tree Cover','Open Space','Waterbody','Goomty','Alignment','GFPlanExistingStructure','Sanctioned Alignment','STP','RWH','Pavement'];
-  var BLYR=['Column','Open Space_Ext_1','Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional','Storage','Assembly','Hazardous','Industrial','Educational','Internal Road','Stair','Lift','Lift_Ext_1','Loft','Cupboard','Tenement','Tenement_Ext_1','Tenement_Single','Tenement_Single_Ext_1','Height','Floor Height','Roof_Structure','Terrace','Parking_Area','Heritage','Existing','Service_floor','Common Area','Fire Refuge','Triple_Balcony','Court Yard','Shaft','Corridor','EVCP','Solar','Baby Care Room'];
+  var MLYR=['Plot','Road','Splay','Strip','Ground Coverage','Tree Cover','Open Space','Waterbody','Goomty','Alignment','Sanctioned Alignment','STP','RWH','Pavement','Existing'];
+  var BLYR=['Column','Open Space_Ext_1','Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional','Storage','Assembly','Hazardous','Industrial','Educational','Internal Road','Stair','Lift','Lift_Ext_1','Loft','Cupboard','Tenement','Tenement_Ext_1','Tenement_Single','Tenement_Single_Ext_1','Height','Floor Height','Roof_Structure','Terrace','Parking_Area','Heritage','Service_floor','Common Area','Fire Refuge','Triple_Balcony','Court Yard','Shaft','Corridor','EVCP','Solar','Baby Care Room'];
   var SLYR=['Parking'];
   var MS=new Set(MLYR),BS=new Set(BLYR),SS=new Set(SLYR),TS=new Set(MLYR.concat(BLYR).concat(SLYR));
   var M2M=0.001,M2M2=0.000001;
