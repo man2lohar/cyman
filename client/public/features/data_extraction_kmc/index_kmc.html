@@ -1370,6 +1370,8 @@ function _kmcCheckMissingLayers() {
           document.getElementById('main-container').style.display='block';
           if(typeof window.displayData==='function') window.displayData(csv);
           if(typeof window._kmcTabRefresh==='function') window._kmcTabRefresh();
+          /* Track DXF drawing upload to Firebase */
+          if(typeof window.kmcTrackDxfUpload==='function') window.kmcTrackDxfUpload(DXF.master,DXF.a,csv);
         };
         if(layerMismatches.length>0||printMismatches.length>0){
           let html='';
