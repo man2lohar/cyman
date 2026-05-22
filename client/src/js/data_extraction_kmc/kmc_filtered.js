@@ -238,14 +238,19 @@ function _buildOtherTables(csv, parsedData) {
       if (layer === 'Lift') {
         tr.insertCell().textContent = d.totalFloorArea;
         tr.insertCell().textContent = d.deductedArea;
-        const lobby = parseFloat(d.deductedArea) || 0;
-        if (lobby > 5) {
-          _filteredErrors.push(
-            `${_filteredErrCount++}. Lift Lobby Area exceeds the limit of 5 (Value: ${lobby})`
-          );
-        }
+        parsedData.forEach(p => {
+           if (p.column4 === 'Lift' &&
+               p.column3 === d.floor &&
+               p.column6 === 'DASHED' &&
+               p.column8 > 5) {
+             const lw = (p.column7 || '').trim() || 'unknown';
+             _filteredErrors.push(
+               `${_filteredErrCount++}. Lift Lobby Area (Lineweight: ${lw}) exceeds limit of 5 sq.m (Value: ${p.column8.toFixed(3)} sq.m)`
+             );
+           }
+         });
         totals.totalFloorArea += parseFloat(d.totalFloorArea) || 0;
-        totals.deductedArea   += lobby;
+        totals.deductedArea += parseFloat(d.deductedArea) || 0;
       } else if (SPECIAL_LAYERS.includes(layer)) {
         tr.insertCell().textContent = d.length;
         tr.insertCell().textContent = d.linetype;
