@@ -747,20 +747,21 @@
       if(c==='2'&&(v==='BLOCKS'||v==='ENTITIES')){if(ent)raw.push(finE(ent,ld));ent=null;sec=v;continue;}
       if(c==='0'&&v==='ENDSEC'){if(ent)raw.push(finE(ent,ld));ent=null;sec='';continue;}
       if(sec!=='BLOCKS'&&sec!=='ENTITIES')continue;
-      if(c==='0'){if(ent)raw.push(finE(ent,ld));ent=null;if(ET.has(v))ent={type:v,layer:'0',color:null,linetype:null,lineweight:null,closed:false,length:0,area:0,x1:null,y1:null,x2:null,y2:null,vertices:[],curX:null,curY:null};continue;}
+      if(c==='0'){if(ent)raw.push(finE(ent,ld));ent={type:v,layer:'0',color:null,linetype:null,lineweight:null,closed:false,length:0,area:0,x1:null,y1:null,x2:null,y2:null,vertices:[],curX:null,curY:null,curBulge:0};continue;}
       if(!ent)continue;
       if(c==='8')ent.layer=v;if(c==='62')ent.color=parseInt(v);if(c==='6')ent.linetype=v;if(c==='370')ent.lineweight=parseInt(v);
       if(c==='70'&&(ent.type==='LWPOLYLINE'||ent.type==='POLYLINE'))ent.closed=(parseInt(v)&1)===1;
       if(ent.type==='LINE'){if(c==='10')ent.x1=parseFloat(v);if(c==='20')ent.y1=parseFloat(v);if(c==='11')ent.x2=parseFloat(v);if(c==='21')ent.y2=parseFloat(v);}
-      if(ent.type==='LWPOLYLINE'){if(c==='10'){if(ent.curX!==null&&ent.curY!==null)ent.vertices.push([ent.curX,ent.curY]);ent.curX=parseFloat(v);ent.curY=null;}if(c==='20')ent.curY=parseFloat(v);}
-    }
+      if(ent.type==='LWPOLYLINE'){if(c==='10'){if(ent.curX!==null&&ent.curY!==null)ent.vertices.push([ent.curX,ent.curY,ent.curBulge]);ent.curX=parseFloat(v);ent.curY=null;ent.curBulge=0;}if(c==='20')ent.curY=parseFloat(v);if(c==='42')ent.curBulge=parseFloat(v);}    }
     if(ent)raw.push(finE(ent,ld));
     function dd(ax,ay,bx,by){return Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));}
-    function per(vv,cl){var l=0;for(var i=0;i<vv.length-1;i++)l+=dd(vv[i][0],vv[i][1],vv[i+1][0],vv[i+1][1]);if(cl&&vv.length>1)l+=dd(vv[vv.length-1][0],vv[vv.length-1][1],vv[0][0],vv[0][1]);return l;}
-    function sho(vv){var a=0,m=vv.length;for(var i=0;i<m;i++){var j=(i+1)%m;a+=vv[i][0]*vv[j][1]-vv[j][0]*vv[i][1];}return Math.abs(a)/2;}
+    function aL(x1,y1,x2,y2,b){var ch=dd(x1,y1,x2,y2);if(!b||ch===0)return ch;var th=4*Math.atan(Math.abs(b));return(ch/(2*Math.sin(th/2)))*th;}
+    function per(vv,cl){var l=0;for(var i=0;i<vv.length-1;i++)l+=aL(vv[i][0],vv[i][1],vv[i+1][0],vv[i+1][1],vv[i][2]||0);if(cl&&vv.length>1){var la=vv[vv.length-1];l+=aL(la[0],la[1],vv[0][0],vv[0][1],la[2]||0);}return l;}    
+    function aS(x1,y1,x2,y2,b){if(!b)return 0;var ch=dd(x1,y1,x2,y2);if(ch===0)return 0;var th=4*Math.atan(Math.abs(b));var R=ch/(2*Math.sin(th/2));var sa=R*R/2*(th-Math.sin(th));return b>0?sa:-sa;}
+    function sho(vv){var a=0,m=vv.length;for(var i=0;i<m;i++){var j=(i+1)%m;a+=vv[i][0]*vv[j][1]-vv[j][0]*vv[i][1];}a/=2;for(var i=0;i<m-1;i++)a+=aS(vv[i][0],vv[i][1],vv[i+1][0],vv[i+1][1],vv[i][2]||0);var la=vv[m-1];a+=aS(la[0],la[1],vv[0][0],vv[0][1],la[2]||0);return Math.abs(a);}
     raw.forEach(function(e){
       if(e.type==='LINE'&&e.x1!==null)e.length=dd(e.x1,e.y1,e.x2,e.y2);
-      if(e.type==='LWPOLYLINE'){if(e.curX!==null&&e.curY!==null)e.vertices.push([e.curX,e.curY]);if(e.vertices.length>=2){e.length=per(e.vertices,e.closed);if(e.closed&&e.vertices.length>=3)e.area=sho(e.vertices);}}
+      if(e.type==='LWPOLYLINE'){if(e.curX!==null&&e.curY!==null)e.vertices.push([e.curX,e.curY,e.curBulge||0]);if(e.vertices.length>=2){e.length=per(e.vertices,e.closed);if(e.closed&&e.vertices.length>=3)e.area=sho(e.vertices);}}
     });
     var rows=[];
     raw.forEach(function(e){
