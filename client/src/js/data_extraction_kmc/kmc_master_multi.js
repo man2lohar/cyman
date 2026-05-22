@@ -343,16 +343,16 @@
     const type       = (document.getElementById('usegroup')?.textContent || '').toLowerCase();
     const minLand    = Math.min(landArea, landDoc);
     const gcTable = {
-      residential:         { upTo500: 60, above500: 50, above5000: 45 },
-      educational:         { upTo500: 45, above500: 45, above5000: 35 },
-      institutional:       { upTo500: 40, above500: 40, above5000: 35 },
-      assembly:            { upTo500: 40, above500: 40, above5000: 35 },
-      mercantile_retail:   { upTo500: 40, above500: 40, above5000: 35 },
-      mercantile_wholesale:{ upTo500: 40, above500: 40, above5000: 35 },
-      industrial:          { upTo500: 40, above500: 40, above5000: 35 },
-      storage:             { upTo500: 40, above500: 40, above5000: 35 },
-      hazardous:           { upTo500: 40, above500: 40, above5000: 35 },
-      business:            { upTo500: 40, above500: 40, above5000: 35 },
+      residential:         { upTo500: 60, above500: 50, above5000: 50 },
+      educational:         { upTo500: 50, above500: 50, above5000: 50 },
+      institutional:       { upTo500: 50, above500: 50, above5000: 50 },
+      assembly:            { upTo500: 50, above500: 50, above5000: 50 },
+      mercantile_retail:   { upTo500: 50, above500: 50, above5000: 50 },
+      mercantile_wholesale:{ upTo500: 50, above500: 50, above5000: 50 },
+      industrial:          { upTo500: 50, above500: 50, above5000: 50 },
+      storage:             { upTo500: 50, above500: 50, above5000: 50 },
+      hazardous:           { upTo500: 50, above500: 50, above5000: 50 },
+      business:            { upTo500: 50, above500: 50, above5000: 50 },
     };
     const t = gcTable[type] || gcTable.residential;
     const permPct  = minLand <= 500 ? t.upTo500 : minLand <= 5000 ? t.above500 : t.above5000;
