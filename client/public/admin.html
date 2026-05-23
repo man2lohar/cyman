@@ -626,24 +626,6 @@ function doLogin(){
 document.getElementById('lPw').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
 function doOut(){ log('Admin signed out'); auth.signOut(); location.reload(); }
 
-    );
-    if(!res.ok){ log('Email fetch skipped — requires Firebase Admin SDK (showing UIDs only)'); return false; }
-    const data = await res.json();
-    // batchGet returns {userInfo:[{localId,email,...}]}
-    if(data.userInfo){
-      data.userInfo.forEach(u=>{ if(u.localId&&u.email) emailCache[u.localId]=u.email; });
-      log('Loaded '+data.userInfo.length+' emails from Auth API');
-      // patch U
-      Object.keys(U).forEach(uid=>{ if(emailCache[uid]) U[uid].email=emailCache[uid]; });
-      return true;
-    }
-  }catch(e){
-    // Fallback: list users via accounts:lookup with each uid's idToken (won't work for other users)
-    // The only real solution is a Cloud Function — explain to user
-    log('Email API failed: '+e.message+' (needs Firebase Admin SDK or Cloud Function)');
-  }
-  return false;
-}
 
 /* ═══════════════════════════════
    LOAD ALL DATA
