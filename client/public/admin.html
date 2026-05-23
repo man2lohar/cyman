@@ -72,7 +72,8 @@ input,select{font-family:var(--sans);transition:all .15s}
 .sb{position:fixed;left:0;top:0;bottom:0;width:var(--sw);
   background:var(--s1);border-right:1px solid var(--border);
   display:flex;flex-direction:column;z-index:40}
-.sb-brand{display:flex;align-items:center;gap:9px;padding:16px 14px;border-bottom:1px solid var(--border)}
+.sb-brand{display:flex;align-items:center;gap:9px;padding:16px 14px;border-bottom:1px solid var(--border);transition:background .15s}
+.sb-brand:hover{background:var(--s2)}
 .sb-brand img{width:28px;height:28px;object-fit:contain;flex-shrink:0}
 .sb-brand-name{font-family:var(--akaya);font-size:1.2rem;color:var(--text)}
 .sb-brand-name sup{font-size:.65em;vertical-align:super;color:var(--blue)}
@@ -324,8 +325,8 @@ input,select{font-family:var(--sans);transition:all .15s}
 #toast.info{border-left-color:var(--blue)}
 
 /* ── EMAIL LOADING ── */
-.email-loading{font-size:.72rem;color:var(--t3);font-style:italic}
-.email-chip{font-size:.72rem;color:var(--emerald);font-weight:600}
+.email-loading{font-size:.68rem;color:var(--t3);font-style:italic}
+.email-chip{font-size:.68rem;color:var(--emerald);font-weight:500;letter-spacing:.01em}
 
 /* ── SPINNER / EMPTY ── */
 .spin{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);
@@ -368,7 +369,7 @@ input,select{font-family:var(--sans);transition:all .15s}
 <!-- APP -->
 <div id="app">
 <aside class="sb">
-  <div class="sb-brand">
+  <div class="sb-brand" onclick="window.open('https://cymansquare.in','_blank')" style="cursor:pointer" title="Go to CyManSquare">
     <img id="sbLogo" alt=""/>
     <div class="sb-brand-name">CyMan<sup>2</sup></div>
     <div class="sb-badge">Admin</div>
@@ -605,8 +606,8 @@ auth.onAuthStateChanged(async u=>{
     showLogin(); return;
   }
   document.getElementById('authLoading').style.display='none';
-  document.getElementById('sbAv').textContent=(u.email||'A')[0].toUpperCase();
-  document.getElementById('sbEm').textContent=u.email||u.uid;
+  document.getElementById('sbAv').textContent=(u.displayName||u.email||'A')[0].toUpperCase();
+  document.getElementById('sbEm').textContent=u.displayName||(u.email||u.uid);
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
   log('Admin signed in: '+(u.email||u.uid));
@@ -625,16 +626,6 @@ function doLogin(){
 document.getElementById('lPw').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
 function doOut(){ log('Admin signed out'); auth.signOut(); location.reload(); }
 
-/* ═══════════════════════════════
-   FETCH EMAILS (Firebase Auth REST API)
-   — Only way to get emails since app.js never writes them to DB
-═══════════════════════════════ */
-async function fetchEmails(){
-  try{
-    const idToken = await auth.currentUser.getIdToken(true);
-    const res = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/projects/project-management-man2/accounts:batchGet?maxResults=200`,
-      { method:'GET', headers:{ Authorization:'Bearer '+idToken } }
     );
     if(!res.ok){ log('Email fetch skipped — requires Firebase Admin SDK (showing UIDs only)'); return false; }
     const data = await res.json();
@@ -670,14 +661,13 @@ async function loadAll(){
       const trash   =toArr(d.trash);
       const kmc     =toArr(d.kmc_uploads);
       const members =toArr(d.members);
-      // email: check every possible key first
-      const email = d.email||d.profile?.email||d.userEmail||emailCache[uid]||'';
-      U[uid]={uid,email,tasks,projects,trash,kmc,members,raw:d,
+      // email & name: check every known DB location
+      const email = d.email||d.profile?.email||d.userEmail||d.profileEmail||(d.profile?.displayEmail)||emailCache[uid]||'';
+      const name  = d.displayName||d.profile?.displayName||d.name||d.profile?.name||'';
+      if(email) emailCache[uid]=email;
+      U[uid]={uid,email,name,tasks,projects,trash,kmc,members,raw:d,
         doneTasks:tasks.filter(t=>t.completed||((t.kanbanStatus||'').toLowerCase()==='done')).length};
     });
-
-    // Try to fetch real emails from Auth API
-    const gotEmails = await fetchEmails();
 
     computeStats();
     renderOverview();
@@ -685,9 +675,6 @@ async function loadAll(){
     renderKmc();
     updateSbCounts();
 
-    if(!gotEmails){
-      toast('Note: Add a Cloud Function to expose user emails. See README.','info');
-    }
     log('Data loaded — '+Object.keys(U).length+' users');
     toast('Loaded '+Object.keys(U).length+' users','ok');
   }catch(e){
@@ -698,17 +685,24 @@ async function loadAll(){
 
 function reload(){ toast('Refreshing…','info'); loadAll(); }
 
-/* EMAIL DISPLAY — best effort */
+/* EMAIL / NAME DISPLAY */
 function showEmail(u){
   if(u.email) return u.email;
   if(emailCache[u.uid]) return emailCache[u.uid];
-  return null; // unknown
+  return null;
 }
-function displayName(u){
+function showName(u){ return u.name || null; }
+function displayName(u){ return showName(u) || showEmail(u) || u.uid.slice(0,14)+'…'; }
+function avLetter(u){
+  const n=showName(u); if(n) return n[0].toUpperCase();
+  const e=showEmail(u); if(e) return e[0].toUpperCase();
+  return u.uid[0].toUpperCase();
+}
+function emailCell(u){
   const em=showEmail(u);
-  return em || u.uid.slice(0,14)+'…';
+  if(em) return `<span class="email-chip">✉ ${esc(em)}</span>`;
+  return `<span class="email-loading">UID only</span>`;
 }
-function avLetter(u){ return (showEmail(u)||u.uid)[0].toUpperCase(); }
 
 /* ═══════════════════════════════
    STATS
@@ -734,13 +728,15 @@ function renderOvTop(){
   const el=document.getElementById('ov-top');
   const list=Object.values(U).sort((a,b)=>(b.tasks.length+b.projects.length)-(a.tasks.length+a.projects.length)).slice(0,6);
   if(!list.length){el.innerHTML=emH('No users');return;}
-  el.innerHTML='<table class="tbl"><thead><tr><th>User</th><th>Email</th><th>Tasks</th><th>Projects</th><th>KMC</th><th></th></tr></thead><tbody>'
+  el.innerHTML='<table class="tbl"><thead><tr><th>User</th><th>Tasks</th><th>Projects</th><th>KMC</th><th></th></tr></thead><tbody>'
     +list.map(u=>`<tr>
       <td><div class="u-cell">
-        <div class="u-av" style="background:${uc(u.uid)}">${avLetter(u)}</div>
-        <div><div class="u-nm">${esc(displayName(u))}</div></div>
+        <div class="u-av" style="background:${uc(u.uid)};width:36px;height:36px;font-size:.85rem">${avLetter(u)}</div>
+        <div>
+          <div class="u-nm">${esc(showName(u)||showEmail(u)||u.uid.slice(0,14)+'…')}</div>
+          <div style="font-size:.67rem;color:var(--t2);margin-top:2px">${showEmail(u)?'<span style="color:var(--emerald)">✉ '+esc(showEmail(u))+'</span>':'<span style="color:var(--t3)">'+u.uid.slice(0,16)+'…</span>'}</div>
+        </div>
       </div></td>
-      <td>${emailCell(u)}</td>
       <td><span class="bdg em">${u.tasks.length}</span></td>
       <td><span class="bdg bl">${u.projects.length}</span></td>
       <td><span class="bdg vi">${u.kmc.length}</span></td>
@@ -748,11 +744,6 @@ function renderOvTop(){
     </tr>`).join('')+'</tbody></table>';
 }
 
-function emailCell(u){
-  const em=showEmail(u);
-  if(em) return `<span class="email-chip">${esc(em)}</span>`;
-  return `<span class="email-loading">loading…</span>`;
-}
 
 function renderOvAct(){
   const el=document.getElementById('ov-act');
@@ -812,12 +803,16 @@ function renderUsers(){
   const pct=u=>u.tasks.length?Math.round(u.doneTasks/u.tasks.length*100):0;
   tb.innerHTML=list.map(u=>`<tr onclick="openPopup('${esc(u.uid)}')">
     <td><div class="u-cell">
-      <div class="u-av" style="background:${uc(u.uid)}">${avLetter(u)}</div>
-      <div><div class="u-nm">${esc(displayName(u))}</div>
-        <div style="font-size:.67rem;color:var(--t3);margin-top:1px">${emailCell(u)}</div>
+      <div class="u-av" style="background:${uc(u.uid)};width:38px;height:38px;border-radius:10px;font-size:.9rem">${avLetter(u)}</div>
+      <div>
+        <div class="u-nm">${esc(showName(u)||showEmail(u)||u.uid.slice(0,14)+'…')}</div>
+        ${showEmail(u)
+          ? `<div style="font-size:.68rem;color:var(--emerald);margin-top:2px;font-weight:500">✉ ${esc(showEmail(u))}</div>`
+          : `<div style="font-family:var(--mono);font-size:.62rem;color:var(--t3);margin-top:2px">${u.uid.slice(0,16)}…</div>`
+        }
       </div>
     </div></td>
-    <td><span class="u-uid" style="font-family:var(--mono);font-size:.62rem;color:var(--t3)">${esc(u.uid.slice(0,18))}…</span></td>
+    <td style="font-family:var(--mono);font-size:.62rem;color:var(--t3);">${esc(u.uid.slice(0,14))}…</td>
     <td>${u.tasks.length?`<span class="bdg em">${u.tasks.length}</span>`:'<span class="nil">—</span>'}</td>
     <td style="min-width:90px">
       ${u.tasks.length?`<div class="prog"><div class="prog-f" style="width:${pct(u)}%;background:var(--emerald)"></div></div>
@@ -869,8 +864,8 @@ function openPopup(uid){
   const col=uc(uid);
   const av=document.getElementById('popAv');
   av.textContent=avLetter(u); av.style.background=col;
-  document.getElementById('popName').textContent=displayName(u);
-  document.getElementById('popUid').textContent=uid;
+  document.getElementById('popName').textContent=showName(u)||showEmail(u)||displayName(u);
+  document.getElementById('popUid').textContent=showEmail(u)?(uid+' · '+showEmail(u)):uid;
   // meta badges
   const meta=document.getElementById('popMeta');
   meta.innerHTML=[
