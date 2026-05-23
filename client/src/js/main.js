@@ -115,6 +115,7 @@ window.signInWithGoogle = async () => {
   }
 };
 
+document.getElementById('googleSignInBtn').addEventListener('click', window.signInWithGoogle);
 /* ── Admin check ─────────────────────────────────────────────── */
 async function checkAdminStatus(user) {
   try {
