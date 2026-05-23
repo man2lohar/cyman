@@ -42,7 +42,8 @@ input,select{font-family:var(--sans);transition:all .15s}
              radial-gradient(ellipse 50% 40% at 90% 100%,rgba(139,92,246,.04),transparent)}
 
 /* ══ LOGIN ══ */
-#loginScreen{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+#loginScreen{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;background:var(--bg)}
+#authLoading{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:var(--bg);font-size:.85rem;color:var(--t2)}
 .lbox{width:400px;background:var(--s1);border:1px solid var(--bhi);border-radius:18px;padding:40px 36px;
   box-shadow:var(--shadow);position:relative;overflow:hidden}
 .lbox::before{content:"";position:absolute;top:-80px;right:-80px;width:220px;height:220px;border-radius:50%;
@@ -342,6 +343,13 @@ input,select{font-family:var(--sans);transition:all .15s}
 <body>
 
 <!-- LOGIN -->
+<div id="authLoading">
+  <div style="text-align:center">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .8s linear infinite;opacity:.4"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+    <div style="margin-top:10px;opacity:.4">Verifying access…</div>
+  </div>
+</div>
+
 <div id="loginScreen">
 <div class="lbox">
   <div class="l-brand">
@@ -596,6 +604,7 @@ auth.onAuthStateChanged(async u=>{
     document.getElementById('lErr').textContent='Access denied — not an admin account.';
     showLogin(); return;
   }
+  document.getElementById('authLoading').style.display='none';
   document.getElementById('sbAv').textContent=(u.email||'A')[0].toUpperCase();
   document.getElementById('sbEm').textContent=u.email||u.uid;
   document.getElementById('loginScreen').style.display='none';
@@ -603,7 +612,11 @@ auth.onAuthStateChanged(async u=>{
   log('Admin signed in: '+(u.email||u.uid));
   loadAll();
 });
-function showLogin(){ document.getElementById('loginScreen').style.display='flex'; document.getElementById('app').style.display='none'; }
+function showLogin(){
+  document.getElementById('authLoading').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
 function doLogin(){
   const e=document.getElementById('lEm').value.trim(), p=document.getElementById('lPw').value;
   document.getElementById('lErr').textContent='';
@@ -623,7 +636,7 @@ async function fetchEmails(){
       `https://identitytoolkit.googleapis.com/v1/projects/project-management-man2/accounts:batchGet?maxResults=200`,
       { method:'GET', headers:{ Authorization:'Bearer '+idToken } }
     );
-    if(!res.ok) throw new Error('Auth API status: '+res.status);
+    if(!res.ok){ log('Email fetch skipped — requires Firebase Admin SDK (showing UIDs only)'); return false; }
     const data = await res.json();
     // batchGet returns {userInfo:[{localId,email,...}]}
     if(data.userInfo){
