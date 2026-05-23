@@ -117,14 +117,10 @@ window.signInWithGoogle = async () => {
 
 document.getElementById('googleSignInBtn').addEventListener('click', window.signInWithGoogle);
 /* ── Admin check ─────────────────────────────────────────────── */
-async function checkAdminStatus(user) {
-  try {
-    const adminRef = ref(db, `admins/${user.uid}`);
-    onValue(adminRef, snap => {
-      const adminBtn = document.getElementById('adminNavBtn');
-      if (adminBtn) adminBtn.style.display = snap.exists() ? 'flex' : 'none';
-    }, { onlyOnce: true });
-  } catch (_) {}
+// In main.js, replace the admin panel open logic
+async function openAdminPanel() {
+  const token = await auth.currentUser.getIdToken();
+  window.open(`client/public/admin.html?token=${token}`, '_blank');
 }
 
 
