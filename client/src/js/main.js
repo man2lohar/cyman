@@ -131,7 +131,10 @@ async function openAdminPanel() {
   const token = await auth.currentUser.getIdToken();
   window.open(`client/public/admin.html?token=${token}`, '_blank');
 }
-document.getElementById('adminPanelBtn').addEventListener('click', openAdminPanel);
+document.addEventListener('DOMContentLoaded', () => {
+  const adminPanelBtn = document.getElementById('adminPanelBtn');
+  if (adminPanelBtn) adminPanelBtn.addEventListener('click', openAdminPanel);
+});
 let isLoginMode  = true;
 
 onAuthStateChanged(auth, user => {
