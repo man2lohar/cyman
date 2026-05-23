@@ -8,7 +8,8 @@
 import { initializeApp }                                          from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword,
          createUserWithEmailAndPassword, signOut,
-         onAuthStateChanged }                                     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+         onAuthStateChanged, GoogleAuthProvider,
+         signInWithPopup }                                        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, onValue }                              from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* ── Firebase init ───────────────────────────────────────────── */
@@ -93,7 +94,39 @@ window.openFeature = (title, url) => {
   window.open(url, '_blank');
 };
 
-/* ── Auth state listener ─────────────────────────────────────── */
+/* ── Google Sign-In ──────────────────────────────────────────── */
+const googleProvider = new GoogleAuthProvider();
+
+window.signInWithGoogle = async () => {
+  const err = document.getElementById('errorDisplay');
+  err.style.display = 'none';
+  try {
+    await signInWithPopup(auth, googleProvider);
+    document.getElementById('authOverlay').classList.remove('active');
+    window.openDashboard();
+  } catch (error) {
+    const friendly = {
+      'auth/popup-closed-by-user':    'Sign-in cancelled.',
+      'auth/popup-blocked':           'Pop-up blocked. Please allow pop-ups for this site.',
+      'auth/account-exists-with-different-credential': 'An account already exists with this email.',
+    };
+    err.style.display = 'flex';
+    err.querySelector('span') && (err.querySelector('span').textContent = friendly[error.code] || error.message);
+  }
+};
+
+/* ── Admin check ─────────────────────────────────────────────── */
+async function checkAdminStatus(user) {
+  try {
+    const adminRef = ref(db, `admins/${user.uid}`);
+    onValue(adminRef, snap => {
+      const adminBtn = document.getElementById('adminNavBtn');
+      if (adminBtn) adminBtn.style.display = snap.exists() ? 'flex' : 'none';
+    }, { onlyOnce: true });
+  } catch (_) {}
+}
+
+
 let isLoginMode  = true;
 
 onAuthStateChanged(auth, user => {
@@ -108,8 +141,11 @@ onAuthStateChanged(auth, user => {
     if (typeof window.onDashboardUserReady === 'function') {
       window.onDashboardUserReady(user, db);
     }
+    checkAdminStatus(user);
   } else {
     ag.innerHTML = `<a class="auth-link" onclick="toggleModal()">Log In</a>`;
+    const adminBtn = document.getElementById('adminNavBtn');
+    if (adminBtn) adminBtn.style.display = 'none';
   }
 });
 
