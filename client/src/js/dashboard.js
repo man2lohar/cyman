@@ -29,7 +29,13 @@ window.switchTab = (tab) => {
   if (panel) panel.classList.add('active');
 };
 document.querySelectorAll('.dash-nav-item').forEach(item =>
-  item.addEventListener('click', () => window.switchTab(item.dataset.tab))
+  item.addEventListener('click', () => {
+    if (item.dataset.tab === 'admin') {
+      window.open('client/public/admin.html', '_blank');
+    } else {
+      window.switchTab(item.dataset.tab);
+    }
+  })
 );
 
 /* ── Greeting ────────────────────────────────────────────────── */
