@@ -155,7 +155,21 @@ onAuthStateChanged(auth, user => {
     const adminBtn = document.getElementById('adminNavBtn');
     if (adminBtn) adminBtn.style.display = 'none';
   }
+
+import { set, ref } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    set(ref(db, `users/${user.uid}/profile`), {
+      email:       user.email                          || '',
+      displayName: user.displayName                    || '',
+      photoURL:    user.photoURL                       || '',
+      providerId:  user.providerData?.[0]?.providerId  || 'password',
+      createdAt:   user.metadata.creationTime          || '',
+      lastLogin:   user.metadata.lastSignInTime        || '',
+      lastLoginMs: Date.now(),
+      uid:         user.uid,
+    }).catch(() => {});
 });
+
+
 
 /* ── Auth form submit ────────────────────────────────────────── */
 document.getElementById('authForm').onsubmit = async e => {
