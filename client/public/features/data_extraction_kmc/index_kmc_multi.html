@@ -810,7 +810,7 @@
     if(!hdr||!body)return;
     if(titleEl)titleEl.textContent=title||'';
     hdr.innerHTML='';body.innerHTML='';
-    var errStoreKey=viewKey||title||'';
+    var errStoreKey=viewKey||title||'__unknown__';
 
     if(!csv){_allErrors[errStoreKey]=[];return;}
     var rows=csv.split('\n');
@@ -976,7 +976,7 @@
     if(!modal||!mbody)return;
 
     var activeView=document.querySelector('#home-block-bar .mblk-pill.active');
-    var key=activeView?activeView.dataset.view:'';
+    var key=activeView?activeView.dataset.view:(KMCMulti.getActiveBlock()||'__unknown__');
     var stored=_allErrors[key];
 
     mbody.innerHTML='';
