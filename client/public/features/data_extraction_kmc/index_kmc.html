@@ -1330,7 +1330,11 @@ function _kmcCheckMissingLayers() {
         const isPoly=(e.type==='LWPOLYLINE'||e.type==='POLYLINE'),isLine=(e.type==='LINE'),isClosed=e.closed||false;
         const showLen=(isLine||isPoly)&&(e.length||0)>0,showArea=isPoly&&isClosed&&(e.area||0)>0;
         const lw=e.lineweight;
-        const lwLabel=(!lw||lw===-3||lw===0)?'ByLayer':lw===-1?'ByLayer':lw===-2?'ByBlock':lw>0?(lw/100).toFixed(2)+' mm':'ByLayer';
+        const lwLabel = (lw == null || lw === -3) ? 'ByLayer'
+                      : lw === -1 ? 'ByLayer'
+                      : lw === -2 ? 'ByBlock'
+                      : lw >= 0   ? (lw/100).toFixed(2) + ' mm'
+                      : 'ByLayer';
         rows.push({count:1,name,colorRaw:String(e.color??7),layer:e.layer,length:showLen?(e.length*MM_TO_M).toFixed(3):'',area:showArea?(e.area*MM2_TO_M2).toFixed(3):'',linetype:e.linetype||'ByLayer',lineweight:lwLabel,closed:isClosed?-1:0,printable:e.printable,source:'',expectedIn:SHARED_SET.has(e.layer)?'both':MASTER_SET.has(e.layer)?'master':'a'});
       }
       return{rows,allLayerNames:[...allLayerNames].sort(),entityCount:rawEnts.length};
