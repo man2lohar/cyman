@@ -769,7 +769,7 @@
       var nm=e.type==='LINE'?'Line':(e.type==='LWPOLYLINE'||e.type==='POLYLINE')?'Polyline':e.type==='POINT'?'Point':e.type==='INSERT'?'Insert':e.type;
       var isP=(e.type==='LWPOLYLINE'||e.type==='POLYLINE'),isL=(e.type==='LINE'),isCl=e.closed||false;
       var sL=(isL||isP)&&(e.length||0)>0,sA=isP&&isCl&&(e.area||0)>0;
-      var lw=e.lineweight,lwL=(!lw||lw===-3||lw===0)?'ByLayer':lw===-1?'ByLayer':lw===-2?'ByBlock':lw>0?(lw/100).toFixed(2)+' mm':'ByLayer';
+      var lw=e.lineweight,lwL=(lw==null||lw===-3)?'ByLayer':lw===-1?'ByLayer':lw===-2?'ByBlock':lw>=0?(lw/100).toFixed(2)+' mm':'ByLayer';
       rows.push({count:1,name:nm,colorRaw:String(e.color||7),layer:e.layer,length:sL?(e.length*M2M).toFixed(3):'',area:sA?(e.area*M2M2).toFixed(3):'',linetype:e.linetype||'ByLayer',lineweight:lwL,closed:isCl?-1:0,printable:e.printable});
     });
     return rows;
