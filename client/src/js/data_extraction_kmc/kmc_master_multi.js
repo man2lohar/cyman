@@ -261,7 +261,7 @@
      const over    = permNum > 0 && prop > 0 && prop < permNum;
    
      const status = prop === 0
-       ? '<span style="color:var(--muted);">⚠ No data</span>'
+       ? '<span class="text-red">⚠ No data</span>'
        : over
          ? '<span class="text-red" style="font-weight:700;">✗ Short</span>'
          : '<span class="text-green" style="font-weight:700;">✔ OK</span>';
