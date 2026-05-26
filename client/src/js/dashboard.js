@@ -354,6 +354,130 @@ window.previewPhoto = (input) => {
 };
 
 /* ══════════════════════════════════════════════════════════════
+   ANNOUNCEMENTS
+══════════════════════════════════════════════════════════════ */
+function fmtRelTime(ms) {
+  if (!ms) return '';
+  const diff = Date.now() - ms;
+  const m = Math.floor(diff / 6e4);
+  const h = Math.floor(diff / 36e5);
+  const d = Math.floor(diff / 864e5);
+  if (m < 1)  return 'Just now';
+  if (m < 60) return `${m}m ago`;
+  if (h < 24) return `${h}h ago`;
+  if (d < 7)  return `${d}d ago`;
+  return new Date(ms).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function getReadAnnouncements() {
+  try { return JSON.parse(localStorage.getItem('cyman_read_ann') || '[]'); }
+  catch { return []; }
+}
+function markAnnouncementRead(id) {
+  const read = getReadAnnouncements();
+  if (!read.includes(id)) {
+    read.push(id);
+    localStorage.setItem('cyman_read_ann', JSON.stringify(read));
+  }
+}
+
+window.markAllAnnouncementsRead = () => {
+  const items = document.querySelectorAll('.ann-item[data-id]');
+  const read = getReadAnnouncements();
+  items.forEach(el => {
+    const id = el.dataset.id;
+    if (!read.includes(id)) read.push(id);
+    el.classList.remove('unread');
+    const pip = el.querySelector('.ann-unread-pip');
+    if (pip) pip.style.display = 'none';
+  });
+  localStorage.setItem('cyman_read_ann', JSON.stringify(read));
+  // Clear badge
+  const badge = document.getElementById('announcementBadge');
+  if (badge) badge.style.display = 'none';
+};
+
+function loadAnnouncements(db) {
+  const loading = document.getElementById('announcementsLoading');
+  const empty   = document.getElementById('announcementsEmpty');
+  const list    = document.getElementById('announcementsList');
+  if (!loading) return;
+
+  const annRef = dbRef(db, 'announcements');
+  onValue(annRef, snap => {
+    loading.style.display = 'none';
+    if (!snap.exists()) {
+      empty.style.display = 'block';
+      list.innerHTML = '';
+      updateAnnouncementBadge([]);
+      return;
+    }
+
+    const now  = Date.now();
+    const read = getReadAnnouncements();
+    const items = Object.values(snap.val())
+      .filter(a => a.active && (!a.expiresAt || a.expiresAt > now))
+      .sort((a, b) => b.createdAt - a.createdAt);
+
+    if (!items.length) {
+      empty.style.display = 'block';
+      list.innerHTML = '';
+      updateAnnouncementBadge([]);
+      return;
+    }
+
+    empty.style.display = 'none';
+    updateAnnouncementBadge(items.filter(a => !read.includes(a.id)));
+
+    list.innerHTML = items.map(a => {
+      const isUnread = !read.includes(a.id);
+      return `
+      <div class="ann-item ${isUnread ? 'unread' : ''}" data-id="${esc(a.id)}"
+           onclick="window.handleAnnouncementClick('${esc(a.id)}', this)">
+        <div class="ann-dot ${esc(a.type || 'info')}"></div>
+        <div class="ann-body">
+          <div class="ann-title">
+            <span class="ann-type-chip ${esc(a.type || 'info')}">${esc(a.type || 'info')}</span>
+            ${esc(a.title)}
+          </div>
+          <div class="ann-text">${esc(a.body)}</div>
+          <div class="ann-meta">
+            ${fmtRelTime(a.createdAt)}
+            ${a.expiresAt ? ` · Expires ${new Date(a.expiresAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}` : ''}
+          </div>
+        </div>
+        ${isUnread ? '<div class="ann-unread-pip"></div>' : ''}
+      </div>`;
+    }).join('');
+  });
+}
+
+function updateAnnouncementBadge(unread) {
+  const badge = document.getElementById('announcementBadge');
+  if (!badge) return;
+  if (unread.length > 0) {
+    badge.textContent    = unread.length;
+    badge.style.display  = 'inline-flex';
+  } else {
+    badge.style.display  = 'none';
+  }
+}
+
+window.handleAnnouncementClick = (id, el) => {
+  markAnnouncementRead(id);
+  el.classList.remove('unread');
+  const pip = el.querySelector('.ann-unread-pip');
+  if (pip) pip.style.display = 'none';
+  // Recalculate badge
+  const unreadCount = document.querySelectorAll('.ann-item.unread').length;
+  const badge = document.getElementById('announcementBadge');
+  if (badge) {
+    badge.textContent   = unreadCount;
+    badge.style.display = unreadCount > 0 ? 'inline-flex' : 'none';
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════
    ENTRY POINT — called from main.js onAuthStateChanged
 ══════════════════════════════════════════════════════════════ */
 window.onDashboardUserReady = (user, db) => {
@@ -361,4 +485,5 @@ window.onDashboardUserReady = (user, db) => {
   loadOverview(user, db);
   loadKmcUploads(user, db);
   loadProfile(user);
+  loadAnnouncements(db);
 };
