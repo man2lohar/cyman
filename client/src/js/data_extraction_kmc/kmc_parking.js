@@ -664,14 +664,7 @@ const _COLOR_DISPLAY = {
 };
 
 const _LW_DISPLAY = {
-  '0.20 mm': 'Cover at Ground', '0.25 mm': 'Open at Ground',
-  '0.15 mm': 'at Basement 1',   '0.05 mm': 'at Basement 2',
-  '0.00 mm': 'at Basement 3',   '0.30 mm': 'at 1st Floor',
-  '0.35 mm': 'at 2nd Floor',    '0.40 mm': 'at 3rd Floor',
-  '0.50 mm': 'at 4th Floor',    '0.60 mm': 'at 5th Floor',
-  '0.70 mm': 'at 6th Floor',    '0.80 mm': 'at 7th Floor',
-  '0.90 mm': 'at 8th Floor',    '1.00 mm': 'at 9th Floor',
-  '2.00 mm': 'at 10th Floor'
+  '0.20 mm': 'Cover at Ground', '0.25 mm': 'Open at Ground', '0.30 mm': 'Other than Ground'
 };
 
 function _calcParkingNos(color, count) {
