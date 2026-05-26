@@ -244,7 +244,7 @@
             <tbody>
               ${_osRow('Front',  perm.front,  os.front)}
               ${_osRow('Rear',   perm.rear,   os.rear)}
-              ${_osRow('Side 1 (min)', perm.side1, minSide, '(min of Side1/Side2)')}
+              ${_osRow('Side 1', perm.side1,  os.side1)}
               ${_osRow('Side 2', perm.side2,  os.side2)}
             </tbody>
           </table>
@@ -254,18 +254,22 @@
   }
 
   function _osRow(label, perm, prop, note = '') {
-    const permNum = parseFloat(perm) || 0;
-    const over    = permNum > 0 && prop < permNum;
-    const status  = over
-      ? '<span class="text-red" style="font-weight:700;">✗ Short</span>'
-      : '<span class="text-green" style="font-weight:700;">✔ OK</span>';
-    return `<tr>
-      <td class="head">${label}${note ? `<br><span style="font-size:.7rem;color:var(--muted);">${note}</span>` : ''}</td>
-      <td>${perm}</td>
-      <td>${prop.toFixed(3)} M.</td>
-      <td>${status}</td>
-    </tr>`;
-  }
+     const permNum = parseFloat(perm) || 0;
+     const over    = permNum > 0 && prop > 0 && prop < permNum;
+   
+     const status = prop === 0
+       ? '<span style="color:var(--muted);">⚠ No data</span>'
+       : over
+         ? '<span class="text-red" style="font-weight:700;">✗ Short</span>'
+         : '<span class="text-green" style="font-weight:700;">✔ OK</span>';
+   
+     return `<tr>
+       <td class="head">${label}${note ? `<br><span style="font-size:.7rem;color:var(--muted);">${note}</span>` : ''}</td>
+       <td>${perm}</td>
+       <td>${prop > 0 ? prop.toFixed(3) + ' M.' : '0.000 M.'}</td>
+       <td>${status}</td>
+     </tr>`;
+   }
 
   function _getPermissibleOS(useGroup, buildingHeight, landArea) {
     const data = minimumOpenSpaces[useGroup] ||
