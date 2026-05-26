@@ -1050,7 +1050,7 @@ set(ref(db, `users/${user.uid}/profile`), {
   providerId:  user.providerData?.[0]?.providerId || 'password',
   createdAt:   user.metadata.creationTime || '',
   lastLogin:   user.metadata.lastSignInTime || '',
-  lastLoginMs: Date.now(),
+  lastLoginMs: user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).getTime() : Date.now(),
   uid:         user.uid,
 }).catch(() => {});</div>
         </div>
@@ -1185,6 +1185,25 @@ function nav(tab,el){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   setText('tb-page',PAGE_LABELS[tab]||tab);
+  // Refresh activity log every time it's opened
+  if(tab==='activity') renderActivityLog();
+  // Reload broadcast history every time opened
+  if(tab==='broadcast') loadBroadcastHistory();
+}
+
+function renderActivityLog(){
+  const body=document.getElementById('activity-body');
+  if(!body) return;
+  if(!activityLog.length){
+    body.innerHTML='<tr class="loading-row"><td colspan="4">No actions yet this session</td></tr>';
+    return;
+  }
+  body.innerHTML=activityLog.map(l=>`<tr>
+    <td class="td-mono td-dim">${l.time}</td>
+    <td style="font-size:12px">${esc(l.action)}</td>
+    <td class="td-email">${esc(l.target)}</td>
+    <td class="td-dim" style="font-size:11px">${esc(l.detail)}</td>
+  </tr>`).join('');
 }
 
 /* ══════════════ REFRESH ══════════════ */
@@ -1650,14 +1669,8 @@ function closeDrawer(){document.getElementById('drawer').classList.remove('open'
 /* ══════════════ ACTIONS ══════════════ */
 function logAction(action,target,detail=''){
   activityLog.unshift({time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),action,target,detail});
-  if(activityLog.length>100) activityLog.pop();
-  const body=document.getElementById('activity-body');
-  if(body) body.innerHTML=activityLog.map(l=>`<tr>
-    <td class="td-mono td-dim">${l.time}</td>
-    <td style="font-size:12px">${esc(l.action)}</td>
-    <td class="td-email">${esc(l.target)}</td>
-    <td class="td-dim" style="font-size:11px">${esc(l.detail)}</td>
-  </tr>`).join('');
+  if(activityLog.length>200) activityLog.pop();
+  renderActivityLog();
 }
 
 // Confirm helper
@@ -1894,7 +1907,7 @@ function exportCSV(type){
   a.download=`cyman-${type}-${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   toast(`Exported ${rows.length} ${type} rows`,'ok');
-  log(`Exported ${type} CSV (${rows.length} rows)`);
+  logAction('Export CSV','all users',type+' ('+rows.length+' rows)');
 }
 
 /* ── Broadcast ── */
@@ -1912,13 +1925,14 @@ async function sendBroadcast(){
     document.getElementById('bc-title').value='';
     document.getElementById('bc-body').value='';
     toast('Announcement sent to all users!','ok');
-    log('Broadcast sent: '+title);
+    logAction('Broadcast Sent','all users',title);
     loadBroadcastHistory();
   }catch(e){toast('Error: '+e.message,'err');}
 }
 async function deleteBroadcast(id){
   if(!confirm('Delete this announcement?'))return;
   await db.ref('announcements/'+id).remove();
+  logAction('Delete Announcement',currentAdmin?.email||'admin',id);
   toast('Announcement deleted','ok');
   loadBroadcastHistory();
 }
@@ -1956,7 +1970,7 @@ async function renameUser(uid){
   await db.ref(`users/${uid}/profile/displayName`).set(val);
   if(D[uid]) D[uid].displayName=val;
   toast('Display name updated','ok');
-  log('Renamed user '+uid+' to '+val);
+  logAction('Rename User',uid,'New name: '+val);
   renderUsersTable();
 }
 
@@ -1964,12 +1978,13 @@ async function renameUser(uid){
 async function toggleBan(uid){
   const u=D[uid];if(!u)return;
   const newState=!u.disabled;
-  if(!confirm(`${newState?'Disable':'Enable'} user ${u.email||uid}?`))return;
-  await db.ref(`users/${uid}/profile/disabled`).set(newState);
-  D[uid].disabled=newState;
-  toast(`User ${newState?'disabled':'enabled'}`,'ok');
-  log(`${newState?'Banned':'Unbanned'} user ${u.email||uid}`);
-  renderUsersTable();
+  confirm2(newState?'Ban User':'Unban User',`${newState?'Disable':'Re-enable'} account for ${u.email||uid}?`,async()=>{
+    await db.ref(`users/${uid}/profile/disabled`).set(newState);
+    D[uid].disabled=newState;
+    toast(`User ${newState?'disabled':'enabled'}`,'ok');
+    logAction(newState?'Ban User':'Unban User',u.email||uid,'');
+    renderUsersTable();
+  });
 }
 
 /* ── Week signup chart on overview ── */
