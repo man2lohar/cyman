@@ -40,7 +40,36 @@
   --radius:10px;
   --sidebar:220px;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── Light theme ── */
+:root.light{
+  --bg:#f0f2f7;
+  --bg2:#e4e8f0;
+  --surface:#ffffff;
+  --surface2:#f5f7fb;
+  --surface3:#edf0f7;
+  --border:rgba(0,0,0,.08);
+  --border2:rgba(0,0,0,.12);
+  --border3:rgba(0,0,0,.18);
+  --text:#111827;
+  --text2:#4b5563;
+  --text3:#9ca3af;
+  --accent:#d4850a;
+  --accent-dim:rgba(212,133,10,.1);
+  --accent-glow:rgba(212,133,10,.2);
+  --blue:#2563eb;
+  --blue-dim:rgba(37,99,235,.1);
+  --green:#059669;
+  --green-dim:rgba(5,150,105,.1);
+  --red:#dc2626;
+  --red-dim:rgba(220,38,38,.1);
+  --purple:#7c3aed;
+  --purple-dim:rgba(124,58,237,.1);
+  --cyan:#0891b2;
+  --cyan-dim:rgba(8,145,178,.1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;transition:background-color .2s,border-color .2s,color .15s}
 html,body{height:100%;overflow:hidden}
 body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex;font-size:14px;line-height:1.5}
 
@@ -143,6 +172,33 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 .tb-btn-blue:hover{border-color:var(--blue);color:#93c5fd}
 .tb-btn-green{border-color:rgba(16,185,129,.3);color:var(--green);background:var(--green-dim)}
 .tb-btn-green:hover{border-color:var(--green);color:#6ee7b7}
+
+/* ── Theme toggle ── */
+#theme-toggle{
+  width:36px;height:20px;border-radius:10px;border:1px solid var(--border2);
+  background:var(--surface2);cursor:pointer;position:relative;flex-shrink:0;
+  transition:background .2s,border-color .2s;padding:0;
+}
+#theme-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--text3);transition:transform .2s,background .2s;
+}
+:root.light #theme-toggle{background:var(--accent-dim);border-color:var(--accent)}
+:root.light #theme-toggle::after{transform:translateX(16px);background:var(--accent)}
+.theme-icon{font-size:13px;pointer-events:none}
+
+/* Light mode specific overrides */
+:root.light .code-block{background:#f0f4ff;color:#1e40af;border-color:rgba(37,99,235,.15)}
+:root.light .gate-card{box-shadow:0 4px 24px rgba(0,0,0,.1)}
+:root.light #auth-gate{background-image:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(212,133,10,.06) 0,transparent 100%)}
+:root.light .nav-item.active{background:var(--accent-dim);color:var(--accent)}
+:root.light .sb-logo-sub{color:var(--accent)}
+:root.light .stat-card{box-shadow:0 1px 4px rgba(0,0,0,.06)}
+:root.light .card{box-shadow:0 1px 4px rgba(0,0,0,.06)}
+:root.light #sidebar{border-right:1px solid var(--border)}
+:root.light #topbar{box-shadow:0 1px 0 var(--border)}
+:root.light .wc-bar{background:var(--blue-dim);border-color:rgba(37,99,235,.2)}
 .tb-btn:disabled{opacity:.35;pointer-events:none}
 
 /* ── content ── */
@@ -571,6 +627,7 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
     </div>
     <div class="live-dot" title="Live"></div>
     <div class="tb-time" id="tb-time">—</div>
+    <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark"></button>
     <button class="tb-btn tb-btn-blue" onclick="openSa()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
       Sync Auth
@@ -1043,6 +1100,18 @@ const db   = firebase.database();
 /* ══════════════ STATE ══════════════ */
 let D = {};             // allUsersData
 let currentAdmin = null;
+
+/* ── Theme toggle ── */
+function toggleTheme(){
+  const isLight=document.documentElement.classList.toggle('light');
+  localStorage.setItem('cyman-admin-theme', isLight?'light':'dark');
+}
+// Restore saved theme on load
+(function(){
+  if(localStorage.getItem('cyman-admin-theme')==='light'){
+    document.documentElement.classList.add('light');
+  }
+})();
 let activityLog  = [];
 let _sortUsers   = {k:'lastLoginMs',asc:false};
 let _sortUploads = {k:'uploadedAt',asc:false};
