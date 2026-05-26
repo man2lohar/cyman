@@ -117,8 +117,11 @@
         landAreaSum += r.area;
 
       if (r.name === 'Polyline' && r.layer === 'Parking_Area' &&
-          r.lineweight === '0.15 mm' && r.closed === '-1')
-        ParkingAreaSum += r.area;
+          r.lineweight === '0.15 mm' && r.closed === '-1') {
+        r.linetype === 'DASHED'
+          ? (ParkingAreaSum -= r.area)
+          : (ParkingAreaSum += r.area);
+      }
     });
 
     const maxHeight = Math.max(...Object.values(blockHeights), 0);
