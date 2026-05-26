@@ -224,7 +224,8 @@
       /* Use this block's own height for permissible lookup */
       const blockHt = blockHeights[lbl] || 0;
       const perm    = _getPermissibleOS(useGroup, blockHt, landArea);
-      const minSide = Math.min(os.side1, os.side2);
+      const drawnSides = [os.side1, os.side2].filter(v => v > 0);
+      const minSide = drawnSides.length > 0 ? Math.min(...drawnSides) : 0;
 
       const blockCard = document.createElement('div');
       blockCard.style.cssText = 'margin-bottom:16px;';
