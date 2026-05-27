@@ -469,6 +469,7 @@
       if (!isNaN(park)) {
         set('per-park-area', fmt(park.toFixed(3)) + ' Sq.m.');
         localStorage.setItem('totalParkingArea', park);
+        localStorage.removeItem('reqParkingArea');
       }
       calculateProposedFAR();
       Compare();
