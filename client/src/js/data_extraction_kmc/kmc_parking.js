@@ -52,6 +52,12 @@ function _resetParkingSection() {
     const tb = ppTable.querySelector('tbody');
     if (tb) tb.innerHTML = '';
   }
+   /* Clear all parking localStorage keys to prevent stale data */
+  localStorage.removeItem('totalParkingNos');
+  localStorage.removeItem('totalParkingArea');
+  localStorage.removeItem('totalReqCarParking');
+  localStorage.removeItem('totalParkingRequired');
+  localStorage.removeItem('reqParkingArea');
 }
 
 /* ══════════════════════════════════════════
