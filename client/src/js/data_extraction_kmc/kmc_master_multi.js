@@ -427,7 +427,7 @@
     const reqCar = parseInt(localStorage.getItem('totalReqCarParking'))   || 0;
     set('per-car', req + reqCar);
     const nos  = localStorage.getItem('totalParkingNos');
-    const area = localStorage.getItem('totalParkingArea');
+    const area = localStorage.getItem('reqParkingArea');
     if (nos)  set('pro-car',       nos);
     if (area) set('per-park-area', area + ' Sq.m.');
   }
