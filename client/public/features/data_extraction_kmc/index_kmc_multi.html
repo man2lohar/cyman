@@ -1256,12 +1256,12 @@
     blks.forEach(function(b){
       html+='<button class="mblk-pill'+(b===activePill?' active':'')+'" onclick="selBlk(\''+b+'\',\''+fnName+'\')">'+b+'</button>';
     });
-    /* Provided Parkings pill for parking bar only */
+    /* Provided Parkings + Required Parkings pills for parking bar only */
     if(barId==='bb-parking'){
-      html+='<button class=\"mblk-pill-special'+(activePill==='provided'?' active':'')+
-        '\" onclick=\"selBlk(\\'provided\\',\\''+fnName+'\\')\">🅿 Provided Parkings</button>';
-      html+='<button class=\"mblk-pill-special'+(activePill==='required'?' active':'')+
-        '\" onclick=\"selBlk(\\'required\\',\\''+fnName+'\\')\">📋 Required Parkings</button>';
+      html+='<button class="mblk-pill-special'+(activePill==='provided'?' active':'')+
+        '" onclick="selBlk(\'provided\',\''+fnName+'\')">🅿 Provided Parkings</button>';
+      html+='<button class="mblk-pill-special'+(activePill==='required'?' active':'')+
+        '" onclick="selBlk(\'required\',\''+fnName+'\')">📋 Required Parkings</button>';
     }
     bar.innerHTML=html;
   }
@@ -1271,7 +1271,7 @@
     if(fnName==='mRefreshFiltered')_mbTabView.filtered=lbl;
     if(fnName==='mRefreshParking') _mbTabView.parking =lbl;
     /* Set active block for real block selections */
-    if(lbl!=='master'&&lbl!=='provided')KMCMulti.setActiveBlock(lbl);
+    if(lbl!=='master'&&lbl!=='provided'&&lbl!=='required')KMCMulti.setActiveBlock(lbl);
     var fn=window[fnName];if(typeof fn==='function')fn();
   };
 
@@ -1325,10 +1325,8 @@
 
     /* ── Provided Parkings view — all blocks combined ── */
     if(view==='provided'){
-        /* Remove required card if present */
-      var reqCard = document.getElementById('mb-required-parking-card');
-      if(reqCard) reqCard.remove();  
-      
+      var reqCard0=document.getElementById('mb-required-parking-card');
+      if(reqCard0)reqCard0.remove();
       if(lbl)lbl.textContent='All Blocks Combined';
       /* Show/hide sections */
       var tenCard =document.querySelector('#p-tenement-table')?.closest('.data-card');
@@ -1370,58 +1368,50 @@
 
     /* ── Required Parkings view — per block summary ── */
     if(view==='required'){
-      if(lbl) lbl.textContent = 'Required — All Blocks';
-      var tenCard  = document.querySelector('#p-tenement-table')?.closest('.data-card');
-      var othCard  = document.getElementById('p-other-layers-container')?.closest('.data-card');
-      var provCard = document.getElementById('p-parking-provided-table')?.closest('.data-card');
-      if(tenCard)  tenCard.style.display  = 'none';
-      if(othCard)  othCard.style.display  = 'none';
-      if(provCard) provCard.style.display = 'none';
-    
-      /* Build/replace a summary card */
-      var reqCardId = 'mb-required-parking-card';
-      var existing  = document.getElementById(reqCardId);
-      if(existing) existing.remove();
-    
-      var card = document.createElement('div');
-      card.id  = reqCardId;
-      card.className = 'data-card';
-    
-      var blks = KMCMulti.getBlocks();
-      var rows = '';
-      var grandTotal = 0;
-    
-      blks.forEach(function(b){
-        var tenReq = parseInt(localStorage.getItem('mb_parkReqCar_'+b)) || 0;
-        var othReq = parseInt(localStorage.getItem('mb_parkReq_'+b))    || 0;
-        var total  = tenReq + othReq;
-        grandTotal += total;
-        rows += '<tr>'
+      if(lbl)lbl.textContent='Required — All Blocks';
+      var tenCardR =document.querySelector('#p-tenement-table')?.closest('.data-card');
+      var othCardR =document.getElementById('p-other-layers-container')?.closest('.data-card');
+      var provCardR=document.getElementById('p-parking-provided-table')?.closest('.data-card');
+      if(tenCardR) tenCardR.style.display='none';
+      if(othCardR) othCardR.style.display='none';
+      if(provCardR)provCardR.style.display='none';
+      var existReqCard=document.getElementById('mb-required-parking-card');
+      if(existReqCard)existReqCard.remove();
+      var reqCard=document.createElement('div');
+      reqCard.id='mb-required-parking-card';
+      reqCard.className='data-card';
+      var blksR=KMCMulti.getBlocks();
+      var rowsHtml='';
+      var grandTotal=0;
+      blksR.forEach(function(b){
+        var tenReq=parseInt(localStorage.getItem('MB_parkReqCar_'+b))||0;
+        var othReq=parseInt(localStorage.getItem('MB_parkReq_'+b))||0;
+        var tot=tenReq+othReq;
+        grandTotal+=tot;
+        rowsHtml+='<tr>'
           +'<td><strong>Block '+b+'</strong></td>'
           +'<td>'+tenReq+'</td>'
           +'<td>'+othReq+'</td>'
-          +'<td style="font-weight:700;color:var(--accent);">'+total+'</td>'
+          +'<td style="font-weight:700;color:var(--accent);">'+tot+'</td>'
           +'</tr>';
       });
-    
-      card.innerHTML = '<div class="data-card-title">Required Parking — Per Block</div>'
+      reqCard.innerHTML='<div class="data-card-title">Required Parking — Per Block</div>'
         +'<div class="table-wrap"><table>'
         +'<thead><tr><th>Block</th><th>Tenement Req.</th><th>Other Use-Groups Req.</th><th>Total Required</th></tr></thead>'
-        +'<tbody>'+rows+'</tbody>'
+        +'<tbody>'+rowsHtml+'</tbody>'
         +'<tfoot><tr class="total-row"><td>Grand Total</td><td></td><td></td>'
         +'<td style="font-weight:700;color:var(--accent);">'+grandTotal+'</td></tr></tfoot>'
         +'</table></div>';
-    
-      document.getElementById('section-parking').appendChild(card);
+      document.getElementById('section-parking').querySelector('.page').appendChild(reqCard);
       return;
     }
-      
+
     /* ── Normal block view ── */
     var a=view;
     if(lbl)lbl.textContent=a||'—';
-    /* Remove required card if switching away from required view */
-    var reqCard = document.getElementById('mb-required-parking-card');
-    if(reqCard) reqCard.remove(); 
+    /* Remove required card if switching away */
+    var reqCardN=document.getElementById('mb-required-parking-card');
+    if(reqCardN)reqCardN.remove();
     /* Restore all three sections */
     var tenCard2 =document.querySelector('#p-tenement-table')?.closest('.data-card');
     var othCard2 =document.getElementById('p-other-layers-container')?.closest('.data-card');
