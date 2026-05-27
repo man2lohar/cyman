@@ -493,6 +493,7 @@
         const el = document.getElementById('per-park-area');
         if (el) el.textContent = formatNumber(park.toFixed(3)) + ' Sq.m.';
         localStorage.setItem('totalParkingArea', park);
+        localStorage.removeItem('reqParkingArea');
       }
 
       calculateProposedFAR();
