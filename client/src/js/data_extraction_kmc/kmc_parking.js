@@ -755,8 +755,27 @@ function _buildProvidedParking(csv) {
   const tdArea = document.createElement('td'); tdArea.textContent = totalParkingArea;
   footer.appendChild(tdArea);
 
-  localStorage.setItem('totalParkingNos', totalParkingNos);
-  localStorage.setItem('totalParkingArea', totalParkingArea);
+   /* Find the area-per-slot of the row with highest parking nos */
+   let maxNosRow = null;
+   let maxNos    = 0;
+   Object.values(parkingDataMap).forEach(({ count, color, lineweight }) => {
+     const nos = _calcParkingNos(color, count);
+     if(nos > maxNos){ maxNos = nos; maxNosRow = { color, lineweight, count }; }
+   });
+   
+   const areaPerSlot = maxNosRow ? _calcParkingArea(maxNosRow.color, maxNosRow.lineweight, 1) : 25;
+   
+   /* Required nos = totalReqCarParking + totalParkingRequired (from localStorage) */
+   const totalRequired = (parseInt(localStorage.getItem('totalReqCarParking')) || 0)
+                       + (parseInt(localStorage.getItem('totalParkingRequired')) || 0);
+   
+   const reqParkingArea = totalRequired <= totalParkingNos
+     ? totalRequired * areaPerSlot   // provided >= required: use required × rate
+     : totalParkingNos * areaPerSlot; // provided < required: cap at provided
+   
+   localStorage.setItem('totalParkingNos',  totalParkingNos);
+   localStorage.setItem('totalParkingArea', totalParkingArea);
+   localStorage.setItem('reqParkingArea',   reqParkingArea);  // ← NEW
   console.log('[kmc_parking] Provided: Nos =', totalParkingNos, '| Area =', totalParkingArea);
 }
 
