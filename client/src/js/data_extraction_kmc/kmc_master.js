@@ -514,8 +514,9 @@
 
     const totalParkingNos  = localStorage.getItem('totalParkingNos');
     const totalParkingArea = localStorage.getItem('totalParkingArea');
-    if (totalParkingNos)  { const el = document.getElementById('pro-car');       if (el) el.textContent = totalParkingNos; }
-    if (totalParkingArea) { const el = document.getElementById('per-park-area'); if (el) el.textContent = totalParkingArea + ' Sq.m.'; }
+   if (totalParkingNos)  { const el = document.getElementById('pro-car');       if (el) el.textContent = totalParkingNos; }
+   const reqParkingArea = localStorage.getItem('reqParkingArea');
+   if (reqParkingArea)   { const el = document.getElementById('per-park-area'); if (el) el.textContent = parseFloat(reqParkingArea).toFixed(3) + ' Sq.m.'; }
   }
 
   /* ────────────────────────────────────────
