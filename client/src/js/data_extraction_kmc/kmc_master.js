@@ -512,11 +512,11 @@
     const sumCell  = document.getElementById('per-car');
     if (sumCell) sumCell.textContent = totalSum;
 
-    const totalParkingNos  = localStorage.getItem('totalParkingNos');
-    const totalParkingArea = localStorage.getItem('totalParkingArea');
-   if (totalParkingNos)  { const el = document.getElementById('pro-car');       if (el) el.textContent = totalParkingNos; }
+   const totalParkingNos  = localStorage.getItem('totalParkingNos');
+   const totalParkingArea = localStorage.getItem('totalParkingArea');
+   if (totalParkingNos) { const el = document.getElementById('pro-car'); if (el) el.textContent = totalParkingNos; }
    const reqParkingArea = localStorage.getItem('reqParkingArea');
-   if (reqParkingArea)   { const el = document.getElementById('per-park-area'); if (el) el.textContent = parseFloat(reqParkingArea).toFixed(3) + ' Sq.m.'; }
+   if (reqParkingArea)  { const el = document.getElementById('per-park-area'); if (el) el.textContent = parseFloat(reqParkingArea).toFixed(3) + ' Sq.m.'; }
   }
 
   /* ────────────────────────────────────────
