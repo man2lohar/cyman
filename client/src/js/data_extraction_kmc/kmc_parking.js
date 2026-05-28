@@ -775,13 +775,13 @@ function _buildProvidedParking(csv) {
    const totalRequired = (parseInt(localStorage.getItem('totalReqCarParking')) || 0)
                        + (parseInt(localStorage.getItem('totalParkingRequired')) || 0);
    
-   const reqParkingArea = totalRequired <= totalParkingNos
-     ? totalRequired * areaPerSlot   // provided >= required: use required × rate
-     : totalParkingNos * areaPerSlot; // provided < required: cap at provided
-   
-   localStorage.setItem('totalParkingNos',  totalParkingNos);
-   localStorage.setItem('totalParkingArea', totalParkingArea);
-   localStorage.setItem('reqParkingArea',   reqParkingArea);  // ← NEW
+   const reqParkArea = totalParkingNos > totalRequired
+    ? totalRequired * areaPerSlot  // provided > required → required nos × rate
+    : totalParkingArea;            // provided <= required → actual drawn area
+
+  localStorage.setItem('totalParkingNos',  totalParkingNos);
+  localStorage.setItem('totalParkingArea', totalParkingArea);
+  localStorage.setItem('reqParkingArea',   reqParkArea);
   console.log('[kmc_parking] Provided: Nos =', totalParkingNos, '| Area =', totalParkingArea);
 }
 
