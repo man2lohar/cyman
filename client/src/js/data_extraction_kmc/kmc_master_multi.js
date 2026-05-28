@@ -334,7 +334,7 @@
   function calculateProposedFAR() {
     const landArea   = parseFloat(document.getElementById('land-area')?.textContent.replace(/,/g, '')) || 0;
     const landDoc    = parseFloat(document.getElementById('land-area-doc')?.textContent.replace(/,/g, '')) || 0;
-    const totalPark  = parseFloat(localStorage.getItem('totalParkingArea')) || 0;
+   const totalPark  = parseFloat(localStorage.getItem('reqParkingArea')) || parseFloat(localStorage.getItem('totalParkingArea')) || 0;
     const netFloor   = parseFloat(localStorage.getItem('netFloorAreaSum')) || 0;
     const minLand    = Math.min(landArea, landDoc);
     if (minLand > 0) {
