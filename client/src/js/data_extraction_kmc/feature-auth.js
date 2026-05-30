@@ -140,6 +140,15 @@
 
     firebase.auth().onAuthStateChanged(user => {
       if (!user) {
+        // ── User Online Status ──────────────────────────────
+        const presenceRef = firebase.database().ref(`presence/${user.uid}`);
+        presenceRef.set({
+          online: true,
+          lastSeen: Date.now(),
+          email: user.email || ''
+        });
+        presenceRef.onDisconnect().remove();
+        
         const thisPage = encodeURIComponent(location.pathname + location.search);
         const fname    = encodeURIComponent(featureName);
         location.href  = `${redirectBase}?redirect=${thisPage}&feature=${fname}`;
