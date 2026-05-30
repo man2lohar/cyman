@@ -200,6 +200,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 :root.light #topbar{box-shadow:0 1px 0 var(--border)}
 :root.light .wc-bar{background:var(--blue-dim);border-color:rgba(37,99,235,.2)}
 .tb-btn:disabled{opacity:.35;pointer-events:none}
+@keyframes tb-spin{to{transform:rotate(360deg)}}
+.tb-btn.refreshing svg{animation:tb-spin .65s linear infinite;}
 
 /* ── content ── */
 #content{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px}
@@ -366,28 +368,44 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
 .sa-err{font-size:11px;color:#f87171;margin-top:6px;font-family:var(--mono);min-height:15px}
 .sa-prog{font-size:11px;color:var(--blue);margin-top:6px;font-family:var(--mono);min-height:15px}
 
-/* ════════ USER DETAIL DRAWER ════════ */
-#drawer{position:fixed;top:0;right:0;height:100vh;width:380px;max-width:95vw;background:var(--surface);border-left:1px solid var(--border2);z-index:7000;transform:translateX(100%);transition:transform .25s ease;overflow-y:auto;display:flex;flex-direction:column}
-#drawer.open{transform:translateX(0)}
-.drawer-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--surface);z-index:1}
+/* ════════ USER DETAIL MODAL (replaces drawer) ════════ */
+#drawer{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:7000;backdrop-filter:blur(6px);padding:20px}
+#drawer.open{display:flex}
+#drawer-inner{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:540px;max-width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:fadeIn .18s ease}
+.drawer-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface);z-index:1;border-radius:14px 14px 0 0;flex-shrink:0}
 .drawer-title{font-size:14px;font-weight:600;flex:1}
 .drawer-close{background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;border-radius:5px;transition:color .15s}
 .drawer-close:hover{color:var(--text)}
-.drawer-body{padding:16px 20px;flex:1}
-.drawer-av{width:56px;height:56px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0;border:2px solid var(--border2)}
+/* User avatar hero */
+.drawer-hero{padding:18px 20px 0;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.drawer-av{width:52px;height:52px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0;border:2px solid var(--border2)}
 .drawer-av img{width:100%;height:100%;object-fit:cover}
+/* Tabs */
+.drawer-tabs{display:flex;gap:0;padding:12px 20px 0;border-bottom:1px solid var(--border);flex-shrink:0}
+.drawer-tab{padding:7px 14px;font-size:11px;font-family:var(--mono);color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
+.drawer-tab:hover{color:var(--text2)}
+.drawer-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* Tab panels */
+.drawer-body{flex:1;overflow-y:auto;padding:16px 20px}
+.drawer-pane{display:none}
+.drawer-pane.active{display:block}
 .drow-sec{margin-bottom:16px}
 .drow-sec-title{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
-.drow-kv{display:flex;justify-content:space-between;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.drow-kv{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
 .drow-kv:last-child{border-bottom:none}
 .drow-k{color:var(--text2);flex-shrink:0;margin-right:12px}
 .drow-v{text-align:right;font-family:var(--mono);font-size:11px;color:var(--text);word-break:break-all}
+.drawer-proj-item{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:7px;margin-bottom:4px;background:var(--surface2);border:1px solid var(--border)}
+.drawer-task-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;margin-bottom:3px;background:var(--surface2);border:1px solid var(--border);font-size:11px}
+.drawer-action-btn{width:100%;padding:9px 14px;border-radius:7px;font-size:12px;font-family:var(--mono);cursor:pointer;border:1px solid;transition:all .15s;text-align:center;margin-bottom:6px;display:block}
+.drawer-action-btn:hover{opacity:.85}
 
 /* ════════ TOAST ════════ */
 #toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 15px;font-size:12px;font-family:var(--mono);box-shadow:0 8px 30px rgba(0,0,0,.5);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:9999;max-width:280px;display:flex;align-items:center;gap:8px}
 #toast.show{opacity:1;transform:translateY(0)}
 #toast.ok{border-color:rgba(16,185,129,.3);color:#34d399}
 #toast.err{border-color:rgba(239,68,68,.3);color:#f87171}
+#toast.warn{border-color:rgba(245,166,35,.3);color:#fbbf24}
 
 /* ════════ CONFIRM MODAL ════════ */
 #confirm-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:9500;backdrop-filter:blur(4px)}
@@ -462,6 +480,123 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
 .wc-val{font-size:8px;font-family:var(--mono);color:var(--text2)}
 
 @keyframes spin{to{transform:rotate(360deg)}}
+/* ════════ COMMAND PALETTE ════════ */
+#cmd-palette{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:flex-start;justify-content:center;z-index:9500;backdrop-filter:blur(8px);padding-top:12vh}
+#cmd-palette.open{display:flex}
+.cmd-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;width:560px;max-width:95vw;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);animation:fadeIn .12s ease}
+.cmd-input-wrap{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.cmd-input-wrap svg{width:16px;height:16px;color:var(--text3);flex-shrink:0}
+#cmd-input{flex:1;background:none;border:none;outline:none;font-size:14px;font-family:var(--mono);color:var(--text)}
+#cmd-input::placeholder{color:var(--text3)}
+.cmd-hint{font-size:10px;font-family:var(--mono);color:var(--text3);flex-shrink:0}
+.cmd-results{max-height:360px;overflow-y:auto}
+.cmd-section-label{font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:1.5px;padding:8px 16px 3px;text-transform:uppercase;display:block}
+.cmd-item{display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;transition:background .1s}
+.cmd-item:hover,.cmd-item.selected{background:var(--accent-dim)}
+.cmd-item-icon{width:28px;height:28px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cmd-item-icon svg{width:13px;height:13px;color:var(--text2)}
+.cmd-item:hover .cmd-item-icon svg,.cmd-item.selected .cmd-item-icon svg{color:var(--accent)}
+.cmd-item-title{font-size:12px;font-weight:500;flex:1}
+.cmd-item-sub{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.cmd-item-kbd{font-size:9px;font-family:var(--mono);color:var(--text3);background:var(--surface2);border:1px solid var(--border2);padding:2px 5px;border-radius:4px;white-space:nowrap}
+.cmd-empty{padding:32px 16px;text-align:center;color:var(--text3);font-size:12px;font-family:var(--mono)}
+
+/* ════════ NOTIFICATION PANEL ════════ */
+#notif-panel{position:fixed;top:50px;right:16px;width:340px;max-height:480px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,.5);z-index:6000;display:none;flex-direction:column;overflow:hidden;animation:fadeIn .15s ease}
+#notif-panel.open{display:flex}
+.notif-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.notif-hdr-title{font-size:12px;font-weight:600;flex:1}
+.notif-clear{font-size:10px;font-family:var(--mono);color:var(--text3);cursor:pointer;padding:3px 7px;border-radius:4px;border:1px solid var(--border);background:none;transition:all .15s}
+.notif-clear:hover{color:var(--text);border-color:var(--border2)}
+.notif-body{flex:1;overflow-y:auto}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.notif-item:hover{background:var(--surface2)}
+.notif-item:last-child{border-bottom:none}
+.notif-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.notif-dot.red{background:var(--red)}
+.notif-dot.amber{background:var(--accent)}
+.notif-dot.green{background:var(--green)}
+.notif-dot.blue{background:var(--blue)}
+.notif-text{font-size:11.5px;line-height:1.5;flex:1}
+.notif-time-lbl{font-size:9px;font-family:var(--mono);color:var(--text3);flex-shrink:0;margin-top:2px}
+#notif-btn{position:relative;flex-shrink:0}
+.notif-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#fff;font-size:9px;font-family:var(--mono);display:none;align-items:center;justify-content:center;padding:0 4px;pointer-events:none}
+.notif-badge.show{display:flex}
+
+/* ════════ QUICK ACTION FAB ════════ */
+#quick-fab{position:fixed;bottom:24px;right:24px;z-index:5000}
+.fab-btn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#f97316);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(245,166,35,.4);transition:transform .2s,box-shadow .2s}
+.fab-btn:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(245,166,35,.5)}
+.fab-btn svg{width:18px;height:18px;color:#000;transition:transform .2s}
+.fab-btn.open svg{transform:rotate(45deg)}
+.fab-menu{position:absolute;bottom:52px;right:0;display:flex;flex-direction:column;gap:6px;opacity:0;pointer-events:none;transform:translateY(8px);transition:all .2s}
+.fab-menu.open{opacity:1;pointer-events:all;transform:translateY(0)}
+.fab-action{display:flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;font-size:11px;font-family:var(--mono);color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.3);transition:all .15s}
+.fab-action:hover{border-color:var(--accent);color:var(--accent)}
+.fab-action svg{width:12px;height:12px}
+
+/* ════════ ANALYTICS ════════ */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+@media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.chart-title{font-size:12px;font-weight:600;margin-bottom:2px}
+.chart-sub{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:14px}
+.bar-chart{display:flex;align-items:flex-end;gap:3px;height:80px;margin-bottom:4px}
+.bar-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.bar-fill{width:100%;border-radius:3px 3px 0 0;min-height:3px;cursor:pointer;transition:filter .15s}
+.bar-fill:hover{filter:brightness(1.25)}
+.bar-lbl{font-size:8px;font-family:var(--mono);color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
+.donut-wrap{display:flex;align-items:center;gap:16px}
+.donut-legend{flex:1;display:flex;flex-direction:column;gap:7px}
+.donut-leg-item{display:flex;align-items:center;gap:7px;font-size:11px}
+.donut-leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.donut-leg-pct{font-family:var(--mono);color:var(--text3);font-size:10px;margin-left:auto}
+
+/* ════════ COMPARE MODAL ════════ */
+#compare-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:7500;backdrop-filter:blur(6px);padding:20px}
+#compare-modal.open{display:flex}
+.compare-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:700px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.6);animation:fadeIn .18s ease}
+.compare-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;border-radius:14px 14px 0 0}
+.compare-cols{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.compare-col{background:var(--surface);padding:16px 18px}
+.compare-col-hdr{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.compare-kv{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:11.5px;border-bottom:1px solid var(--border)}
+.compare-kv:last-child{border-bottom:none}
+.compare-kv-key{color:var(--text2)}
+.compare-kv-val{font-family:var(--mono);font-size:11px;font-weight:600}
+.compare-winner{color:var(--green)!important}
+.compare-loser{color:var(--text3)!important}
+
+/* ════════ BULK ACTION BAR ════════ */
+#bulk-bar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;display:none;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:5500}
+#bulk-bar.show{display:flex;animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.bulk-count{font-size:12px;font-family:var(--mono);color:var(--text2)}
+.bulk-count b{color:var(--accent)}
+.bulk-sep{width:1px;height:20px;background:var(--border2)}
+.bulk-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-family:var(--mono);cursor:pointer;border:1px solid;transition:all .15s}
+.bulk-btn-red{border-color:rgba(239,68,68,.3);color:#f87171;background:var(--red-dim)}
+.bulk-btn-red:hover{border-color:var(--red)}
+.bulk-btn-cancel{border-color:var(--border2);color:var(--text2);background:none}
+.bulk-btn-cancel:hover{color:var(--text)}
+
+/* ════════ SORT ARROWS ════════ */
+thead th.sortable{cursor:pointer;user-select:none}
+thead th.sortable:hover{color:var(--text2)}
+thead th.sort-asc::after{content:' ↑';color:var(--accent);font-size:9px}
+thead th.sort-desc::after{content:' ↓';color:var(--accent);font-size:9px}
+
+/* ════════ ROW CHECKBOX ════════ */
+.row-check{width:14px;height:14px;accent-color:var(--accent);cursor:pointer}
+tr.selected-row{background:rgba(245,166,35,.04)!important}
+
+/* ════════ SEARCH HIGHLIGHT ════════ */
+mark{background:rgba(245,166,35,.25);color:var(--accent);border-radius:2px;padding:0 1px}
+
+/* ════════ CUSTOM SCROLLBARS (panels) ════════ */
+.cmd-results::-webkit-scrollbar,.notif-body::-webkit-scrollbar,.compare-card::-webkit-scrollbar{width:4px}
+.cmd-results::-webkit-scrollbar-thumb,.notif-body::-webkit-scrollbar-thumb,.compare-card::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
 </style>
 </head>
 <body>
@@ -511,15 +646,29 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
   </div>
 </div>
 
-<!-- ══ USER DETAIL DRAWER ═════════════════════════════ -->
-<div id="drawer">
-  <div class="drawer-hdr">
-    <div class="drawer-title" id="drawer-title">User Details</div>
-    <button class="drawer-close" onclick="closeDrawer()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+<!-- ══ USER DETAIL MODAL ═════════════════════════════ -->
+<div id="drawer" onclick="if(event.target===this)closeDrawer()">
+  <div id="drawer-inner">
+    <div class="drawer-hdr">
+      <div class="drawer-title" id="drawer-title">User Details</div>
+      <button class="drawer-close" onclick="closeDrawer()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-hero" id="drawer-hero"></div>
+    <div class="drawer-tabs" id="drawer-tabs">
+      <div class="drawer-tab active" onclick="switchDrawerTab('account',this)">Account</div>
+      <div class="drawer-tab" onclick="switchDrawerTab('activity',this)">Activity</div>
+      <div class="drawer-tab" onclick="switchDrawerTab('projects',this)">Projects</div>
+      <div class="drawer-tab" onclick="switchDrawerTab('actions',this)">Actions</div>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-pane active" id="drawer-pane-account"></div>
+      <div class="drawer-pane" id="drawer-pane-activity"></div>
+      <div class="drawer-pane" id="drawer-pane-projects"></div>
+      <div class="drawer-pane" id="drawer-pane-actions"></div>
+    </div>
   </div>
-  <div class="drawer-body" id="drawer-body"></div>
 </div>
 
 <!-- ══ CONFIRM MODAL ══════════════════════════════════ -->
@@ -592,15 +741,19 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Activity Log
     </div>
+    <div class="nav-item" onclick="nav('analytics',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </div>
 
     <div class="sb-label">System</div>
     <div class="nav-item" onclick="nav('settings',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07"/><path d="M4.93 4.93A10 10 0 0 0 19.07 19.07"/></svg>
       Settings
     </div>
-    <div class="nav-item" onclick="window.close()">
+    <div class="nav-item" onclick="adminSignOut()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Exit
+      Sign Out
     </div>
   </div>
 
@@ -627,6 +780,11 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
     </div>
     <div class="live-dot" title="Live"></div>
     <div class="tb-time" id="tb-time">—</div>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--text3)" id="last-refresh-time"></div>
+    <button id="notif-btn" class="tb-btn" onclick="toggleNotifPanel()" title="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="notif-badge" id="notif-badge"></div>
+    </button>
     <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark"></button>
     <button class="tb-btn tb-btn-blue" onclick="openSa()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
@@ -636,7 +794,7 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export
     </button>
-    <button class="tb-btn" onclick="refreshAll()">
+    <button id="refresh-btn" class="tb-btn" onclick="refreshAll()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       Refresh
     </button>
@@ -664,6 +822,10 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
         <div class="mini-stat">
           <div class="mini-stat-val" id="ms-overdue">—</div>
           <div class="mini-stat-lbl">Overdue Tasks</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-val" id="ms-online" style="color:var(--green)">—</div>
+          <div class="mini-stat-lbl">🟢 Online Now</div>
         </div>
         <div class="mini-stat">
           <div class="mini-stat-val" id="ms-announcements">—</div>
@@ -777,30 +939,7 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
       </div>
     </div>
 
-    <!-- ═══ ANALYTICS ═══════════════════════════════ -->
-    <div class="tab-panel" id="tab-analytics">
-      <div class="grid2">
-        <div class="card">
-          <div class="sec-hdr"><div class="sec-title">Users by Provider</div></div>
-          <div id="analytics-providers" style="font-size:12px"></div>
-        </div>
-        <div class="card">
-          <div class="sec-hdr"><div class="sec-title">Task Priority Distribution</div></div>
-          <div id="analytics-priority" style="font-size:12px"></div>
-        </div>
-      </div>
-      <div class="grid2">
-        <div class="card">
-          <div class="sec-hdr"><div class="sec-title">Top Users by Activity</div></div>
-          <table><thead><tr><th>User</th><th>Uploads</th><th>Projects</th><th>Tasks</th><th>Score</th></tr></thead>
-          <tbody id="top-users"><tr class="loading-row"><td colspan="5"><span class="spin"></span>Loading…</td></tr></tbody></table>
-        </div>
-        <div class="card">
-          <div class="sec-hdr"><div class="sec-title">Expiring Uploads Timeline</div></div>
-          <div id="expiry-timeline" style="font-size:12px"></div>
-        </div>
-      </div>
-    </div>
+
 
     <!-- ═══ USERS ═══════════════════════════════════ -->
     <div class="tab-panel" id="tab-users">
@@ -832,13 +971,17 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>User</th><th>Email</th><th>Provider</th>
+            <th style="width:32px"><input type="checkbox" class="row-check" title="Select all" onchange="selectAllUsers(this.checked)"/></th>
+            <th class="sortable" onclick="sortUsers('displayName')">User ↕</th>
+            <th class="sortable" onclick="sortUsers('email')">Email ↕</th>
+            <th>Provider</th>
             <th class="sortable" onclick="sortUsers('createdAt')">Created ↕</th>
             <th class="sortable" onclick="sortUsers('lastLoginMs')">Last Login ↕</th>
+            <th>Online</th>
             <th>Uploads</th><th>Projects</th><th>Tasks</th>
             <th>Status</th><th>Role</th><th>Actions</th>
           </tr></thead>
-          <tbody id="users-body"><tr class="loading-row"><td colspan="11"><span class="spin"></span>Loading…</td></tr></tbody>
+          <tbody id="users-body"><tr class="loading-row"><td colspan="13"><span class="spin"></span>Loading…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -919,12 +1062,26 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
             <option value="medium">Medium</option>
             <option value="low">Low</option>
           </select>
+          <button class="tb-btn" style="color:var(--cyan);border-color:rgba(6,182,212,.3);font-size:10px" onclick="inspectTaskFields()" title="Show raw Firebase field names">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Inspect
+          </button>
         </div>
       </div>
+      <!-- Field map banner — shown after Inspect if field names don't match -->
+      <div id="task-field-banner" style="display:none;margin-bottom:10px;background:var(--surface);border:1px solid rgba(6,182,212,.3);border-radius:8px;padding:10px 14px;font-size:11px;font-family:var(--mono);color:var(--cyan);line-height:1.8;white-space:pre-wrap;overflow-x:auto"></div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Task</th><th>Project</th><th>User</th><th>Status</th><th>Priority</th><th>Due</th><th>Overdue</th></tr></thead>
-          <tbody id="tasks-body"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Loading…</td></tr></tbody>
+          <thead><tr>
+  <th class="sortable" data-sort-body="tasks-body" onclick="sortTable('tasks-body',0)">Description</th>
+  <th class="sortable" data-sort-body="tasks-body" onclick="sortTable('tasks-body',1)">Project</th>
+  <th>Assignees</th>
+  <th class="sortable" data-sort-body="tasks-body" onclick="sortTable('tasks-body',3)">Status</th>
+  <th class="sortable" data-sort-body="tasks-body" onclick="sortTable('tasks-body',4)">Priority</th>
+  <th class="sortable" data-sort-body="tasks-body" onclick="sortTable('tasks-body',5)">Target Date</th>
+  <th>Overdue</th><th>Action</th>
+</tr></thead>
+          <tbody id="tasks-body"><tr class="loading-row"><td colspan="8"><span class="spin"></span>Loading…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -953,7 +1110,79 @@ td{padding:8px 12px;font-size:12px;vertical-align:middle}
       </div>
     </div>
 
-    <!-- ═══ BROADCAST ════════════════════════════════ -->
+
+    <!-- ═══ ANALYTICS ══════════════════════════════════ -->
+    <div class="tab-panel" id="tab-analytics">
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Task Status Breakdown</div>
+          <div class="chart-sub">all users · live</div>
+          <div class="donut-wrap">
+            <svg width="90" height="90" viewBox="0 0 36 36" id="donut-status">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--surface2)" stroke-width="3.8"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--green)" stroke-width="3.8" stroke-dasharray="0 100" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:center" id="donut-done"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--blue)" stroke-width="3.8" stroke-dasharray="0 100" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:center" id="donut-inprog"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--text3)" stroke-width="3.8" stroke-dasharray="0 100" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:center" id="donut-todo"/>
+              <text x="18" y="18" text-anchor="middle" dominant-baseline="middle" font-size="6" font-family="monospace" fill="var(--text)" id="donut-pct">—</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="donut-leg-item"><div class="donut-leg-dot" style="background:var(--green)"></div>Done<span class="donut-leg-pct" id="leg-done">—</span></div>
+              <div class="donut-leg-item"><div class="donut-leg-dot" style="background:var(--blue)"></div>In Progress<span class="donut-leg-pct" id="leg-inprog">—</span></div>
+              <div class="donut-leg-item"><div class="donut-leg-dot" style="background:var(--text3)"></div>Todo<span class="donut-leg-pct" id="leg-todo">—</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Priority Distribution</div>
+          <div class="chart-sub">open tasks only</div>
+          <div class="bar-chart" id="prio-chart"></div>
+          <div id="prio-labels" style="display:flex;gap:3px;margin-top:2px"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Top 8 Users by Task Count</div>
+          <div class="chart-sub">total tasks assigned</div>
+          <div class="bar-chart" id="user-task-chart"></div>
+          <div id="user-task-labels" style="display:flex;gap:3px;margin-top:2px"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Top 8 Projects by Task Count</div>
+          <div class="chart-sub">tasks per project</div>
+          <div class="bar-chart" id="proj-task-chart"></div>
+          <div id="proj-task-labels" style="display:flex;gap:3px;margin-top:2px"></div>
+        </div>
+        <div class="chart-card" style="grid-column:span 2">
+          <div class="chart-title">Upload Expiry Timeline</div>
+          <div class="chart-sub">uploads expiring each day over next 14 days</div>
+          <div class="bar-chart" style="height:60px" id="expiry-chart"></div>
+          <div id="expiry-labels" style="display:flex;gap:3px;margin-top:2px"></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">Assignee Leaderboard</div><div class="sec-badge">by tasks done</div></div>
+          <div id="assignee-board"></div>
+        </div>
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">System Health</div></div>
+          <div id="health-board"></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">Top Users by Activity</div><div class="sec-badge">score = uploads×2 + projects×3 + tasks</div></div>
+          <table style="width:100%">
+            <thead><tr><th>User</th><th>Uploads</th><th>Projects</th><th>Tasks</th><th>Score</th></tr></thead>
+            <tbody id="top-users"><tr class="loading-row"><td colspan="5"><span class="spin"></span>Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">Users by Auth Provider</div></div>
+          <div id="analytics-providers" style="font-size:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ BROADCAST ══════════════════════════════ -->
     <div class="tab-panel" id="tab-broadcast">
       <div class="banner banner-blue">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -1078,7 +1307,86 @@ set(ref(db, `users/${user.uid}/profile`), {
   </div><!-- /content -->
 </div><!-- /main -->
 
+<!-- ══ COMMAND PALETTE ════════════════════════════════ -->
+<div id="cmd-palette" onclick="if(event.target===this)closeCmdPalette()">
+  <div class="cmd-box">
+    <div class="cmd-input-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="cmd-input" placeholder="Search users, navigate, run actions…" autocomplete="off" oninput="updateCmdResults(this.value)" onkeydown="cmdKeydown(event)"/>
+      <span class="cmd-hint">ESC to close</span>
+    </div>
+    <div class="cmd-results" id="cmd-results"></div>
+  </div>
+</div>
+
+<!-- ══ NOTIFICATION PANEL ═════════════════════════════ -->
+<div id="notif-panel">
+  <div class="notif-hdr">
+    <div class="notif-hdr-title">🔔 Notifications</div>
+    <button class="notif-clear" onclick="clearAllNotifs()">Clear all</button>
+    <button class="notif-clear" onclick="toggleNotifPanel()" style="padding:3px 7px">✕</button>
+  </div>
+  <div class="notif-body" id="notif-body">
+    <div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;font-family:var(--mono)">No notifications</div>
+  </div>
+</div>
+
+<!-- ══ COMPARE MODAL ══════════════════════════════════ -->
+<div id="compare-modal" onclick="if(event.target===this)closeCompare()">
+  <div class="compare-card">
+    <div class="compare-hdr">
+      <div style="font-size:14px;font-weight:600">⚖ Compare Users</div>
+      <button onclick="closeCompare()" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:16px">✕</button>
+    </div>
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center">
+      <select id="cmp-a" class="inline-input" style="flex:1" onchange="renderCompare()"><option value="">Select user A…</option></select>
+      <span style="color:var(--text3);font-size:18px;font-family:var(--mono)">vs</span>
+      <select id="cmp-b" class="inline-input" style="flex:1" onchange="renderCompare()"><option value="">Select user B…</option></select>
+    </div>
+    <div id="compare-body" style="padding:14px 20px;color:var(--text3);font-size:12px;text-align:center;padding:40px">Select two users to compare</div>
+  </div>
+</div>
+
+<!-- ══ BULK ACTION BAR ═════════════════════════════════ -->
+<div id="bulk-bar">
+  <div class="bulk-count"><b id="bulk-count-num">0</b> users selected</div>
+  <div class="bulk-sep"></div>
+  <button class="bulk-btn bulk-btn-red" onclick="bulkBan()">⊘ Ban Selected</button>
+  <button class="bulk-btn bulk-btn-red" onclick="bulkExport()">↓ Export Selected</button>
+  <button class="bulk-btn bulk-btn-cancel" onclick="clearBulkSelection()">Cancel</button>
+</div>
+
+<!-- ══ QUICK ACTION FAB ════════════════════════════════ -->
+<div id="quick-fab">
+  <div class="fab-menu" id="fab-menu">
+    <div class="fab-action" onclick="openCmdPalette()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Command Palette
+    </div>
+    <div class="fab-action" onclick="openCompare()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+      Compare Users
+    </div>
+    <div class="fab-action" onclick="nav('broadcast',document.querySelector('[onclick*=broadcast]'));closeFab()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      New Broadcast
+    </div>
+    <div class="fab-action" onclick="nav('analytics',document.querySelector('[onclick*=analytics]'));closeFab()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      View Analytics
+    </div>
+    <div class="fab-action" onclick="refreshAll();closeFab()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/></svg>
+      Refresh Data
+    </div>
+  </div>
+  <button class="fab-btn" id="fab-main-btn" onclick="toggleFab()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+</div>
+
 <div id="toast"></div>
+
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -1175,20 +1483,23 @@ function bootAdmin(){
   setText('set-prov',u.providerData?.[0]?.providerId||'password');
   setText('set-login',u.metadata?.lastSignInTime||'—');
   refreshAll();
+  startPresenceListener();
 }
 
 /* ══════════════ NAVIGATION ══════════════ */
 const PAGE_LABELS={overview:'Dashboard',analytics:'Analytics',users:'Users',uploads:'KMC Uploads',projects:'Projects',tasks:'Tasks',trash:'Trash',admins:'Admins',activity:'Activity Log',settings:'Settings'};
 function nav(tab,el){
+  // Normalise: strip leading 'tab-' so we always work with bare key
+  const key=tab.startsWith('tab-')?tab.slice(4):tab;
   document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
   if(el) el.classList.add('active');
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  setText('tb-page',PAGE_LABELS[tab]||tab);
-  // Refresh activity log every time it's opened
-  if(tab==='activity') renderActivityLog();
-  // Reload broadcast history every time opened
-  if(tab==='broadcast') loadBroadcastHistory();
+  const panel=document.getElementById('tab-'+key);
+  if(panel) panel.classList.add('active');
+  setText('tb-page',PAGE_LABELS[key]||key);
+  if(key==='activity') renderActivityLog();
+  if(key==='broadcast') loadBroadcastHistory();
+  if(key==='analytics') setTimeout(renderAnalytics,50);
 }
 
 function renderActivityLog(){
@@ -1207,9 +1518,7 @@ function renderActivityLog(){
 }
 
 /* ══════════════ REFRESH ══════════════ */
-async function refreshAll(){
-  try{await loadAll();}catch(e){toast('Error: '+e.message,'err');}
-}
+// refreshAll defined below after all helpers are set up
 
 /* ══════════════ MASTER LOAD ══════════════ */
 async function loadAll(){
@@ -1223,16 +1532,30 @@ async function loadAll(){
     const p=ud.profile||{};
     const uploads=ud.kmc_uploads?Object.values(ud.kmc_uploads):[];
     const projects=ud.projects?(Array.isArray(ud.projects)?ud.projects:Object.values(ud.projects)):[];
-    const tasks=ud.tasks?(Array.isArray(ud.tasks)?ud.tasks:Object.values(ud.tasks)):[];
-    const trash=ud.trash?(Array.isArray(ud.trash)?ud.trash:Object.values(ud.trash)):[];
+    const tasksRaw=ud.tasks||({}); 
+    const tasks=Array.isArray(tasksRaw)?tasksRaw.map((t,i)=>t?{...t,_fbKey:String(i)}:null).filter(Boolean):Object.entries(tasksRaw).map(([k,t])=>t?{...t,_fbKey:k}:null).filter(Boolean);
+    const trashRaw=ud.trash||({});
+    const trash=Array.isArray(trashRaw)?trashRaw.map((t,i)=>t?{...t,_fbKey:String(i)}:null).filter(Boolean):Object.entries(trashRaw).map(([k,t])=>t?{...t,_fbKey:k}:null).filter(Boolean);
     const active=uploads.filter(u=>!u.expiresAt||u.expiresAt>now);
     const expiring=active.filter(u=>u.expiresAt&&(u.expiresAt-now)<7*864e5);
-    const done=tasks.filter(t=>t&&t.status==='done').length;
+    // Use normalizeTask for accurate status counting (handles all field name variants)
+    // normalizeTask is defined later in the script — use a safe inline version here
+    const normStatus=t=>{
+      if(t.completed===true) return 'done';
+      const s=(t.kanbanStatus||t.status||t.taskStatus||t.state||'').toString().toLowerCase().trim();
+      if(['done','complete','completed','finished','closed'].includes(s)) return 'done';
+      if(['in-progress','inprogress','in progress','wip','active','ongoing'].includes(s)) return 'in-progress';
+      return 'todo';
+    };
+    const done=tasks.filter(t=>t&&normStatus(t)==='done').length;
     tUploads+=active.length; tProjects+=projects.length;
     tTasks+=tasks.filter(t=>t&&t.status!=='done').length;
     tDone+=done; tTrash+=trash.length; tExpiring+=expiring.length;
     if(!p.email) tMissing++;
-    D[uid]={uid,hasProfile:!!p.email,email:p.email||'',displayName:p.displayName||'',photoURL:p.photoURL||'',providerId:p.providerId||'',createdAt:p.createdAt||'',lastLogin:p.lastLogin||'',lastLoginMs:p.lastLoginMs||0,emailVerified:p.emailVerified||false,disabled:p.disabled||false,isAdmin:aVal.hasOwnProperty(uid),uploads,activeUploads:active,expiringUploads:expiring,projects,tasks,trash};
+    // Resolve lastLoginMs: stored as number OR as a date string — handle both
+    const rawLoginMs = p.lastLoginMs||(p.lastLogin?new Date(p.lastLogin).getTime():0);
+    const lastLoginMs = (rawLoginMs&&!isNaN(rawLoginMs))?rawLoginMs:0;
+    D[uid]={uid,hasProfile:!!p.email,email:p.email||'',displayName:p.displayName||'',photoURL:p.photoURL||'',providerId:p.providerId||'',createdAt:p.createdAt||'',lastLogin:p.lastLogin||'',lastLoginMs,emailVerified:p.emailVerified||false,disabled:p.disabled||false,isAdmin:aVal.hasOwnProperty(uid),uploads,activeUploads:active,expiringUploads:expiring,projects,tasks,trash};
   }
 
   const uCount=Object.keys(uVal).length, aCount=Object.keys(aVal).length;
@@ -1262,6 +1585,7 @@ async function loadAll(){
   renderTasksTable(); renderTrashTable(); renderAdminsTable(aVal);
   renderAnalytics(); renderTopUsers();
   renderSignupChart(); loadBroadcastHistory(); renderMiniStats();
+  postLoadNotifs();
 }
 
 /* ══════════════ OVERVIEW TABLES ══════════════ */
@@ -1297,7 +1621,8 @@ function renderOverviewTables(){
 function renderTaskBreakdown(open,done){
   const all=Object.values(D);
   let todo=0,inprog=0;
-  for(const u of all) for(const t of u.tasks){if(!t)continue; if(t.status==='todo')todo++; else if(t.status==='in-progress')inprog++;}
+  const normS=t=>{if(t.completed===true)return'done';const s=(t.kanbanStatus||t.status||'').toLowerCase();if(s==='done'||s==='complete'||s==='completed')return'done';if(s==='in-progress'||s==='wip'||s==='active')return'in-progress';return'todo';};
+  for(const u of all) for(const t of u.tasks){if(!t)continue; const s=normS(t); if(s==='todo')todo++; else if(s==='in-progress')inprog++;}
   const total=todo+inprog+done||1;
   const el=document.getElementById('task-breakdown');
   el.innerHTML=[
@@ -1348,57 +1673,6 @@ function renderSparkline(){
 }
 
 /* ══════════════ ANALYTICS ══════════════ */
-function renderAnalytics(){
-  // Provider breakdown
-  const provs={};
-  for(const u of Object.values(D)) provs[u.providerId||'unknown']=(provs[u.providerId||'unknown']||0)+1;
-  const total=Object.keys(D).length||1;
-  document.getElementById('analytics-providers').innerHTML=Object.entries(provs).map(([k,v])=>`
-    <div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-        <span>${provChip(k)}</span>
-        <span style="font-family:var(--mono);font-size:11px;color:var(--text2)">${v} (${(v/total*100).toFixed(0)}%)</span>
-      </div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${(v/total*100).toFixed(1)}%;background:var(--blue)"></div></div>
-    </div>`).join('');
-
-  // Priority
-  const prios={high:0,medium:0,low:0,none:0};
-  for(const u of Object.values(D)) for(const t of u.tasks){if(!t)continue; prios[t.priority||'none']++;}
-  const ptotal=Object.values(prios).reduce((a,b)=>a+b,1);
-  const pcols={high:'var(--red)',medium:'var(--accent)',low:'var(--green)',none:'var(--text3)'};
-  document.getElementById('analytics-priority').innerHTML=Object.entries(prios).map(([k,v])=>`
-    <div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-        <span style="font-size:12px;text-transform:capitalize">${k}</span>
-        <span style="font-family:var(--mono);font-size:11px;color:var(--text2)">${v}</span>
-      </div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${(v/ptotal*100).toFixed(1)}%;background:${pcols[k]}"></div></div>
-    </div>`).join('');
-
-  // Expiry timeline
-  const now=Date.now();
-  const buckets={'Today':0,'1-3d':0,'4-7d':0,'8-30d':0,'Expired':0};
-  for(const u of Object.values(D)) for(const up of u.uploads){
-    if(!up.expiresAt) continue;
-    const d=Math.ceil((up.expiresAt-now)/864e5);
-    if(d<=0) buckets['Expired']++;
-    else if(d<=1) buckets['Today']++;
-    else if(d<=3) buckets['1-3d']++;
-    else if(d<=7) buckets['4-7d']++;
-    else buckets['8-30d']++;
-  }
-  const ecols={'Today':'var(--red)','1-3d':'#f97316','4-7d':'var(--accent)','8-30d':'var(--green)','Expired':'var(--text3)'};
-  const etotal=Object.values(buckets).reduce((a,b)=>a+b,1);
-  document.getElementById('expiry-timeline').innerHTML=Object.entries(buckets).map(([k,v])=>`
-    <div style="margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-        <span style="font-size:11px;font-family:var(--mono);color:${ecols[k]}">${k}</span>
-        <span style="font-family:var(--mono);font-size:11px;color:var(--text2)">${v}</span>
-      </div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${(v/etotal*100).toFixed(1)}%;background:${ecols[k]}"></div></div>
-    </div>`).join('');
-}
 
 function renderTopUsers(){
   const users=Object.values(D).map(u=>({
@@ -1431,42 +1705,72 @@ function renderUsersTable(){
     const av=a[_sortUsers.k]||0, bv=b[_sortUsers.k]||0;
     return _sortUsers.asc?(av>bv?1:-1):(av<bv?1:-1);
   });
-  if(!entries.length){body.innerHTML='<tr class="loading-row"><td colspan="11">No users found</td></tr>';return;}
-  body.innerHTML=entries.map(u=>{
-    const open=u.tasks.filter(t=>t&&t.status!=='done').length;
-    const overdue=u.tasks.filter(t=>t&&t.status!=='done'&&t.dueDate&&new Date(t.dueDate)<new Date()).length;
-    const dot=u.hasProfile?'<span class="dot-sync" title="Synced"></span>':'<span class="dot-no" title="Not synced"></span>';
-    const overdueBadge=overdue>0?`<span class="chip chip-red" style="font-size:9px;padding:1px 5px;margin-left:4px">⚠${overdue} overdue</span>`:'';
+  if(!entries.length){body.innerHTML='<tr class="loading-row"><td colspan="13">No users found</td></tr>';return;}
+  body.innerHTML=entries.map((u,i)=>{
+    const normS=t=>{if(t.completed===true)return'done';const s=(t.kanbanStatus||t.status||'').toLowerCase();return(s==='done'||s==='complete'||s==='completed')?'done':'open';};
+    const open=u.tasks.filter(t=>t&&normS(t)!=='done').length;
+    const overdue=u.tasks.filter(t=>{if(!t||normS(t)==='done')return false;const d=t.target||t.dueDate||'';return d&&new Date(d)<new Date();}).length;
+    const dot=u.hasProfile?'<span class="dot-sync" title="Profile synced"></span>':'<span class="dot-no" title="Profile missing"></span>';
+    const overdueBadge=overdue>0?`<span class="chip chip-red" style="font-size:9px;padding:1px 5px;margin-left:4px">⚠${overdue}</span>`:'';
+    // Online: last login within 10 minutes = online, within 30 min = recently active
+    const minsAgo=u.lastLoginMs?(Date.now()-u.lastLoginMs)/60000:Infinity;
+    const onlineBadge=minsAgo<10
+      ?'<span class="chip chip-green" style="font-size:9px;padding:1px 6px"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#34d399;margin-right:3px;vertical-align:middle;animation:pulse 2s infinite"></span>Online</span>'
+      :minsAgo<30
+      ?'<span class="chip chip-amber" style="font-size:9px;padding:1px 6px">~30m</span>'
+      :'<span style="color:var(--text3);font-size:10px">—</span>';
+    // Last login display — show relative time if we have ms, otherwise format string
+    const lastLoginDisplay=u.lastLoginMs?relTime(u.lastLoginMs):(u.lastLogin?fmtDate(u.lastLogin):'—');
     return `<tr>
+      <td style="width:32px"><input type="checkbox" class="row-check" onchange="toggleBulkSelect('${u.uid}',this.checked)"/></td>
       <td><div class="av-cell">${avEl(u)}
         <div><div class="av-name">${dot}${esc(u.displayName||(u.hasProfile?'(no name)':'—'))}</div>
         <div class="av-sub">${u.uid.slice(0,14)}…</div></div>
       </div></td>
       <td class="td-email">${esc(u.email||'—')}</td>
       <td>${provChip(u.providerId)}</td>
-      <td class="td-mono td-dim" style="font-size:10px">${fmtDate(u.createdAt)}</td>
-      <td>${relTime(u.lastLoginMs||0)}</td>
+      <td class="td-mono td-dim" style="font-size:10px;white-space:nowrap">${fmtDate(u.createdAt)}</td>
+      <td class="td-mono td-dim" style="font-size:10px;white-space:nowrap">${lastLoginDisplay}</td>
+      <td>${onlineBadge}</td>
       <td class="td-mono">${u.activeUploads.length}</td>
       <td class="td-mono">${u.projects.length}</td>
       <td class="td-mono">${open}${overdueBadge}</td>
       <td>${u.disabled?'<span class="chip chip-red">Disabled</span>':'<span class="chip chip-green">Active</span>'}</td>
       <td>${u.isAdmin?'<span class="chip chip-amber">Admin</span>':'<span class="chip chip-gray">User</span>'}</td>
       <td><div class="act-row">
-        <button class="act info" onclick="openDrawer('${u.uid}')">
+        <button class="act info u-view-btn" data-uid="${u.uid}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View
         </button>
-        <button class="act ${u.disabled?'ok':'del'}" onclick="toggleBan('${u.uid}')">${u.disabled?'Enable':'Ban'}</button>
+        <button class="act ${u.disabled?'ok':'del'} u-ban-btn" data-uid="${u.uid}">${u.disabled?'Enable':'Ban'}</button>
         ${u.isAdmin
-          ?`<button class="act del" onclick="revokeAdmin('${u.uid}')">Revoke</button>`
-          :`<button class="act ok" onclick="grantAdminUID('${u.uid}')">Admin</button>`}
+          ?`<button class="act del u-revoke-btn" data-uid="${u.uid}">Revoke</button>`
+          :`<button class="act ok u-admin-btn" data-uid="${u.uid}">Admin</button>`}
       </div>
       <div class="edit-field" style="margin-top:5px">
         <input id="rename-${u.uid}" placeholder="Rename…" value="${esc(u.displayName||'')}"/>
-        <button onclick="renameUser('${u.uid}')">Save</button>
+        <button class="u-rename-btn" data-uid="${u.uid}">Save</button>
       </div></td>
     </tr>`;
   }).join('');
 }
+
+// Event delegation for users table
+document.addEventListener('click',function(e){
+  const vb=e.target.closest('.u-view-btn');
+  const bb=e.target.closest('.u-ban-btn');
+  const rb=e.target.closest('.u-revoke-btn');
+  const ab=e.target.closest('.u-admin-btn');
+  const nb=e.target.closest('.u-rename-btn');
+  const btn=vb||bb||rb||ab||nb;
+  if(!btn) return;
+  const uid=btn.dataset.uid;
+  if(!uid) return;
+  if(vb) openDrawer(uid);
+  if(bb) toggleBan(uid);
+  if(rb) revokeAdmin(uid);
+  if(ab) grantAdminUID(uid);
+  if(nb) renameUser(uid);
+});
 
 /* ══════════════ UPLOADS TABLE ══════════════ */
 let _uploadsAll=[];
@@ -1500,12 +1804,18 @@ function renderUploadsTable(){
       <td class="td-mono td-dim">${fmtDate(new Date(r.uploadedAt||0))}</td>
       <td class="td-mono td-dim">${fmtDate(new Date(r.expiresAt||0))}</td>
       <td>${chip}</td>
-      <td><button class="act del" onclick="deleteUpload('${r._uid}','${r.id||''}')">
+      <td><button class="act del upload-del-btn" data-uid="${r._uid}" data-id="${r.id||''}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Del
       </button></td>
     </tr>`;
   }).join('');
 }
+// Event delegation for uploads table
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.upload-del-btn');
+  if(!btn) return;
+  deleteUpload(btn.dataset.uid, btn.dataset.id);
+});
 
 /* ══════════════ PROJECTS TABLE ══════════════ */
 let _projectsAll=[];
@@ -1518,9 +1828,11 @@ function renderProjectsTable(){
   if(_filterProjects) rows=rows.filter(r=>(r.name||'').toLowerCase().includes(_filterProjects)||(r._email||'').toLowerCase().includes(_filterProjects));
   setText('proj-count',rows.length);
   if(!rows.length){body.innerHTML='<tr class="loading-row"><td colspan="7">No projects found</td></tr>';return;}
-  body.innerHTML=rows.map(p=>{
-    const uTasks=(D[p._uid]?.tasks||[]).filter(t=>t&&t.project===p.name);
-    const done=uTasks.filter(t=>t.status==='done').length;
+  window._projectRows=rows;
+  body.innerHTML=rows.map((p,i)=>{
+    const uTasks=(D[p._uid]?.tasks||[]).filter(t=>t&&(t.project||t.projectName||'')===p.name);
+    const normS=t=>{if(t.completed===true)return'done';const s=(t.kanbanStatus||t.status||'').toLowerCase();return(s==='done'||s==='complete'||s==='completed')?'done':'open';};
+    const done=uTasks.filter(t=>normS(t)==='done').length;
     const pct=uTasks.length?Math.round(done/uTasks.length*100):0;
     return `<tr>
       <td style="font-size:12px;font-weight:500">${esc(p.name||'Untitled')}</td>
@@ -1534,72 +1846,253 @@ function renderProjectsTable(){
         </div>
       </td>
       <td class="td-mono td-dim">${fmtDate(p.createdAt)}</td>
-      <td><button class="act del" onclick="deleteProject('${p._uid}','${esc(p.name||'')}')">
+      <td><button class="act del proj-del-btn" data-idx="${i}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Del
       </button></td>
     </tr>`;
   }).join('');
 }
+// Event delegation for projects table
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.proj-del-btn');
+  if(!btn) return;
+  const idx=parseInt(btn.dataset.idx);
+  const rows=window._projectRows;
+  if(!rows||isNaN(idx)||!rows[idx]) return;
+  const p=rows[idx];
+  deleteProject(p._uid, p.name||'');
+});
 
 /* ══════════════ TASKS TABLE ══════════════ */
 function filterTasks(v){_filterTasks=v.toLowerCase();renderTasksTable();}
+
+// Normalize a raw Firebase task object — uses actual field names from DB
+function normalizeTask(t){
+  if(!t||typeof t!=='object') return null;
+
+  // ── Title: Firebase uses 'description' as the task name ──
+  const title =
+    t.description  ||   // ← actual field in DB
+    t.title        ||
+    t.taskTitle    ||
+    t.name         ||
+    t.taskName     ||
+    t.label        ||
+    '';
+
+  // ── Status: Firebase uses 'kanbanStatus' + 'completed' boolean ──
+  let status = '';
+  const rawKanban = (t.kanbanStatus||t.status||t.taskStatus||t.state||'').toString().toLowerCase().trim();
+  if(t.completed===true || rawKanban==='done' || rawKanban==='complete' || rawKanban==='completed'){
+    status='done';
+  } else if(rawKanban==='in-progress'||rawKanban==='inprogress'||rawKanban==='in progress'||rawKanban==='wip'||rawKanban==='active'){
+    status='in-progress';
+  } else if(rawKanban==='todo'||rawKanban==='to-do'||rawKanban==='to do'||rawKanban==='pending'||rawKanban==='open'||t.completed===false){
+    status='todo';
+  } else {
+    status=rawKanban||'todo';
+  }
+
+  // ── Priority: 'priority' field is correct already ──
+  const rawPrio = (t.priority||t.taskPriority||t.urgency||'').toString().toLowerCase().trim();
+  const prioMap = {
+    'high':'high','urgent':'high','critical':'high',
+    'medium':'medium','med':'medium','normal':'medium','moderate':'medium',
+    'low':'low','minor':'low',
+  };
+  const priority = prioMap[rawPrio] || rawPrio || '';
+
+  // ── Due date: Firebase uses 'target' field ──
+  let dueDate = t.target||t.dueDate||t.due_date||t.due||t.deadline||t.dueAt||t.endDate||'';
+  if(typeof dueDate==='number'&&dueDate>0){
+    dueDate=new Date(dueDate).toISOString().slice(0,10);
+  }
+
+  // ── Project: 'project' field is correct ──
+  const project = t.project||t.projectName||t.category||'';
+
+  // ── Assignees: array of names ──
+  let assignees=[];
+  if(Array.isArray(t.assignees)) assignees=t.assignees.filter(Boolean);
+  else if(t.assignees&&typeof t.assignees==='object') assignees=Object.values(t.assignees).filter(Boolean);
+  else if(t.assignedTo) assignees=[t.assignedTo];
+
+  // ── Completed date ──
+  const completedAt = t.completedAt||'';
+
+  return {...t, _title:title, _status:status, _priority:priority, _dueDate:dueDate, _project:project, _assignees:assignees, _completedAt:completedAt};
+}
+
 function renderTasksTable(){
   const body=document.getElementById('tasks-body');
   const fs=document.getElementById('tasks-filter-status')?.value||'';
   const fp=document.getElementById('tasks-filter-priority')?.value||'';
   const now=Date.now();
   let rows=[];
-  for(const u of Object.values(D)) for(const t of u.tasks){if(!t)continue;rows.push({...t,_uid:u.uid,_email:u.email});}
-  if(_filterTasks) rows=rows.filter(r=>(r.title||r.name||'').toLowerCase().includes(_filterTasks));
-  if(fs) rows=rows.filter(r=>r.status===fs);
-  if(fp) rows=rows.filter(r=>r.priority===fp);
+  for(const u of Object.values(D)){
+    for(const t of u.tasks){
+      if(!t) continue;
+      const n=normalizeTask(t);
+      if(!n) continue;
+      rows.push({...n, _uid:u.uid, _email:u.email, _displayName:u.displayName});
+    }
+  }
+  if(_filterTasks) rows=rows.filter(r=>
+    r._title.toLowerCase().includes(_filterTasks)||
+    r._project.toLowerCase().includes(_filterTasks)||
+    (r._email||'').toLowerCase().includes(_filterTasks)
+  );
+  if(fs) rows=rows.filter(r=>r._status===fs);
+  if(fp) rows=rows.filter(r=>r._priority===fp);
   setText('tasks-count',rows.length);
-  if(!rows.length){body.innerHTML='<tr class="loading-row"><td colspan="7">No tasks found</td></tr>';return;}
-  const sm={todo:'<span class="chip chip-gray">Todo</span>','in-progress':'<span class="chip chip-blue">In Progress</span>',done:'<span class="chip chip-green">Done</span>'};
-  const pm={high:'<span class="chip chip-red">High</span>',medium:'<span class="chip chip-amber">Medium</span>',low:'<span class="chip chip-green">Low</span>'};
-  body.innerHTML=rows.map(t=>{
-    const due=t.dueDate?new Date(t.dueDate).getTime():null;
-    const overdue=due&&due<now&&t.status!=='done';
+  if(!rows.length){body.innerHTML='<tr class="loading-row"><td colspan="8">No tasks found</td></tr>';return;}
+  const sm={
+    todo:'<span class="chip chip-gray">Todo</span>',
+    'in-progress':'<span class="chip chip-blue">In Progress</span>',
+    done:'<span class="chip chip-green">Done</span>'
+  };
+  const pm={
+    high:'<span class="chip chip-red">High</span>',
+    medium:'<span class="chip chip-amber">Medium</span>',
+    low:'<span class="chip chip-green">Low</span>'
+  };
+  window._taskRows=rows;
+  body.innerHTML=rows.map((t,i)=>{
+    const dueMs=t._dueDate?new Date(t._dueDate).getTime():null;
+    const overdue=dueMs&&dueMs<Date.now()&&t._status!=='done';
+    const titleHtml=t._title
+      ?`<span title="${esc(t._title)}">${esc(t._title)}</span>`
+      :`<span style="color:var(--text3);font-style:italic;font-size:11px">No description</span>`;
+    const projHtml=t._project
+      ?`<span title="${esc(t._project)}">${esc(t._project.replace(/_/g,' '))}</span>`
+      :`<span style="color:var(--text3)">—</span>`;
+    // Assignees: show names as small pills
+    const assigneeHtml=t._assignees&&t._assignees.length
+      ?t._assignees.map(a=>`<span style="display:inline-block;background:var(--blue-dim);color:#60a5fa;border:1px solid rgba(59,130,246,.2);border-radius:4px;padding:1px 5px;font-size:9px;font-family:var(--mono);margin:1px">${esc(a)}</span>`).join('')
+      :`<span style="color:var(--text3);font-size:10px">—</span>`;
+    const statusChip=sm[t._status]
+      ||(t._status?`<span class="chip chip-gray">${esc(t._status)}</span>`:'<span class="chip chip-gray" style="opacity:.4">—</span>');
+    const prioChip=pm[t._priority]
+      ||(t._priority?`<span class="chip chip-gray">${esc(t._priority)}</span>`:'<span class="chip chip-gray" style="opacity:.4">—</span>');
+    const dueFmt=t._dueDate
+      ?`<span class="${overdue?'chip chip-red':''}" style="font-size:11px">${fmtDate(new Date(t._dueDate))}</span>`
+      :`<span style="color:var(--text3)">—</span>`;
+    const overdueBadge=overdue
+      ?'<span class="chip chip-red">⚠ Yes</span>'
+      :`<span style="color:var(--text3)">—</span>`;
     return `<tr${overdue?' style="background:rgba(239,68,68,.04)"':''}>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${esc(t.title||t.name||'Untitled')}</td>
-      <td class="td-mono" style="font-size:11px">${esc(t.project||'—')}</td>
-      <td class="td-email" style="font-size:10px">${esc((t._email||'').split('@')[0])}</td>
-      <td>${sm[t.status]||`<span class="chip chip-gray">${esc(t.status||'—')}</span>`}</td>
-      <td>${pm[t.priority]||'<span class="chip chip-gray">—</span>'}</td>
-      <td class="td-mono td-dim">${t.dueDate||'—'}</td>
-      <td>${overdue?'<span class="chip chip-red">Overdue</span>':'<span class="chip chip-gray">—</span>'}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:500">${titleHtml}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-family:var(--mono)">${projHtml}</td>
+      <td style="max-width:140px">${assigneeHtml}</td>
+      <td>${statusChip}</td>
+      <td>${prioChip}</td>
+      <td class="td-mono td-dim" style="white-space:nowrap;font-size:11px">${dueFmt}</td>
+      <td>${overdueBadge}</td>
+      <td><button class="act del task-del-btn" data-idx="${i}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Del
+      </button></td>
     </tr>`;
   }).join('');
+}
+// Event delegation for task delete
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.task-del-btn');
+  if(!btn) return;
+  const idx=parseInt(btn.dataset.idx);
+  const rows=window._taskRows;
+  if(!rows||isNaN(idx)||!rows[idx]) return;
+  const t=rows[idx];
+  deleteTask(t._uid, t._fbKey||'', t._title||'(untitled)');
+});
+
+// Inspect raw Firebase field names — shows exactly what's in your DB
+function inspectTaskFields(){
+  const banner=document.getElementById('task-field-banner');
+  // Gather all unique field names across first 5 tasks from each user
+  const samples=[];
+  for(const u of Object.values(D)){
+    for(const t of u.tasks.slice(0,3)){
+      if(t) samples.push({user:u.email, task:t});
+      if(samples.length>=5) break;
+    }
+    if(samples.length>=5) break;
+  }
+  if(!samples.length){
+    banner.style.display='block';
+    banner.textContent='⚠ No tasks found in loaded data.';
+    return;
+  }
+  // Show raw keys and values of first sample
+  const s=samples[0];
+  const rawKeys=Object.keys(s.task).filter(k=>!k.startsWith('_'));
+  const lines=[
+    `📋 Raw Firebase task fields (user: ${s.user})`,
+    '─'.repeat(48),
+    ...rawKeys.map(k=>{
+      const v=s.task[k];
+      const display=typeof v==='object'?JSON.stringify(v).slice(0,60):String(v).slice(0,60);
+      return `  ${k.padEnd(20)} → ${display}`;
+    }),
+    '',
+    `📊 Normalized result:`,
+    `  _title     → "${s.task.title||s.task.taskTitle||s.task.name||s.task.taskName||'(empty)'}"`,
+    `  _status    → "${s.task.status||s.task.taskStatus||s.task.state||'(empty)'}"`,
+    `  _priority  → "${s.task.priority||s.task.taskPriority||s.task.urgency||'(empty)'}"`,
+    `  _project   → "${s.task.project||s.task.projectName||s.task.category||'(empty)'}"`,
+    `  _dueDate   → "${s.task.dueDate||s.task.due_date||s.task.deadline||'(empty)'}"`,
+    '',
+    `ℹ If fields show "(empty)", your DB uses different field names.`,
+    `  Contact dev to map: title→?, status→?, priority→?, project→?`,
+  ];
+  banner.style.display='block';
+  banner.textContent=lines.join('\n');
+  console.log('=== TASK FIELD INSPECTOR ===');
+  samples.forEach((s,i)=>console.log(`Sample ${i+1} (${s.user}):`, JSON.parse(JSON.stringify(s.task))));
 }
 
 /* ══════════════ TRASH TABLE ══════════════ */
 function renderTrashTable(){
   const body=document.getElementById('trash-body');
   let rows=[];
-  for(const u of Object.values(D)) for(const t of u.trash){if(!t)continue;rows.push({...t,_uid:u.uid,_email:u.email});}
+  for(const u of Object.values(D)) for(const t of u.trash){if(!t)continue;rows.push({...t,_uid:u.uid,_email:u.email,_title:t.title||t.name||''});}
   rows.sort((a,b)=>new Date(b.deletedAt||0)-new Date(a.deletedAt||0));
   setText('trash-count',rows.length); setText('sb-trash',rows.length);
-  if(!rows.length){body.innerHTML='<tr class="loading-row"><td colspan="6">No deleted tasks</td></tr>';return;}
+  if(!rows.length){body.innerHTML='<tr class="loading-row"><td colspan="6"><div class="empty-state" style="padding:20px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.3;margin-bottom:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg><div>Trash is empty</div></div></td></tr>';return;}
   const pm={high:'<span class="chip chip-red">High</span>',medium:'<span class="chip chip-amber">Medium</span>',low:'<span class="chip chip-green">Low</span>'};
-  body.innerHTML=rows.map(t=>`<tr>
-    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;text-decoration:line-through;color:var(--text2)">${esc(t.title||t.name||'Untitled')}</td>
+  window._trashRows=rows;
+  body.innerHTML=rows.map((t,i)=>`<tr>
+    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;text-decoration:line-through;color:var(--text2)">${t._title?esc(t._title):'<span style="font-style:italic">Untitled</span>'}</td>
     <td class="td-mono" style="font-size:11px">${esc(t.project||'—')}</td>
-    <td class="td-email" style="font-size:10px">${esc((t._email||'').split('@')[0])}</td>
-    <td>${pm[t.priority]||'<span class="chip chip-gray">—</span>'}</td>
+    <td class="td-email" style="font-size:10px">${esc((t._email||'').split('@')[0])||'—'}</td>
+    <td>${pm[t.priority||'']||'<span class="chip chip-gray">—</span>'}</td>
     <td class="td-mono td-dim">${fmtDate(t.deletedAt)}</td>
     <td><div class="act-row">
-      <button class="act ok" onclick="restoreTask('${t._uid}','${esc(t.title||t.name||'')}')">Restore</button>
-      <button class="act del" onclick="purgeTask('${t._uid}','${esc(t.title||t.name||'')}')">Purge</button>
+      <button class="act ok trash-restore-btn" data-idx="${i}">Restore</button>
+      <button class="act del trash-purge-btn" data-idx="${i}">Purge</button>
     </div></td>
   </tr>`).join('');
 }
+// Event delegation for trash actions
+document.addEventListener('click',function(e){
+  const rb=e.target.closest('.trash-restore-btn');
+  const pb=e.target.closest('.trash-purge-btn');
+  if(!rb&&!pb) return;
+  const btn=rb||pb;
+  const idx=parseInt(btn.dataset.idx);
+  const rows=window._trashRows;
+  if(!rows||isNaN(idx)||!rows[idx]) return;
+  const t=rows[idx];
+  if(rb) restoreTask(t._uid, t._fbKey||'', t._title||'');
+  if(pb) purgeTask(t._uid, t._fbKey||'', t._title||'');
+});
 
 /* ══════════════ ADMINS TABLE ══════════════ */
 function renderAdminsTable(aVal){
   const body=document.getElementById('admins-body');
   const entries=Object.entries(aVal||{});
   if(!entries.length){body.innerHTML='<tr class="loading-row"><td colspan="6">No admins configured</td></tr>';return;}
-  body.innerHTML=entries.map(([uid,val])=>{
+  window._adminRows=entries;
+  body.innerHTML=entries.map(([uid,val],i)=>{
     const p=D[uid];
     const g=val?.grantedAt?fmtDate(val.grantedAt):'—';
     const by=val?.grantedBy?val.grantedBy.slice(0,12)+'…':'—';
@@ -1609,62 +2102,202 @@ function renderAdminsTable(aVal){
       <td style="font-size:12px">${esc(p?.displayName||'—')}</td>
       <td class="td-mono td-dim">${g}</td>
       <td class="td-uid">${by}</td>
-      <td><button class="act del" onclick="revokeAdmin('${uid}')">Revoke</button></td>
+      <td>${uid===currentAdmin?.uid
+        ?'<span class="chip chip-amber">You</span>'
+        :`<button class="act del admin-revoke-btn" data-idx="${i}">Revoke</button>`}</td>
     </tr>`;
   }).join('');
 }
+// Event delegation for admins table
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.admin-revoke-btn');
+  if(!btn) return;
+  const idx=parseInt(btn.dataset.idx);
+  const rows=window._adminRows;
+  if(!rows||isNaN(idx)||!rows[idx]) return;
+  revokeAdmin(rows[idx][0]); // rows[idx][0] = uid
+});
 
 /* ══════════════ USER DRAWER ══════════════ */
+function switchDrawerTab(tab,el){
+  document.querySelectorAll('.drawer-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.drawer-pane').forEach(p=>p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const pane=document.getElementById('drawer-pane-'+tab);
+  if(pane) pane.classList.add('active');
+}
+
 function openDrawer(uid){
   const u=D[uid]; if(!u) return;
-  document.getElementById('drawer-title').textContent=u.displayName||u.email||uid.slice(0,12);
+  // Reset to first tab
+  document.querySelectorAll('.drawer-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.querySelectorAll('.drawer-pane').forEach((p,i)=>p.classList.toggle('active',i===0));
+
+  // Header
+  document.getElementById('drawer-title').textContent=u.displayName||u.email||uid.slice(0,14);
+
+  // Hero
+  const initChar=(u.displayName||u.email||uid)[0].toUpperCase();
+  document.getElementById('drawer-hero').innerHTML=`
+    <div class="drawer-av">${u.photoURL?`<img src="${esc(u.photoURL)}">`:(initChar)}</div>
+    <div>
+      <div style="font-size:15px;font-weight:700">${esc(u.displayName||'No name')}</div>
+      <div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:2px">${esc(u.email||'—')}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:7px">
+        ${u.isAdmin?'<span class="chip chip-amber">Admin</span>':''}
+        ${u.disabled?'<span class="chip chip-red">Disabled</span>':'<span class="chip chip-green">Active</span>'}
+        ${provChip(u.providerId)}
+      </div>
+    </div>`;
+
+  // ── Tab: Account ──
+  document.getElementById('drawer-pane-account').innerHTML=`
+    <div class="drow-sec" style="margin-top:4px">
+      <div class="drow-sec-title">Identity</div>
+      <div class="drow-kv"><span class="drow-k">UID</span><span class="drow-v" style="font-size:10px">${esc(uid)}</span></div>
+      <div class="drow-kv"><span class="drow-k">Email</span><span class="drow-v">${esc(u.email||'—')}</span></div>
+      <div class="drow-kv"><span class="drow-k">Email Verified</span><span class="drow-v">${u.emailVerified?'<span class="chip chip-green">✓ Yes</span>':'<span class="chip chip-red">✗ No</span>'}</span></div>
+      <div class="drow-kv"><span class="drow-k">Display Name</span><span class="drow-v">${esc(u.displayName||'—')}</span></div>
+      <div class="drow-kv"><span class="drow-k">Provider</span><span class="drow-v">${provChip(u.providerId)}</span></div>
+    </div>
+    <div class="drow-sec">
+      <div class="drow-sec-title">Timestamps</div>
+      <div class="drow-kv"><span class="drow-k">Account Created</span><span class="drow-v">${fmtDate(u.createdAt)}</span></div>
+      <div class="drow-kv"><span class="drow-k">Last Login</span><span class="drow-v">${fmtDate(u.lastLogin)}</span></div>
+      <div class="drow-kv"><span class="drow-k">Last Login (rel)</span><span class="drow-v">${relTime(u.lastLoginMs||0)}</span></div>
+    </div>
+    <div class="drow-sec">
+      <div class="drow-sec-title">Status</div>
+      <div class="drow-kv"><span class="drow-k">Account Status</span><span class="drow-v">${u.disabled?'<span class="chip chip-red">Disabled</span>':'<span class="chip chip-green">Active</span>'}</span></div>
+      <div class="drow-kv"><span class="drow-k">Admin Role</span><span class="drow-v">${u.isAdmin?'<span class="chip chip-amber">Admin</span>':'<span class="chip chip-gray">User</span>'}</span></div>
+      <div class="drow-kv"><span class="drow-k">Profile Synced</span><span class="drow-v">${u.hasProfile?'<span class="chip chip-green">Synced</span>':'<span class="chip chip-red">Missing</span>'}</span></div>
+    </div>`;
+
+  // ── Tab: Activity ──
   const uploads=u.activeUploads.length;
-  const done=u.tasks.filter(t=>t&&t.status==='done').length;
-  const open=u.tasks.filter(t=>t&&t.status!=='done').length;
-  document.getElementById('drawer-body').innerHTML=`
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
-      <div class="drawer-av">${u.photoURL?`<img src="${esc(u.photoURL)}">`:(u.displayName||u.email||uid)[0].toUpperCase()}</div>
-      <div>
-        <div style="font-size:14px;font-weight:600">${esc(u.displayName||'No name')}</div>
-        <div style="font-size:11px;color:var(--text2);font-family:var(--mono)">${esc(u.email||'—')}</div>
-        <div style="margin-top:6px;display:flex;gap:4px">${u.isAdmin?'<span class="chip chip-amber">Admin</span>':''} ${u.disabled?'<span class="chip chip-red">Disabled</span>':'<span class="chip chip-green">Active</span>'} ${provChip(u.providerId)}</div>
+  const normS=t=>{if(t.completed===true)return'done';const s=(t.kanbanStatus||t.status||'').toLowerCase();if(s==='done'||s==='complete'||s==='completed')return'done';if(s==='in-progress'||s==='wip'||s==='active')return'in-progress';return'todo';};
+  const done=u.tasks.filter(t=>t&&normS(t)==='done').length;
+  const inprog=u.tasks.filter(t=>t&&normS(t)==='in-progress').length;
+  const todo=u.tasks.filter(t=>t&&normS(t)==='todo').length;
+  const overdue=u.tasks.filter(t=>{if(!t||normS(t)==='done')return false;const d=t.target||t.dueDate||'';return d&&new Date(d)<new Date();}).length;
+  const totalTasks=u.tasks.length;
+  const pct=totalTasks?Math.round(done/totalTasks*100):0;
+  document.getElementById('drawer-pane-activity').innerHTML=`
+    <div class="drow-sec" style="margin-top:4px">
+      <div class="drow-sec-title">Uploads</div>
+      <div class="drow-kv"><span class="drow-k">Active Uploads</span><span class="drow-v"><span class="chip chip-blue">${uploads}</span></span></div>
+      <div class="drow-kv"><span class="drow-k">Expiring Soon (&lt;7d)</span><span class="drow-v"><span class="chip ${u.expiringUploads.length?'chip-amber':'chip-gray'}">${u.expiringUploads.length}</span></span></div>
+      <div class="drow-kv"><span class="drow-k">Total Uploads</span><span class="drow-v">${u.uploads.length}</span></div>
+    </div>
+    <div class="drow-sec">
+      <div class="drow-sec-title">Tasks</div>
+      <div class="drow-kv"><span class="drow-k">Total Tasks</span><span class="drow-v">${totalTasks}</span></div>
+      <div class="drow-kv"><span class="drow-k">Todo</span><span class="drow-v"><span class="chip chip-gray">${todo}</span></span></div>
+      <div class="drow-kv"><span class="drow-k">In Progress</span><span class="drow-v"><span class="chip chip-blue">${inprog}</span></span></div>
+      <div class="drow-kv"><span class="drow-k">Completed</span><span class="drow-v"><span class="chip chip-green">${done}</span></span></div>
+      <div class="drow-kv"><span class="drow-k">Overdue</span><span class="drow-v"><span class="chip ${overdue?'chip-red':'chip-gray'}">${overdue}</span></span></div>
+      <div style="margin-top:8px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px"><span>Completion</span><span>${pct}%</span></div>
+        <div class="prog-bar" style="height:5px"><div class="prog-fill" style="width:${pct}%;background:var(--green)"></div></div>
       </div>
     </div>
-
     <div class="drow-sec">
-      <div class="drow-sec-title">Account</div>
-      <div class="drow-kv"><span class="drow-k">UID</span><span class="drow-v">${esc(uid)}</span></div>
-      <div class="drow-kv"><span class="drow-k">Email</span><span class="drow-v">${esc(u.email||'—')}</span></div>
-      <div class="drow-kv"><span class="drow-k">Email Verified</span><span class="drow-v">${u.emailVerified?'✓ Yes':'✗ No'}</span></div>
-      <div class="drow-kv"><span class="drow-k">Provider</span><span class="drow-v">${esc(u.providerId||'—')}</span></div>
-      <div class="drow-kv"><span class="drow-k">Created</span><span class="drow-v">${fmtDate(u.createdAt)}</span></div>
-      <div class="drow-kv"><span class="drow-k">Last Login</span><span class="drow-v">${fmtDate(u.lastLogin)}</span></div>
-    </div>
-
-    <div class="drow-sec">
-      <div class="drow-sec-title">Activity</div>
-      <div class="drow-kv"><span class="drow-k">Uploads (active)</span><span class="drow-v">${uploads}</span></div>
-      <div class="drow-kv"><span class="drow-k">Expiring soon</span><span class="drow-v">${u.expiringUploads.length}</span></div>
+      <div class="drow-sec-title">Other</div>
       <div class="drow-kv"><span class="drow-k">Projects</span><span class="drow-v">${u.projects.length}</span></div>
-      <div class="drow-kv"><span class="drow-k">Open tasks</span><span class="drow-v">${open}</span></div>
-      <div class="drow-kv"><span class="drow-k">Completed tasks</span><span class="drow-v">${done}</span></div>
-      <div class="drow-kv"><span class="drow-k">Trash items</span><span class="drow-v">${u.trash.length}</span></div>
-    </div>
-
-    <div class="drow-sec">
-      <div class="drow-sec-title">Projects</div>
-      ${u.projects.length?u.projects.filter(Boolean).map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)"><span style="font-size:12px">${esc(p.name||'Untitled')}</span><span class="chip chip-gray" style="font-size:9px">${(D[uid]?.tasks||[]).filter(t=>t&&t.project===p.name).length} tasks</span></div>`).join(''):'<div style="font-size:12px;color:var(--text3)">No projects</div>'}
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
-      ${u.isAdmin
-        ?`<button class="tb-btn" style="justify-content:center;color:var(--red);border-color:rgba(239,68,68,.3)" onclick="revokeAdmin('${uid}');closeDrawer()">Revoke Admin Access</button>`
-        :`<button class="tb-btn tb-btn-green" style="justify-content:center" onclick="grantAdminUID('${uid}');closeDrawer()">Grant Admin Access</button>`}
-      <button class="tb-btn" style="justify-content:center;color:var(--red);border-color:rgba(239,68,68,.3)" onclick="deleteUserData('${uid}')">Delete All User Data</button>
+      <div class="drow-kv"><span class="drow-k">Trash Items</span><span class="drow-v">${u.trash.length}</span></div>
     </div>`;
+
+  // ── Tab: Projects ──
+  const projHtml=u.projects.length?u.projects.filter(Boolean).map(p=>{
+    const pTasks=(D[uid]?.tasks||[]).filter(t=>t&&t.project===p.name);
+    const pDone=pTasks.filter(t=>t.status==='done').length;
+    const pPct=pTasks.length?Math.round(pDone/pTasks.length*100):0;
+    return `<div class="drawer-proj-item">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name||'Untitled')}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">${pTasks.length} tasks · ${pDone} done · ${pPct}%</div>
+        <div class="prog-bar" style="margin-top:5px;height:3px"><div class="prog-fill" style="width:${pPct}%;background:var(--green)"></div></div>
+      </div>
+      <span class="chip chip-gray" style="margin-left:10px;flex-shrink:0">${fmtDate(p.createdAt)}</span>
+    </div>`;
+  }).join(''):'<div class="empty-state" style="padding:24px 0">No projects yet</div>';
+
+  const tasksHtml=u.tasks.filter(Boolean).slice(0,10).map(t=>{
+    const normS=t=>{if(t.completed===true)return'done';const s=(t.kanbanStatus||t.status||'').toLowerCase();if(s==='done'||s==='complete')return'done';if(s==='in-progress'||s==='wip')return'in-progress';return'todo';};
+    const sm2={todo:'chip-gray','in-progress':'chip-blue',done:'chip-green'};
+    const st=normS(t);
+    const assignees=Array.isArray(t.assignees)?t.assignees:t.assignees?Object.values(t.assignees):[];
+    return `<div class="drawer-task-item">
+      <span class="chip ${sm2[st]||'chip-gray'}" style="font-size:9px;flex-shrink:0">${st||'—'}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.description||t.title||t.name||'Untitled')}</span>
+      ${assignees.length?`<span style="font-size:9px;color:var(--text3);flex-shrink:0">${esc(assignees[0])}</span>`:''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('drawer-pane-projects').innerHTML=`
+    <div class="drow-sec" style="margin-top:4px">
+      <div class="drow-sec-title">Projects (${u.projects.length})</div>
+      ${projHtml}
+    </div>
+    ${u.tasks.length?`<div class="drow-sec">
+      <div class="drow-sec-title">Recent Tasks (${Math.min(u.tasks.length,10)} of ${u.tasks.length})</div>
+      ${tasksHtml}
+    </div>`:''}`;
+
+  // ── Tab: Actions ── (uses data-action + data-uid to avoid onclick injection)
+  document.getElementById('drawer-pane-actions').innerHTML=`
+    <div style="margin-top:4px">
+      <div class="drow-sec-title" style="margin-bottom:12px">Account Controls</div>
+      <button class="drawer-action-btn drawer-act-btn"
+        data-action="ban" data-uid="${uid}"
+        style="background:var(--${u.disabled?'green':'red'}-dim);border-color:rgba(${u.disabled?'16,185,129':'239,68,68'},.3);color:${u.disabled?'#34d399':'#f87171'}">
+        ${u.disabled?'✓ Enable Account':'⊘ Disable / Ban Account'}
+      </button>
+      ${u.isAdmin
+        ?`<button class="drawer-action-btn drawer-act-btn" data-action="revoke" data-uid="${uid}" style="background:var(--red-dim);border-color:rgba(239,68,68,.3);color:#f87171">⊘ Revoke Admin Access</button>`
+        :`<button class="drawer-action-btn drawer-act-btn" data-action="grant" data-uid="${uid}" style="background:var(--green-dim);border-color:rgba(16,185,129,.3);color:#34d399">✓ Grant Admin Access</button>`}
+      <div style="margin:14px 0 10px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px">Rename Display Name</div>
+      <div class="edit-field" style="margin-bottom:14px">
+        <input id="modal-rename-inp" class="inline-input" placeholder="New display name…" value="${esc(u.displayName||'')}"/>
+        <button class="drawer-act-btn" data-action="rename" data-uid="${uid}" style="padding:7px 12px;font-size:11px;font-family:var(--mono);border-radius:6px;cursor:pointer;border:1px solid rgba(16,185,129,.3);background:var(--green-dim);color:#34d399;white-space:nowrap">Save</button>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+        <div style="font-size:10px;color:var(--red);font-family:var(--mono);margin-bottom:8px;letter-spacing:.5px">⚠ DANGER ZONE</div>
+        <button class="drawer-action-btn drawer-act-btn" data-action="delete" data-uid="${uid}" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#f87171">⚠ Delete All User Data (Irreversible)</button>
+      </div>
+    </div>`;
+
   document.getElementById('drawer').classList.add('open');
 }
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');}
+
+// Single event delegation handler for ALL drawer action buttons
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.drawer-act-btn');
+  if(!btn) return;
+  const action=btn.dataset.action;
+  const uid=btn.dataset.uid;
+  if(!action||!uid) return;
+  switch(action){
+    case 'ban':    toggleBan(uid); break;
+    case 'revoke': revokeAdmin(uid); closeDrawer(); break;
+    case 'grant':  grantAdminUID(uid); closeDrawer(); break;
+    case 'rename': {
+      const inp=document.getElementById('modal-rename-inp');
+      if(!inp){toast('Input not found','err');return;}
+      const val=inp.value.trim();
+      if(!val){toast('Name cannot be empty','warn');return;}
+      db.ref(`users/${uid}/profile/displayName`).set(val).then(()=>{
+        if(D[uid]) D[uid].displayName=val;
+        toast('Display name updated','ok');
+        logAction('Rename User',uid,'New name: '+val);
+        renderUsersTable();
+      }).catch(err=>toast('Error: '+err.message,'err'));
+      break;
+    }
+    case 'delete': deleteUserData(uid); break;
+  }
+});
 
 /* ══════════════ ACTIONS ══════════════ */
 function logAction(action,target,detail=''){
@@ -1724,28 +2357,89 @@ async function bulkDeleteExpired(){
 }
 async function deleteProject(uid,name){
   confirm2('Delete Project',`Delete project "${name}"? Tasks remain.`,async()=>{
-    const u=D[uid]; if(!u)return;
-    await db.ref(`users/${uid}/projects`).set(u.projects.filter(p=>p&&p.name!==name));
+    const snap=await db.ref(`users/${uid}/projects`).once('value');
+    const raw=snap.val();
+    if(!raw){toast('No projects found','err');return;}
+    if(!Array.isArray(raw)&&typeof raw==='object'){
+      // Object-keyed: find the key whose value.name matches
+      const key=Object.entries(raw).find(([k,v])=>v&&v.name===name)?.[0];
+      if(key) await db.ref(`users/${uid}/projects/${key}`).remove();
+      else {toast('Project not found','err');return;}
+    } else {
+      const arr=Array.isArray(raw)?[...raw]:Object.values(raw);
+      await db.ref(`users/${uid}/projects`).set(arr.filter(p=>p&&p.name!==name));
+    }
     logAction('Delete Project',uid,name);
     toast('Project deleted','ok'); refreshAll();
   });
 }
-async function restoreTask(uid,title){
+async function deleteTask(uid,fbKey,title){
+  confirm2('Delete Task',`Permanently delete task "${title}"?`,async()=>{
+    const u=D[uid]; if(!u) return;
+    // Try key-based removal first (most reliable)
+    if(fbKey&&fbKey!==''){
+      // Check if tasks stored as object (has non-numeric keys) or array
+      const snap=await db.ref(`users/${uid}/tasks`).once('value');
+      const raw=snap.val();
+      if(raw&&!Array.isArray(raw)&&typeof raw==='object'){
+        // Object-keyed: remove by key directly
+        await db.ref(`users/${uid}/tasks/${fbKey}`).remove();
+      } else {
+        // Array-based: filter out by key (index)
+        const arr=Array.isArray(raw)?[...raw]:Object.values(raw||{});
+        const idx=parseInt(fbKey);
+        if(!isNaN(idx)) arr.splice(idx,1);
+        await db.ref(`users/${uid}/tasks`).set(arr.filter(Boolean));
+      }
+    } else {
+      // Fallback: title match
+      const newTasks=u.tasks.filter(t=>t&&(t.title||t.name)!==title);
+      await db.ref(`users/${uid}/tasks`).set(newTasks);
+    }
+    logAction('Delete Task',uid,title);
+    toast('Task deleted','ok'); refreshAll();
+  });
+}
+async function restoreTask(uid,fbKey,title){
   const u=D[uid]; if(!u) return;
-  const idx=u.trash.findIndex(t=>t&&(t.title||t.name)===title);
-  if(idx<0){toast('Task not found in trash','err');return;}
-  const task=u.trash[idx]; delete task.deletedAt;
-  const newTrash=u.trash.filter((_,i)=>i!==idx);
-  const newTasks=[...(u.tasks||[]),task];
-  await Promise.all([db.ref(`users/${uid}/trash`).set(newTrash),db.ref(`users/${uid}/tasks`).set(newTasks)]);
+  const snap=await db.ref(`users/${uid}/trash`).once('value');
+  const raw=snap.val();
+  let task=null, newTrash;
+  if(raw&&!Array.isArray(raw)&&typeof raw==='object'){
+    task={...raw[fbKey]}; delete task.deletedAt;
+    await db.ref(`users/${uid}/trash/${fbKey}`).remove();
+  } else {
+    const arr=Array.isArray(raw)?[...raw]:Object.values(raw||{});
+    const idx=fbKey!==''&&!isNaN(parseInt(fbKey))?parseInt(fbKey):arr.findIndex(t=>t&&(t.title||t.name)===title);
+    if(idx<0){toast('Task not found in trash','err');return;}
+    task={...arr[idx]}; delete task.deletedAt;
+    arr.splice(idx,1);
+    await db.ref(`users/${uid}/trash`).set(arr.filter(Boolean));
+  }
+  if(!task){toast('Task not found','err');return;}
+  const tSnap=await db.ref(`users/${uid}/tasks`).once('value');
+  const tRaw=tSnap.val();
+  if(tRaw&&!Array.isArray(tRaw)&&typeof tRaw==='object'){
+    await db.ref(`users/${uid}/tasks`).push(task);
+  } else {
+    const tArr=Array.isArray(tRaw)?[...tRaw]:Object.values(tRaw||{});
+    await db.ref(`users/${uid}/tasks`).set([...tArr,task]);
+  }
   logAction('Restore Task',uid,title);
   toast('Task restored','ok'); refreshAll();
 }
-async function purgeTask(uid,title){
+async function purgeTask(uid,fbKey,title){
   confirm2('Purge Task',`Permanently delete "${title}" from trash?`,async()=>{
-    const u=D[uid]; if(!u) return;
-    const newTrash=u.trash.filter(t=>t&&(t.title||t.name)!==title);
-    await db.ref(`users/${uid}/trash`).set(newTrash);
+    const snap=await db.ref(`users/${uid}/trash`).once('value');
+    const raw=snap.val();
+    if(raw&&!Array.isArray(raw)&&typeof raw==='object'){
+      await db.ref(`users/${uid}/trash/${fbKey}`).remove();
+    } else {
+      const arr=Array.isArray(raw)?[...raw]:Object.values(raw||{});
+      const idx=fbKey!==''&&!isNaN(parseInt(fbKey))?parseInt(fbKey):arr.findIndex(t=>t&&(t.title||t.name)===title);
+      if(idx>=0) arr.splice(idx,1);
+      await db.ref(`users/${uid}/trash`).set(arr.filter(Boolean));
+    }
     logAction('Purge Task',uid,title);
     toast('Task permanently deleted','ok'); refreshAll();
   });
@@ -1962,8 +2656,8 @@ async function loadBroadcastHistory(){
 }
 
 /* ── Rename user display name ── */
-async function renameUser(uid){
-  const inp=document.getElementById('rename-'+uid);
+async function renameUser(uid,inputId){
+  const inp=document.getElementById(inputId||('rename-'+uid));
   if(!inp)return;
   const val=inp.value.trim();
   if(!val){toast('Name cannot be empty','warn');return;}
@@ -2037,12 +2731,587 @@ function avEl(u){
   const init=(u.displayName||u.email||u.uid)[0].toUpperCase();
   return u.photoURL?`<div class="av"><img src="${esc(u.photoURL)}"></div>`:`<div class="av">${esc(init)}</div>`;
 }
+/* ── Online presence: listen to /presence node in Firebase ── */
+let _presenceMap={};
+function startPresenceListener(){
+  db.ref('presence').on('value', snap=>{
+    _presenceMap={};
+    if(snap.val()){
+      Object.entries(snap.val()).forEach(([uid,val])=>{
+        // val can be: true, a timestamp number, or {online:true, lastSeen: ms}
+        const ts=typeof val==='number'?val:(val&&val.lastSeen)?val.lastSeen:(val===true?Date.now():0);
+        _presenceMap[uid]=ts;
+      });
+    }
+    // Re-render users table online column without full reload
+    updateOnlineColumn();
+  });
+}
+function updateOnlineColumn(){
+  // If users table is visible, re-render just the online cells
+  document.querySelectorAll('#users-body tr').forEach(tr=>{
+    const cb=tr.querySelector('.row-check');
+    if(!cb) return;
+    // uid is in the data-uid of the view button
+    const viewBtn=tr.querySelector('.u-view-btn');
+    if(!viewBtn) return;
+    const uid=viewBtn.dataset.uid;
+    const u=D[uid]; if(!u) return;
+    // Online cell is column index 6 (0-based after checkbox)
+    const onlineCell=tr.cells[6];
+    if(!onlineCell) return;
+    const presenceTs=_presenceMap[uid]||0;
+    const loginTs=u.lastLoginMs||0;
+    const bestTs=Math.max(presenceTs,loginTs);
+    const minsAgo=bestTs?(Date.now()-bestTs)/60000:Infinity;
+    if(minsAgo<5){
+      onlineCell.innerHTML='<span class="chip chip-green" style="font-size:9px;padding:1px 6px"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#34d399;margin-right:3px;vertical-align:middle;animation:pulse 2s infinite"></span>Online</span>';
+    } else if(minsAgo<30){
+      onlineCell.innerHTML='<span class="chip chip-amber" style="font-size:9px;padding:1px 6px">~'+Math.round(minsAgo)+'m ago</span>';
+    } else {
+      onlineCell.innerHTML='<span style="color:var(--text3);font-size:10px">—</span>';
+    }
+  });
+  // Update overview online count badge
+  const onlineCount=Object.entries(_presenceMap).filter(([uid,ts])=>(Date.now()-ts)<5*60000).length;
+  setText('ms-online', onlineCount);
+}
+// Refresh online column every 60s (presence data stays fresh)
+setInterval(updateOnlineColumn, 60000);
+async function adminSignOut(){
+  confirm2('Sign Out','Sign out of the admin console?',async()=>{
+    await auth.signOut();
+    location.reload();
+  });
+}
+
+/* ── Keyboard shortcuts ── */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closeDrawer();
+    closeConfirm();
+    const sa=document.getElementById('sa-modal');
+    if(sa.classList.contains('open')) closeSa();
+  }
+});
+
+/* ── Auto-refresh every 90 seconds ── */
+let _autoRefreshTimer=null;
+function startAutoRefresh(){
+  clearInterval(_autoRefreshTimer);
+  _autoRefreshTimer=setInterval(()=>{
+    if(document.visibilityState==='visible') refreshAll();
+  }, 90000);
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible') refreshAll();
+});
+
+/* ── Last refreshed indicator ── */
+function updateLastRefreshed(){
+  const el=document.getElementById('last-refresh-time');
+  if(el) el.textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+// Patch refreshAll to also update last-refreshed and start auto-refresh
+const _origRefreshAll=refreshAll;
+async function refreshAll(){
+  const btn=document.getElementById('refresh-btn');
+  if(btn){btn.classList.add('refreshing');btn.disabled=true;}
+  try{await loadAll(); updateLastRefreshed(); startAutoRefresh();}
+  catch(e){toast('Error: '+e.message,'err');}
+  finally{if(btn){btn.classList.remove('refreshing');btn.disabled=false;}}
+}
+
+/* ── Toast supports warn type ── */
 let _tt;
 function toast(msg,type='ok'){
   const t=document.getElementById('toast');
-  t.textContent=msg; t.className='show '+(type==='ok'?'ok':'err');
+  t.textContent=msg;
+  t.className='show '+(type==='ok'?'ok':type==='warn'?'warn':'err');
   clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),3500);
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   COMMAND PALETTE  (Ctrl+K / ⌘K)
+═══════════════════════════════════════════════════════════════ */
+const CMD_ACTIONS=[
+  {title:'Go to Dashboard',sub:'Overview & stats',icon:'home',action:()=>nav('overview',document.querySelector('[onclick*=overview]'))},
+  {title:'Go to Users',sub:'Manage all users',icon:'users',action:()=>nav('users',document.querySelector('[onclick*=users]'))},
+  {title:'Go to Tasks',sub:'All tasks table',icon:'tasks',action:()=>nav('tasks',document.querySelector('[onclick*=tasks]'))},
+  {title:'Go to Projects',sub:'All projects',icon:'folder',action:()=>nav('projects',document.querySelector('[onclick*=projects]'))},
+  {title:'Go to Uploads',sub:'KMC uploads',icon:'upload',action:()=>nav('uploads',document.querySelector('[onclick*=uploads]'))},
+  {title:'Go to Analytics',sub:'Charts & insights',icon:'chart',action:()=>nav('analytics',document.querySelector('[onclick*=analytics]'))},
+  {title:'Go to Broadcast',sub:'Send announcements',icon:'send',action:()=>nav('broadcast',document.querySelector('[onclick*=broadcast]'))},
+  {title:'Go to Admins',sub:'Admin access control',icon:'shield',action:()=>nav('admins',document.querySelector('[onclick*=admins]'))},
+  {title:'Refresh Data',sub:'Reload all Firebase data',icon:'refresh',action:()=>refreshAll(),kbd:'R'},
+  {title:'Toggle Theme',sub:'Switch light / dark mode',icon:'theme',action:()=>toggleTheme(),kbd:'T'},
+  {title:'Sync Auth Users',sub:'Firebase Auth sync',icon:'sync',action:()=>openSa()},
+  {title:'Export Data',sub:'CSV / JSON export',icon:'export',action:()=>showExportMenu()},
+  {title:'Compare Users',sub:'Side-by-side user comparison',icon:'compare',action:()=>openCompare()},
+  {title:'Purge All Trash',sub:'Permanently delete all trash',icon:'trash',action:()=>purgeAllTrash()},
+  {title:'Sign Out',sub:'Sign out of admin console',icon:'logout',action:()=>adminSignOut()},
+];
+const ICON_SVG={
+  home:'<polyline points="3 9 12 2 21 9"/><polyline points="9 22 9 12 15 12 15 22"/><path d="M3 9v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  tasks:'<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+  folder:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  send:'<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  refresh:'<polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+  theme:'<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>',
+  sync:'<path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>',
+  export:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  compare:'<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+  trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+};
+let _cmdSel=0;
+function openCmdPalette(){
+  document.getElementById('cmd-palette').classList.add('open');
+  const inp=document.getElementById('cmd-input');
+  inp.value=''; updateCmdResults('');
+  setTimeout(()=>inp.focus(),50);
+}
+function closeCmdPalette(){document.getElementById('cmd-palette').classList.remove('open');}
+function updateCmdResults(q){
+  const el=document.getElementById('cmd-results');
+  q=q.trim().toLowerCase();
+  // Nav & action matches
+  let actions=CMD_ACTIONS.filter(a=>!q||a.title.toLowerCase().includes(q)||a.sub.toLowerCase().includes(q));
+  // User matches
+  let users=q.length>1?Object.values(D).filter(u=>(u.email||'').toLowerCase().includes(q)||(u.displayName||'').toLowerCase().includes(q)).slice(0,5):[];
+  if(!actions.length&&!users.length){el.innerHTML='<div class="cmd-empty">No results for "'+esc(q)+'"</div>';return;}
+  let html='';
+  if(actions.length){
+    html+='<span class="cmd-section-label">Actions</span>';
+    html+=actions.slice(0,8).map((a,i)=>`<div class="cmd-item${i===_cmdSel?' selected':''}" data-cmd-idx="${i}" onclick="runCmdAction(${CMD_ACTIONS.indexOf(a)})">
+      <div class="cmd-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ICON_SVG[a.icon]||''}</svg></div>
+      <div style="flex:1"><div class="cmd-item-title">${esc(a.title)}</div><div class="cmd-item-sub">${esc(a.sub)}</div></div>
+      ${a.kbd?`<span class="cmd-item-kbd">${a.kbd}</span>`:''}
+    </div>`).join('');
+  }
+  if(users.length){
+    html+='<span class="cmd-section-label">Users</span>';
+    html+=users.map((u,i)=>{
+      const idx=actions.length+i;
+      return `<div class="cmd-item${idx===_cmdSel?' selected':''}" data-cmd-idx="${idx}" onclick="openDrawer('${u.uid}');closeCmdPalette()">
+        <div class="cmd-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div style="flex:1"><div class="cmd-item-title">${esc(u.displayName||u.email||u.uid)}</div><div class="cmd-item-sub">${esc(u.email||'')}</div></div>
+        <span class="chip ${u.isAdmin?'chip-amber':'chip-gray'}" style="font-size:9px">${u.isAdmin?'Admin':'User'}</span>
+      </div>`;
+    }).join('');
+  }
+  el.innerHTML=html;
+}
+function runCmdAction(idx){CMD_ACTIONS[idx]?.action();closeCmdPalette();}
+function cmdKeydown(e){
+  const items=document.querySelectorAll('.cmd-item');
+  if(e.key==='ArrowDown'){_cmdSel=Math.min(_cmdSel+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('selected',i===_cmdSel));e.preventDefault();}
+  else if(e.key==='ArrowUp'){_cmdSel=Math.max(_cmdSel-1,0);items.forEach((el,i)=>el.classList.toggle('selected',i===_cmdSel));e.preventDefault();}
+  else if(e.key==='Enter'){items[_cmdSel]?.click();}
+  else if(e.key==='Escape'){closeCmdPalette();}
+}
+// Global shortcut Ctrl+K / Cmd+K
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openCmdPalette();}
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   NOTIFICATIONS
+═══════════════════════════════════════════════════════════════ */
+let _notifs=JSON.parse(localStorage.getItem('cm2_notifs')||'[]');
+function pushNotif(text,type='blue',link=''){
+  _notifs.unshift({text,type,link,time:Date.now()});
+  if(_notifs.length>50) _notifs=_notifs.slice(0,50);
+  localStorage.setItem('cm2_notifs',JSON.stringify(_notifs));
+  renderNotifs();
+}
+function renderNotifs(){
+  const body=document.getElementById('notif-body');
+  const badge=document.getElementById('notif-badge');
+  if(!_notifs.length){
+    body.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;font-family:var(--mono)">No notifications</div>';
+    badge.classList.remove('show'); return;
+  }
+  badge.textContent=_notifs.length>9?'9+':_notifs.length;
+  badge.classList.add('show');
+  body.innerHTML=_notifs.map((n,i)=>`<div class="notif-item" onclick="_notifs.splice(${i},1);localStorage.setItem('cm2_notifs',JSON.stringify(_notifs));renderNotifs()">
+    <div class="notif-dot ${n.type}"></div>
+    <div class="notif-text">${esc(n.text)}</div>
+    <div class="notif-time-lbl">${relTime(n.time)}</div>
+  </div>`).join('');
+}
+function clearAllNotifs(){_notifs=[];localStorage.setItem('cm2_notifs','[]');renderNotifs();}
+function toggleNotifPanel(){
+  const p=document.getElementById('notif-panel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) renderNotifs();
+}
+// Close notif panel on outside click
+document.addEventListener('click',e=>{
+  const p=document.getElementById('notif-panel');
+  const btn=document.getElementById('notif-btn');
+  if(p.classList.contains('open')&&!p.contains(e.target)&&!btn.contains(e.target)) p.classList.remove('open');
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   ANALYTICS  
+═══════════════════════════════════════════════════════════════ */
+function renderAnalytics(){
+  const users=Object.values(D);
+  const normS=t=>{if(t.completed===true)return'done';const s=(t.kanbanStatus||t.status||'').toLowerCase();return(s==='done'||s==='complete'||s==='completed')?'done':(s==='in-progress'||s==='wip'||s==='active')?'in-progress':'todo';};
+  const normP=t=>(t.priority||'').toLowerCase();
+  let allTasks=[]; for(const u of users) allTasks=allTasks.concat(u.tasks.filter(Boolean));
+  const done=allTasks.filter(t=>normS(t)==='done').length;
+  const inprog=allTasks.filter(t=>normS(t)==='in-progress').length;
+  const todo=allTasks.filter(t=>normS(t)==='todo').length;
+  const total=allTasks.length||1;
+  const pct=Math.round(done/total*100);
+
+  // ── Donut chart (SVG stroke-dasharray trick)
+  const circumference=99.9;
+  const donePct=done/total*circumference;
+  const inprogPct=inprog/total*circumference;
+  const todoPct=todo/total*circumference;
+  const doneEl=document.getElementById('donut-done');
+  const inprogEl=document.getElementById('donut-inprog');
+  const todoEl=document.getElementById('donut-todo');
+  if(doneEl){
+    doneEl.setAttribute('stroke-dasharray',`${donePct} ${circumference-donePct}`);
+    doneEl.setAttribute('stroke-dashoffset','0');
+  }
+  if(inprogEl){
+    inprogEl.setAttribute('stroke-dasharray',`${inprogPct} ${circumference-inprogPct}`);
+    inprogEl.setAttribute('stroke-dashoffset',`${-donePct}`);
+  }
+  if(todoEl){
+    todoEl.setAttribute('stroke-dasharray',`${todoPct} ${circumference-todoPct}`);
+    todoEl.setAttribute('stroke-dashoffset',`${-(donePct+inprogPct)}`);
+  }
+  const pctEl=document.getElementById('donut-pct');
+  if(pctEl) pctEl.textContent=pct+'%';
+  setText('leg-done',done+' ('+pct+'%)');
+  setText('leg-inprog',inprog+' ('+Math.round(inprog/total*100)+'%)');
+  setText('leg-todo',todo+' ('+Math.round(todo/total*100)+'%)');
+
+  // ── Priority bar chart
+  const high=allTasks.filter(t=>normS(t)!=='done'&&normP(t)==='high').length;
+  const med=allTasks.filter(t=>normS(t)!=='done'&&normP(t)==='medium').length;
+  const low=allTasks.filter(t=>normS(t)!=='done'&&normP(t)==='low').length;
+  renderBarChart('prio-chart','prio-labels',[
+    {lbl:'High',val:high,color:'var(--red)'},
+    {lbl:'Medium',val:med,color:'var(--accent)'},
+    {lbl:'Low',val:low,color:'var(--green)'},
+  ]);
+
+  // ── Top 8 users by task count
+  const userTaskCounts=users.map(u=>({lbl:(u.displayName||u.email||'?').split('@')[0].slice(0,8),val:u.tasks.length,color:'var(--blue)'})).sort((a,b)=>b.val-a.val).slice(0,8);
+  renderBarChart('user-task-chart','user-task-labels',userTaskCounts);
+
+  // ── Top 8 projects by task count
+  const projMap={};
+  for(const u of users) for(const t of u.tasks){if(!t)continue;const p=(t.project||'Other').slice(0,10);projMap[p]=(projMap[p]||0)+1;}
+  const projData=Object.entries(projMap).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>({lbl:k,val:v,color:'var(--purple)'}));
+  renderBarChart('proj-task-chart','proj-task-labels',projData);
+
+  // ── Upload expiry timeline (next 14 days)
+  const expiryMap={};
+  const nowD=new Date(); nowD.setHours(0,0,0,0);
+  for(const u of users) for(const up of u.uploads){
+    if(!up||!up.expiresAt) continue;
+    const d=new Date(up.expiresAt); d.setHours(0,0,0,0);
+    const diff=Math.round((d-nowD)/(864e5));
+    if(diff>=0&&diff<14){const k=diff;expiryMap[k]=(expiryMap[k]||0)+1;}
+  }
+  const expiryData=Array.from({length:14},(_,i)=>{
+    const d=new Date(nowD); d.setDate(d.getDate()+i);
+    return {lbl:d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}).slice(0,6),val:expiryMap[i]||0,color:'var(--accent)'};
+  });
+  renderBarChart('expiry-chart','expiry-labels',expiryData);
+
+  // ── Auth Provider breakdown
+  const provEl=document.getElementById('analytics-providers');
+  if(provEl){
+    const provs={};
+    const uTotal=users.length||1;
+    for(const u of users) provs[u.providerId||'unknown']=(provs[u.providerId||'unknown']||0)+1;
+    provEl.innerHTML=Object.entries(provs).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span>${provChip(k)}</span>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--text2)">${v} (${Math.round(v/uTotal*100)}%)</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${(v/uTotal*100).toFixed(1)}%;background:var(--blue)"></div></div>
+      </div>`).join('');
+  }
+  const assigneeMap={};
+  for(const u of users) for(const t of u.tasks){
+    if(!t) continue;
+    const assignees=Array.isArray(t.assignees)?t.assignees:t.assignees?Object.values(t.assignees):[];
+    for(const a of assignees){
+      if(!assigneeMap[a]) assigneeMap[a]={total:0,done:0};
+      assigneeMap[a].total++;
+      if(normS(t)==='done') assigneeMap[a].done++;
+    }
+  }
+  const sortedAssignees=Object.entries(assigneeMap).sort((a,b)=>b[1].done-a[1].done).slice(0,8);
+  const boardEl=document.getElementById('assignee-board');
+  if(boardEl){
+    if(!sortedAssignees.length){boardEl.innerHTML='<div style="color:var(--text3);font-size:12px;padding:16px 0">No assignee data found</div>';return;}
+    boardEl.innerHTML=sortedAssignees.map(([name,s],i)=>{
+      const pct=s.total?Math.round(s.done/s.total*100):0;
+      const medals=['🥇','🥈','🥉'];
+      return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:16px;width:24px;text-align:center;flex-shrink:0">${medals[i]||'  '}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</div>
+          <div class="prog-bar" style="margin-top:4px"><div class="prog-fill" style="width:${pct}%;background:var(--green)"></div></div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:12px;font-family:var(--mono);font-weight:600">${s.done}/${s.total}</div>
+          <div style="font-size:10px;color:var(--text3)">${pct}% done</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── System health board
+  const healthEl=document.getElementById('health-board');
+  if(healthEl){
+    const totalUsers=users.length;
+    const activeUsers=users.filter(u=>u.lastLoginMs&&(Date.now()-u.lastLoginMs)<7*864e5).length;
+    const synced=users.filter(u=>u.hasProfile).length;
+    const disabled=users.filter(u=>u.disabled).length;
+    const expiring=users.reduce((a,u)=>a+u.expiringUploads.length,0);
+    const overdueCount=allTasks.filter(t=>{if(!t||normS(t)==='done')return false;const d=t.target||t.dueDate||'';return d&&new Date(d)<new Date();}).length;
+    const items=[
+      {label:'Active Users (7d)',val:activeUsers+' / '+totalUsers,color:activeUsers/totalUsers>0.5?'green':'amber'},
+      {label:'Profile Sync Rate',val:Math.round(synced/totalUsers*100)+'%',color:synced/totalUsers>0.8?'green':'amber'},
+      {label:'Disabled Accounts',val:disabled,color:disabled?'red':'green'},
+      {label:'Expiring Uploads',val:expiring,color:expiring>5?'red':expiring>0?'amber':'green'},
+      {label:'Overdue Tasks',val:overdueCount,color:overdueCount>10?'red':overdueCount>0?'amber':'green'},
+      {label:'Task Completion',val:pct+'%',color:pct>70?'green':pct>40?'amber':'red'},
+    ];
+    const colorMap={green:'#34d399',amber:'#fbbf24',red:'#f87171'};
+    healthEl.innerHTML=items.map(it=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="color:var(--text2)">${it.label}</span>
+      <span style="font-family:var(--mono);font-weight:600;color:${colorMap[it.color]}">${it.val}</span>
+    </div>`).join('');
+  }
+}
+
+function renderBarChart(chartId,labelsId,data){
+  const chart=document.getElementById(chartId);
+  const labels=document.getElementById(labelsId);
+  if(!chart||!labels) return;
+  const max=Math.max(...data.map(d=>d.val),1);
+  chart.innerHTML=data.map(d=>{
+    const h=Math.round((d.val/max)*100);
+    return `<div class="bar-item" style="height:100%">
+      <div class="bar-fill" style="height:${h}%;background:${d.color};width:100%;border-radius:3px 3px 0 0;min-height:${d.val?3:0}px" title="${d.lbl}: ${d.val}"></div>
+    </div>`;
+  }).join('');
+  labels.style.cssText='display:flex;gap:3px;';
+  labels.innerHTML=data.map(d=>`<div style="flex:1;font-size:8px;font-family:var(--mono);color:var(--text3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.lbl)}</div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   USER COMPARE
+═══════════════════════════════════════════════════════════════ */
+function openCompare(){
+  const modal=document.getElementById('compare-modal');
+  const selA=document.getElementById('cmp-a');
+  const selB=document.getElementById('cmp-b');
+  const users=Object.values(D);
+  const opts='<option value="">Select user…</option>'+users.map(u=>`<option value="${u.uid}">${esc(u.displayName||u.email||u.uid)}</option>`).join('');
+  selA.innerHTML=opts; selB.innerHTML=opts;
+  document.getElementById('compare-body').innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:12px;font-family:var(--mono)">Select two users above to compare</div>';
+  modal.classList.add('open');
+}
+function closeCompare(){document.getElementById('compare-modal').classList.remove('open');}
+function renderCompare(){
+  const uidA=document.getElementById('cmp-a').value;
+  const uidB=document.getElementById('cmp-b').value;
+  const body=document.getElementById('compare-body');
+  if(!uidA||!uidB){body.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Select both users to compare</div>';return;}
+  if(uidA===uidB){body.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:12px">Select two <em>different</em> users</div>';return;}
+  const a=D[uidA], b=D[uidB];
+  if(!a||!b){body.innerHTML='<div style="padding:40px;text-align:center;color:var(--red);font-size:12px">User data not loaded</div>';return;}
+  const normS=t=>{if(t.completed===true)return'done';const s=(t.kanbanStatus||t.status||'').toLowerCase();return(s==='done'||s==='complete')?'done':(s==='in-progress'||s==='wip')?'in-progress':'todo';};
+  const stats=u=>({
+    tasks:u.tasks.length,
+    done:u.tasks.filter(t=>t&&normS(t)==='done').length,
+    inprog:u.tasks.filter(t=>t&&normS(t)==='in-progress').length,
+    overdue:u.tasks.filter(t=>{if(!t||normS(t)==='done')return false;const d=t.target||t.dueDate||'';return d&&new Date(d)<new Date();}).length,
+    projects:u.projects.length,
+    uploads:u.activeUploads.length,
+    lastLogin:u.lastLoginMs||0,
+    pct:u.tasks.length?Math.round(u.tasks.filter(t=>t&&normS(t)==='done').length/u.tasks.length*100):0,
+  });
+  const sa=stats(a), sb=stats(b);
+  const row=(label,ka,kb,higherIsBetter=true)=>{
+    const aWins=higherIsBetter?(ka>kb):(ka<kb);
+    const bWins=higherIsBetter?(kb>ka):(kb<ka);
+    return `<div class="compare-kv">
+      <span class="compare-kv-key">${label}</span>
+      <span style="display:flex;gap:16px">
+        <span class="compare-kv-val ${aWins?'compare-winner':bWins?'compare-loser':''}">${ka}</span>
+        <span class="compare-kv-val ${bWins?'compare-winner':aWins?'compare-loser':''}">${kb}</span>
+      </span>
+    </div>`;
+  };
+  const colHdr=u=>`<div class="compare-col-hdr">
+    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${(u.displayName||u.email||'?')[0].toUpperCase()}</div>
+    <div><div style="font-size:12px;font-weight:600">${esc(u.displayName||'No name')}</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono)">${esc(u.email||'')}</div></div>
+  </div>`;
+  body.innerHTML=`<div class="compare-cols">
+    <div class="compare-col">${colHdr(a)}</div>
+    <div class="compare-col">${colHdr(b)}</div>
+  </div>
+  <div style="padding:0 18px 16px">
+    <div style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Task Performance</div>
+    ${row('Total Tasks',sa.tasks,sb.tasks)}
+    ${row('Completed',sa.done,sb.done)}
+    ${row('In Progress',sa.inprog,sb.inprog)}
+    ${row('Completion %',sa.pct+'%',sb.pct+'%')}
+    ${row('Overdue',sa.overdue,sb.overdue,false)}
+    <div style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Activity</div>
+    ${row('Projects',sa.projects,sb.projects)}
+    ${row('Active Uploads',sa.uploads,sb.uploads)}
+    ${row('Last Login',relTime(sa.lastLogin),relTime(sb.lastLogin))}
+    <div style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Account</div>
+    ${row('Status',a.disabled?'Disabled':'Active',b.disabled?'Disabled':'Active')}
+    ${row('Role',a.isAdmin?'Admin':'User',b.isAdmin?'Admin':'User')}
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BULK USER ACTIONS
+═══════════════════════════════════════════════════════════════ */
+let _selectedUids=new Set();
+function toggleBulkSelect(uid,checked){
+  if(checked) _selectedUids.add(uid); else _selectedUids.delete(uid);
+  updateBulkBar();
+}
+function selectAllUsers(checked){
+  _selectedUids=new Set(checked?Object.keys(D):[]);
+  document.querySelectorAll('.row-check').forEach(cb=>cb.checked=checked);
+  document.querySelectorAll('tbody tr').forEach(tr=>tr.classList.toggle('selected-row',checked));
+  updateBulkBar();
+}
+function updateBulkBar(){
+  const bar=document.getElementById('bulk-bar');
+  const n=_selectedUids.size;
+  if(n>0){bar.classList.add('show');setText('bulk-count-num',n);}
+  else bar.classList.remove('show');
+}
+function clearBulkSelection(){
+  _selectedUids.clear();
+  document.querySelectorAll('.row-check').forEach(cb=>cb.checked=false);
+  document.querySelectorAll('tbody tr').forEach(tr=>tr.classList.remove('selected-row'));
+  updateBulkBar();
+}
+async function bulkBan(){
+  if(!_selectedUids.size) return;
+  confirm2('Bulk Ban',`Disable ${_selectedUids.size} selected users?`,async()=>{
+    for(const uid of _selectedUids){
+      await db.ref(`users/${uid}/profile/disabled`).set(true);
+      if(D[uid]) D[uid].disabled=true;
+    }
+    toast(`${_selectedUids.size} users disabled`,'ok');
+    pushNotif(`Bulk ban: ${_selectedUids.size} users disabled`,'red');
+    logAction('Bulk Ban','multiple',`${_selectedUids.size} users`);
+    clearBulkSelection(); refreshAll();
+  });
+}
+function bulkExport(){
+  if(!_selectedUids.size) return;
+  const rows=[['UID','Email','Name','Status','Tasks','Projects','Last Login']];
+  for(const uid of _selectedUids){
+    const u=D[uid]; if(!u) continue;
+    rows.push([uid,u.email||'',u.displayName||'',u.disabled?'Disabled':'Active',u.tasks.length,u.projects.length,u.lastLogin||'']);
+  }
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'selected_users.csv'});
+  a.click(); URL.revokeObjectURL(a.href);
+  toast(`Exported ${_selectedUids.size} users`,'ok');
+  clearBulkSelection();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FAB
+═══════════════════════════════════════════════════════════════ */
+let _fabOpen=false;
+function toggleFab(){
+  _fabOpen=!_fabOpen;
+  document.getElementById('fab-menu').classList.toggle('open',_fabOpen);
+  document.getElementById('fab-main-btn').classList.toggle('open',_fabOpen);
+}
+function closeFab(){
+  _fabOpen=false;
+  document.getElementById('fab-menu').classList.remove('open');
+  document.getElementById('fab-main-btn').classList.remove('open');
+}
+document.addEventListener('click',e=>{
+  if(_fabOpen&&!document.getElementById('quick-fab').contains(e.target)) closeFab();
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLE COLUMN SORTING
+═══════════════════════════════════════════════════════════════ */
+let _sortState={table:null,col:null,dir:1};
+function sortTable(tableBodyId,colIdx,type='str'){
+  const body=document.getElementById(tableBodyId);
+  if(!body) return;
+  const rows=Array.from(body.querySelectorAll('tr:not(.loading-row)'));
+  const same=_sortState.table===tableBodyId&&_sortState.col===colIdx;
+  _sortState={table:tableBodyId,col:colIdx,dir:same?-_sortState.dir:1};
+  rows.sort((a,b)=>{
+    const av=(a.cells[colIdx]?.textContent||'').trim();
+    const bv=(b.cells[colIdx]?.textContent||'').trim();
+    if(type==='num') return (parseFloat(av)||0-parseFloat(bv)||0)*_sortState.dir;
+    return av.localeCompare(bv)*_sortState.dir;
+  });
+  rows.forEach(r=>body.appendChild(r));
+  document.querySelectorAll(`[data-sort-body="${tableBodyId}"]`).forEach((th,i)=>{
+    th.classList.remove('sort-asc','sort-desc');
+    if(i===colIdx) th.classList.add(_sortState.dir===1?'sort-asc':'sort-desc');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SEARCH HIGHLIGHT
+═══════════════════════════════════════════════════════════════ */
+function highlight(text,query){
+  if(!query) return esc(text);
+  const idx=text.toLowerCase().indexOf(query.toLowerCase());
+  if(idx<0) return esc(text);
+  return esc(text.slice(0,idx))+'<mark>'+esc(text.slice(idx,idx+query.length))+'</mark>'+esc(text.slice(idx+query.length));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PATCH: pushNotif on data load
+═══════════════════════════════════════════════════════════════ */
+function postLoadNotifs(){
+  const users=Object.values(D);
+  const normS=t=>{if(t.completed===true)return'done';const s=(t.kanbanStatus||t.status||'').toLowerCase();return(s==='done'||s==='complete'||s==='completed')?'done':'open';};
+  const overdue=users.reduce((a,u)=>a+u.tasks.filter(t=>{if(!t||normS(t)==='done')return false;const d=t.target||t.dueDate||'';return d&&new Date(d)<new Date();}).length,0);
+  const expiring=users.reduce((a,u)=>a+u.expiringUploads.length,0);
+  const disabled=users.filter(u=>u.disabled).length;
+  if(overdue>0&&localStorage.getItem('cm2_last_overdue')!=overdue){pushNotif(`⚠ ${overdue} tasks are overdue across all users`,'red');localStorage.setItem('cm2_last_overdue',overdue);}
+  if(expiring>0&&localStorage.getItem('cm2_last_expiring')!=expiring){pushNotif(`⏰ ${expiring} uploads expiring within 7 days`,'amber');localStorage.setItem('cm2_last_expiring',expiring);}
+  if(disabled>0&&localStorage.getItem('cm2_last_disabled')!=disabled){pushNotif(`🔒 ${disabled} user accounts are disabled`,'blue');localStorage.setItem('cm2_last_disabled',disabled);}
+}
+
+// Initial notification render
+renderNotifs();
+
 </script>
 </body>
 </html>
