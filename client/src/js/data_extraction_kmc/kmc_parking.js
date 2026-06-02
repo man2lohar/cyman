@@ -560,15 +560,17 @@ function _calcCarParkingRequired(layerData) {
   const layer           = layerData[0].layer;
   const totalCarpetArea = layerData.reduce((s, d) => s + parseFloat(d.carpetArea), 0);
   const totalNetArea = layerData.reduce((s, d) => s + parseFloat(d.netArea), 0);
-
+   
+//-------CAR PARKING CALCULATION FOR BUSINESS-------//ALL OK
    if (layer === 'Business') {
      if (totalNetArea <= 50) return 0;
      if (totalNetArea <= 70) return 1;
      return Math.floor(totalNetArea / 70);
    }
+   
+//-------CAR PARKING CALCULATION FOR MERCANTILE RETAIL-------//ALL OK
   if (layer === 'Mercantile_retail') {
     let parkingSlots = 0;
-
     if (totalNetArea <= 5000) {
       // Rule 1: 1 slot per 50 for the first 5000
       parkingSlots = totalNetArea / 50;
@@ -576,18 +578,20 @@ function _calcCarParkingRequired(layerData) {
       // Rule 2: First 5000 at 1 per 50, PLUS excess at 1 per 75
       const baseParking = 5000 / 50; // This equals 100 slots
       const excessArea = totalNetArea - 5000;
-      const excessParking = excessArea / 75;
-      
+      const excessParking = excessArea / 75;      
       parkingSlots = baseParking + excessParking;
     }
-
     return Math.floor(parkingSlots);
   }
+   
+//-------CAR PARKING CALCULATION FOR ASSEMBLY-------//
   if (layer === 'Assembly') {
     return totalCarpetArea > 35 ? Math.floor(totalCarpetArea / 35) : 0;
   }
+
+//-------CAR PARKING CALCULATION FOR INSTITUTION-------//ALL OK
   if (layer === 'Institutional') {
-    return totalCarpetArea > 75 ? Math.floor(totalCarpetArea / 75) : 0;
+    return totalNetArea > 75 ? Math.floor(totalNetArea / 90) : 0;
   }
   return 'N/A';
 }
