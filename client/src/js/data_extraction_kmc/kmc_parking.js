@@ -340,10 +340,10 @@ function _buildOtherLayersParking(csv) {
 }
 
 /* ══════════════════════════════════════════
-   ASSEMBLY — 3 SEPARATE SUB-TABLES
+   ASSEMBLY — 4 SEPARATE SUB-TABLES
    KMC Rule 78 Cl.IV
 
-   Table 1: General + Boarding & Guest House
+   Table 1: General
             Linetype = ByLayer, LW = ByLayer
             Rule: 1 per 65 sqm, min 1
 
@@ -355,18 +355,27 @@ function _buildOtherLayersParking(csv) {
             Linetype = PHANTOM2, LW = ByLayer
             Rule: 1 per 60 sqm (full net area)
 
-   Combined total row shown after all 3 tables.
+   Table 4: Boarding & Guest House
+            Linetype = DASHED2, LW = ByLayer
+            Rule: 1 per 250 sqm, min 1
+
+   Combined total row shown after all 4 tables.
 ══════════════════════════════════════════ */
 function _buildAssemblyTables(rows, parsedData, container) {
 
-  // Collect all Assembly rows grouped by linetype
   const subGroups = {
-    general:  [],   // ByLayer
+    general:  [],   // ByLayer  (excludes PHANTOM, PHANTOM2, DASHED2)
     hotel:    [],   // PHANTOM
     banquet:  [],   // PHANTOM2
+    boarding: [],   // DASHED2
   };
 
-  const seen = { general: new Set(), hotel: new Set(), banquet: new Set() };
+  const seen = {
+    general:  new Set(),
+    hotel:    new Set(),
+    banquet:  new Set(),
+    boarding: new Set(),
+  };
 
   rows.forEach((row, index) => {
     if (index === 0 || !row.trim()) return;
@@ -378,11 +387,13 @@ function _buildAssemblyTables(rows, parsedData, container) {
 
     let group, key;
     if (linetype === 'PHANTOM2') {
-      group = 'banquet'; key = floor + '-PHANTOM2';
+      group = 'banquet';  key = floor + '-PHANTOM2';
     } else if (linetype === 'PHANTOM') {
-      group = 'hotel';   key = floor + '-PHANTOM';
+      group = 'hotel';    key = floor + '-PHANTOM';
+    } else if (linetype === 'DASHED2') {
+      group = 'boarding'; key = floor + '-DASHED2';
     } else {
-      group = 'general'; key = floor + '-ByLayer';
+      group = 'general';  key = floor + '-ByLayer';
     }
 
     if (seen[group].has(key)) return;
@@ -390,12 +401,12 @@ function _buildAssemblyTables(rows, parsedData, container) {
 
     const tfa = _pkgCalcTotalFloorAreaByLinetype(floor, 'Assembly', linetype, parsedData);
     const da  = _pkgCalcDeductedAreaByLinetype(floor, 'Assembly', linetype, parsedData);
-    const net = (parseFloat(tfa) - parseFloat(da));
+    const net = parseFloat(tfa) - parseFloat(da);
 
     subGroups[group].push({
       floor,
-      layer:    'Assembly',
-      linetype: cells[5] || 'ByLayer',
+      layer:          'Assembly',
+      linetype:       cells[5] || 'ByLayer',
       totalFloorArea: _pkgFmt(tfa),
       deductedArea:   _pkgFmt(da),
       netArea:        _pkgFmt(net),
@@ -405,13 +416,13 @@ function _buildAssemblyTables(rows, parsedData, container) {
 
   let grandTotal = 0;
 
-  // ── Table 1: General + Boarding & Guest House ──
+  // ── Table 1: General ──
   if (subGroups.general.length > 0) {
     const totalNet = subGroups.general.reduce((s, d) => s + parseFloat(d.netArea), 0);
     const parking  = totalNet > 0 ? (totalNet >= 65 ? Math.floor(totalNet / 65) : 1) : 0;
     _createAssemblySubTable(
-      'Assembly — General / Boarding & Guest House',
-      'KMC Rule 78 Cl.IV(a)(c) — 1 per 65 Sq.M, min 1',
+      'Assembly — General',
+      'KMC Rule 78 Cl.IV(a) — 1 per 65 Sq.M, min 1',
       subGroups.general, parking, container
     );
     grandTotal += parking;
@@ -441,10 +452,22 @@ function _buildAssemblyTables(rows, parsedData, container) {
     grandTotal += parking;
   }
 
-  // ── Combined Assembly Total row ──
-  if (subGroups.general.length + subGroups.hotel.length + subGroups.banquet.length > 0) {
-    _addAssemblyCombinedRow(grandTotal, container);
+  // ── Table 4: Boarding & Guest House ──
+  if (subGroups.boarding.length > 0) {
+    const totalNet = subGroups.boarding.reduce((s, d) => s + parseFloat(d.netArea), 0);
+    const parking  = totalNet > 0 ? Math.max(Math.floor(totalNet / 250), 1) : 0;
+    _createAssemblySubTable(
+      'Assembly — Boarding & Guest House',
+      'KMC Rule 78 Cl.IV(c) — 1 per 250 Sq.M, min 1',
+      subGroups.boarding, parking, container
+    );
+    grandTotal += parking;
   }
+
+  // ── Combined Assembly Total row ──
+  const anyData = subGroups.general.length + subGroups.hotel.length
+                + subGroups.banquet.length + subGroups.boarding.length;
+  if (anyData > 0) _addAssemblyCombinedRow(grandTotal, container);
 
   return grandTotal;
 }
@@ -541,23 +564,29 @@ function _addAssemblyCombinedRow(total, container) {
 }
 
 /* ── Assembly linetype-aware area helpers ──────────────────────────────────
-   Net Area    : Lineweight = ByLayer,  Linetype ≠ DASHED, matching group
-   Deducted    : Lineweight = ByLayer,  Linetype = DASHED,  matching group
-   Carpet Area : Lineweight = 0.15 mm,                      matching group
-   "General" group excludes rows whose Linetype is PHANTOM or PHANTOM2.
+   Sub-type linetypes:
+     General   → ByLayer  (excludes PHANTOM, PHANTOM2, DASHED2)
+     Hotel     → PHANTOM
+     Banquet   → PHANTOM2
+     Boarding  → DASHED2
+
+   Net Area    : Lineweight = ByLayer,  Linetype = sub-type (non-DASHED)
+   Deducted    : Lineweight = ByLayer,  Linetype = DASHED  (shared across sub-types)
+   Carpet Area : Lineweight = 0.15 mm,  Linetype = sub-type
 ──────────────────────────────────────────────────────────────────────────*/
 
-// Total floor area for one Assembly sub-type (LW=ByLayer, non-DASHED rows)
+// Total floor area for one Assembly sub-type (LW=ByLayer, matching linetype)
 function _pkgCalcTotalFloorAreaByLinetype(floor, layer, linetype, parsedData) {
   let sum = 0;
   const lt = linetype.toUpperCase();
   parsedData.forEach(d => {
     if (d.column3 !== floor || d.column4 !== layer) return;
-    if (d.column7 !== 'ByLayer') return;           // Net Area → LW must be ByLayer
-    if (d.column6 === 'DASHED')  return;           // exclude deduct rows
+    if (d.column7 !== 'ByLayer') return;            // Net Area → LW must be ByLayer
     const dlt = (d.column6 || '').trim().toUpperCase();
+    if (dlt === 'DASHED') return;                   // exclude deduct rows (always skip)
     if (lt === 'BYLAYER' || lt === '') {
-      if (dlt === 'PHANTOM' || dlt === 'PHANTOM2') return; // General excludes hotel rows
+      // General: exclude all named sub-type linetypes
+      if (dlt === 'PHANTOM' || dlt === 'PHANTOM2' || dlt === 'DASHED2') return;
     } else {
       if (dlt !== lt) return;
     }
@@ -566,30 +595,28 @@ function _pkgCalcTotalFloorAreaByLinetype(floor, layer, linetype, parsedData) {
   return sum.toFixed(3);
 }
 
-// Deducted area for one Assembly sub-type (LW=ByLayer, Linetype=DASHED)
+// Deducted area — Linetype=DASHED, LW=ByLayer (shared across all Assembly sub-types)
 function _pkgCalcDeductedAreaByLinetype(floor, layer, linetype, parsedData) {
   let sum = 0;
   parsedData.forEach(d => {
     if (d.column3 !== floor || d.column4 !== layer) return;
-    if (d.column6 !== 'DASHED')  return;           // only DASHED rows
-    if (d.column7 !== 'ByLayer') return;           // Lineweight must be ByLayer
+    if ((d.column6 || '').trim().toUpperCase() !== 'DASHED') return; // only DASHED rows
+    if (d.column7 !== 'ByLayer') return;            // Lineweight must be ByLayer
     sum += d.column8;
-    // Note: DASHED rows don't carry a sub-type linetype in CAD,
-    // so all DASHED ByLayer rows on this floor+layer are shared deductions.
   });
   return sum.toFixed(3);
 }
 
-// Carpet area for one Assembly sub-type (LW=0.15 mm)
+// Carpet area for one Assembly sub-type (LW=0.15 mm, matching linetype)
 function _pkgCalcCarpetAreaByLinetype(floor, layer, linetype, parsedData) {
   let sum = 0;
   const lt = linetype.toUpperCase();
   parsedData.forEach(d => {
     if (d.column3 !== floor || d.column4 !== layer) return;
-    if (d.column7 !== '0.15 mm') return;           // Carpet Area → LW must be 0.15 mm
+    if (d.column7 !== '0.15 mm') return;            // Carpet Area → LW must be 0.15 mm
     const dlt = (d.column6 || '').trim().toUpperCase();
     if (lt === 'BYLAYER' || lt === '') {
-      if (dlt === 'PHANTOM' || dlt === 'PHANTOM2') return;
+      if (dlt === 'PHANTOM' || dlt === 'PHANTOM2' || dlt === 'DASHED2') return;
     } else {
       if (dlt !== lt) return;
     }
