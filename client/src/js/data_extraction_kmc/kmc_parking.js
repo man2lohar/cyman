@@ -608,9 +608,9 @@ function _calcCarParkingRequired(layerData) {
   //   Phantom              → Star Hotels
   //   Phantom2             → Other Hotels / Boarding & Guest Houses
   if (layer === 'Assembly') {
-    const general    = layerData.filter(d => d.linetype === 'ByLayer' || d.linetype === 'Continuous');
-    const starHotel  = layerData.filter(d => d.linetype === 'Phantom');
-    const otherHotel = layerData.filter(d => d.linetype === 'Phantom2');
+    const general    = layerData.filter(d => d.linetype === 'ByLayer');
+    const starHotel  = layerData.filter(d => d.linetype === 'PHANTOM');
+    const otherHotel = layerData.filter(d => d.linetype === 'PHANTOM2');
 
     const netGeneral   = general.reduce((s, d)    => s + parseFloat(d.netArea), 0);
     const netStar      = starHotel.reduce((s, d)  => s + parseFloat(d.netArea), 0);
