@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Team Report Builder</title>
+<title>Project Status Report</title>
+<link rel="icon" href="../../assets/images/cymansquare_logo.svg" type="image/svg+xml"/>
 <link href="https://fonts.googleapis.com/css2?family=Akaya+Kanadaka&family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -30,7 +31,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
 .sb-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
 .sb-logo-mark{background:var(--gold);color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;padding:5px 7px;border-radius:4px;line-height:1;}
 .sb-logo-text{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:500;color:rgba(255,255,255,.9);letter-spacing:.5px;line-height:1.3;}
-.sb-logo-sub{font-weight:400;color:rgba(255,255,255,.4);font-size:9px;letter-spacing:1px;}
+.sb-logo-sub{font-weight:400;color:rgba(255,255,255,.4);font-size:9px;letter-spacing:1px;margin-top: 5px;}
 .sb-sec{padding:11px 16px 4px;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);}
 .sb-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.6);font-family:'Open Sans',sans-serif;font-size:11.5px;width:100%;text-align:left;transition:all .15s;border-left:3px solid transparent;}
 .sb-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.9);}
@@ -116,7 +117,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
 .stage-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(45,152,253,.2);color:var(--gold2);border:1px solid rgba(45,152,253,.35);cursor:pointer;transition:all .15s;white-space:nowrap;}
 .stage-btn:hover{background:rgba(45,152,253,.35);}
 .stage-arr{font-size:7px;opacity:.7;}
-.stage-info-sub{font-size:8px;color:rgba(255,255,255,.35);white-space:nowrap;}
+.stage-info-sub{font-size:12px;color:rgba(255,255,255,.35);white-space:nowrap;}
 .stage-dd{position:absolute;top:calc(100% + 6px);left:0;z-index:400;background:#fff;border:1px solid var(--border);border-radius:10px;padding:6px;min-width:230px;max-height:320px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15);display:none;}
 .stage-dd.open{display:block;}
 .stage-dd-head{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 6px;border-bottom:1px solid var(--border2);margin-bottom:4px;}
@@ -140,7 +141,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
 .status-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:4px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;border:1.5px solid;}
 .ssel{background:transparent;border:none;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;outline:none;color:inherit;-webkit-appearance:none;}
 .ssel option{background:#fff;color:var(--text);}
-.card-remove-btn{background:transparent;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:14px;padding:2px;transition:color .15s;align-self:flex-start;}
+.card-remove-btn{background:transparent;border:none;color:rgba(255,255,255,.25);cursor:pointer;font-size:12px;padding:5px;transition:color .15s;display:flex;align-items:center;justify-content:center;}
 .card-remove-btn:hover{color:#f07070;}
 
 /* BODY GRID */
@@ -194,7 +195,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
 .photos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
 .photo-card{display:flex;flex-direction:column;gap:4px;}
 .photo-thumb{position:relative;border-radius:7px;overflow:hidden;aspect-ratio:4/3;border:1px solid var(--border2);background:var(--bg);cursor:pointer;}
-.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block;position:absolute;inset:0;}
 .photo-ov{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity .18s;display:flex;align-items:center;justify-content:center;gap:6px;}
 .photo-thumb:hover .photo-ov{opacity:1;}
 .pov-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:3px 7px;border-radius:4px;font-size:10px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;}
@@ -265,7 +266,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
 .dz-icon{font-size:36px;margin-bottom:9px;}
 .dz-text{color:var(--muted);font-size:12.5px;font-weight:600;}
 .dz-sub{color:var(--border);font-size:10.5px;margin-top:3px;}
-.crop-stage{position:relative;width:100%;aspect-ratio:16/9;background:#111;border-radius:9px;overflow:hidden;cursor:grab;user-select:none;touch-action:none;}
+.crop-stage{position:relative;width:100%;aspect-ratio:4/3;background:#e8e8e8;border-radius:9px;overflow:hidden;cursor:grab;user-select:none;touch-action:none;}
 .crop-stage.grabbing{cursor:grabbing;}
 .crop-img{position:absolute;transform-origin:center center;will-change:transform;}
 .cg-ov{position:absolute;inset:0;pointer-events:none;}
@@ -320,6 +321,11 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
   .scard.red   .scard-num{color:#a02020!important;}
   .scard-lbl{color:#a05000!important;}
 
+  .cmeta-input{color:#2a1e00!important;}
+  .cover-title{color:#1a1200!important;}
+  .cover-meta-item{color:#3d2e00!important;}
+  .cover-meta-item strong{color:#1a1200!important;}
+  .cover-eyebrow{color:var(--orange)!important;}
   /* ── PROJECT HEADER ── */
   .ph{background:#e07b00!important;border-radius:8px!important;
     overflow:hidden!important;margin-bottom:8px!important;box-shadow:none!important;}
@@ -338,7 +344,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
   .ring-sub{color:rgba(255,255,255,.6)!important;}
   .stage-btn{background:rgba(255,255,255,.18)!important;color:#fff!important;
     border:1px solid rgba(255,255,255,.4)!important;font-size:8px!important;padding:3px 8px!important;}
-  .stage-info-sub{color:rgba(255,255,255,.6)!important;font-size:7px!important;}
+  .stage-info-sub{color:rgba(255,255,255,.6)!important;font-size:10px!important;}
   .status-chip{font-size:7px!important;padding:2px 7px!important;}
 
   /* meta row inline colors */
@@ -355,7 +361,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
   .seg-dark{background:#fff4e6!important;border-color:#ffcb8a!important;}
 
   /* Section headings */
-  .sec-hd{border-bottom:2px solid #e07b00!important;margin-bottom:7px!important;padding-bottom:5px!important;}
+  .sec-hd{border-bottom:0.5px solid #e07b00!important;margin-bottom:7px!important;padding-bottom:5px!important;}
   .sec-hd-icon{background:#e07b00!important;color:#fff!important;}
   .sec-hd-title{color:#1a0a00!important;font-size:8px!important;}
   .sec-hd-gold .sec-hd-icon{background:#e07b00!important;}
@@ -427,8 +433,8 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
     <div id="sbLogoFallback"
       style="display:none;width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#2d98fd,#60b8ff);align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:900;color:#fff;flex-shrink:0;">CMS</div>
     <div class="sb-logo-text">
-      <span style="font-family:'Akaya Kanadaka',cursive;font-size:16px;color:#fff;letter-spacing:.5px;line-height:1;">CyManSquare</span>
-      <div class="sb-logo-sub">Team Report Builder</div>
+      <span style="font-family:'Akaya Kanadaka',cursive;font-size:16px;color:#fff;letter-spacing:.5px;line-height:1;">CyMan²</span>
+      <div class="sb-logo-sub">Project Status Report Builder</div>
     </div>
   </div>
   <div class="sb-sec">Projects</div>
@@ -467,7 +473,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
 <div class="overlay" id="settingsModal">
   <div class="panel">
     <div class="panel-hd">
-      <span class="panel-title" style="font-family:'Akaya Kanadaka',cursive;font-size:14px;letter-spacing:.5px;">⚙ CyManSquare — Settings</span>
+      <span class="panel-title" style="font-family:'Akaya Kanadaka',cursive;font-size:14px;letter-spacing:.5px;">⚙ CyMan² — Settings</span>
       <button class="panel-x" onclick="closeSettings()">×</button>
     </div>
     <div class="panel-body">
@@ -568,7 +574,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
 // ═══ STAGE REGISTRY ═══
 let STAGES=[
   {k:'SD1',l:'Stage 1 — SD',d:'Schematic Design'},
-  {k:'SD2',l:'Stage 2 — SD',d:'Preliminary / Sanction'},
+  {k:'SD2',l:'Stage 2 — SD',d:'Sanction Drawings'},
   {k:'DD', l:'Stage 3 — DD',d:'Design Development'},
   {k:'WD', l:'Stage 4 — WD',d:'Working Drawings'},
   {k:'SITE',l:'Stage 5 — Site',d:'Site Supervision'},
@@ -588,8 +594,8 @@ function today(){return new Date().toLocaleDateString('en-GB',{day:'2-digit',mon
 
 // ═══ GLOBAL STATE ═══
 let G={
-  firm:'Architecture + Design Studio',
-  rtitle:'PROJECT STATUS REPORT',
+  firm:'Architecture',
+  rtitle:'PROJECTS STATUS REPORT',
   team:'',
   by:'',
   period:'',
@@ -658,10 +664,33 @@ function renderSummary(){
   const tot=D.length,done=D.filter(p=>p.status==='done').length,
         ong=D.filter(p=>p.status==='ongoing').length,hold=D.filter(p=>p.status==='pending').length;
   document.getElementById('summaryRow').innerHTML=`
-    <div class="scard"><div class="scard-icon">📋</div><div><div class="scard-num">${tot}</div><div class="scard-lbl">Total Projects</div></div></div>
-    <div class="scard green"><div class="scard-icon">✅</div><div><div class="scard-num">${done}</div><div class="scard-lbl">Completed</div></div></div>
-    <div class="scard amber"><div class="scard-icon">⟳</div><div><div class="scard-num">${ong}</div><div class="scard-lbl">In Progress</div></div></div>
-    <div class="scard red"><div class="scard-icon">⏸</div><div><div class="scard-num">${hold}</div><div class="scard-lbl">On Hold</div></div></div>`;
+    <div class="scard"><div class="scard-icon">
+      <svg color=#94A3B8 width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="8" y="2" width="8" height="4" rx="1"/>
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+      </svg>
+    </div><div><div class="scard-num">${tot}</div><div class="scard-lbl">Total Projects</div></div></div>
+    <div class="scard green"><div class="scard-icon">
+      <svg color=#22C55E width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6L9 17l-5-5"/>
+      </svg>
+    </div><div><div class="scard-num">${done}</div><div class="scard-lbl">Completed</div></div></div>
+    <div class="scard amber"><div class="scard-icon">
+      <svg color=#3B82F6 width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+        <polyline points="21 3 21 9 15 9"/>
+      </svg>
+    </div><div><div class="scard-num">${ong}</div><div class="scard-lbl">In Progress</div></div></div>
+    <div class="scard red"><div class="scard-icon">
+      <svg color=#EF4444 width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="10" y1="5" x2="10" y2="19"/>
+        <line x1="14" y1="5" x2="14" y2="19"/>
+      </svg>
+    </div><div><div class="scard-num">${hold}</div><div class="scard-lbl">On Hold</div></div></div>`;
 }
 
 function renderPages(){
@@ -733,8 +762,8 @@ function buildPage(p){
       <img src="../../assets/images/cymansquare_logo.svg" alt="CMS"
         style="width:32px;height:32px;object-fit:contain;filter:brightness(0) invert(1);opacity:.85;"
         onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <div style="display:none;font-family:'Akaya Kanadaka',cursive;font-size:11px;color:#2d98fd;font-weight:400;text-align:center;letter-spacing:.5px;">CMS</div>
-      <div style="font-family:'Akaya Kanadaka',cursive;font-size:9px;color:rgba(255,255,255,.4);margin-top:3px;letter-spacing:.3px;text-align:center;">CyManSquare</div>
+      <div style="display:none;font-family:'Akaya Kanadaka',cursive;font-size:11px;color:#2d98fd;font-weight:400;text-align:center;letter-spacing:.5px;">CyMan²</div>
+      <div style="font-family:'Akaya Kanadaka',cursive;font-size:9px;color:rgba(255,255,255,.4);margin-top:3px;letter-spacing:.3px;text-align:center;">CyMan²</div>
     </div>
     <div class="ph-mid">
       <div class="ph-label">Project Status Report</div>
@@ -808,7 +837,12 @@ function buildPage(p){
           </div>
         </div>
         <div class="stage-info-sub" id="stageDesc-${p.id}">${sg.d}</div>
-        <button class="card-remove-btn" onclick="removeProject(${p.id})" title="Remove project" style="margin-top:4px;">✕</button>
+        <button class="card-remove-btn" onclick="removeProject(${p.id})" title="Delete project" style="margin-top:4px;">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+          </svg>
+          <span style="margin-left:4px;">Delete This Project</span>
+        </button>
       </div>
     </div>
   </div>
@@ -816,13 +850,66 @@ function buildPage(p){
   <div class="pg-body">
     <div style="display:flex;flex-direction:column;gap:8px;">
       <div class="seg">
-        <div class="sec-hd"><div class="sec-hd-icon">📋</div><div class="sec-hd-title">Project Summary</div></div>
-        <div class="psumm-row"><span class="psumm-icon">🏠</span><div class="psumm-content"><div class="psumm-lbl">Name</div><input class="psumm-input" value="${p.name}" oninput="updateNameOnly(${p.id},this.value)"/></div></div>
-        <div class="psumm-row"><span class="psumm-icon">🏗️</span><div class="psumm-content"><div class="psumm-lbl">Type</div><input class="psumm-input" value="${p.ptype||''}" oninput="updateF(${p.id},'ptype',this.value)"/></div></div>
-        <div class="psumm-row"><span class="psumm-icon">📍</span><div class="psumm-content"><div class="psumm-lbl">Location</div><input class="psumm-input" value="${p.location||''}" oninput="updateF(${p.id},'location',this.value)"/></div></div>
-        <div class="psumm-row"><span class="psumm-icon">🔧</span><div class="psumm-content"><div class="psumm-lbl">Const. Stage</div><input class="psumm-input" value="${p.cstage||''}" oninput="updateF(${p.id},'cstage',this.value)"/></div></div>
-        <div class="psumm-row"><span class="psumm-icon">📅</span><div class="psumm-content"><div class="psumm-lbl">Start</div><input class="psumm-input" value="${p.startDate||'—'}" oninput="updateF(${p.id},'startDate',this.value)"/></div></div>
-        <div class="psumm-row"><span class="psumm-icon">🏁</span><div class="psumm-content"><div class="psumm-lbl">Completion</div><input class="psumm-input" value="${p.endDate||'—'}" oninput="updateF(${p.id},'endDate',this.value)"/></div></div>
+        <div class="sec-hd"><div class="sec-hd-icon">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <rect width="64" height="64" rx="14" fill="none"/>
+            <path d="M20 14H36L44 22V50H20V14Z" stroke="white" stroke-width="3"/>
+            <path d="M36 14V22H44" stroke="white" stroke-width="3"/>
+            <path d="M25 30H39" stroke="white" stroke-width="3"/>
+            <path d="M25 37H39" stroke="white" stroke-width="3"/>
+            <path d="M25 44H35" stroke="white" stroke-width="3"/>
+          </svg>
+        </div><div class="sec-hd-title">Project Summary</div></div>
+        <div class="psumm-row"><span class="psumm-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 10.5L12 3l9 7.5"/>
+              <path d="M5 9.5V21h14V9.5"/>
+          </svg>
+          </span><div class="psumm-content"><div class="psumm-lbl">Name</div><input class="psumm-input" value="${p.name}" oninput="updateNameOnly(${p.id},this.value)"/></div>
+        </div>
+        <div class="psumm-row"><span class="psumm-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="3" width="8" height="18"/>
+              <rect x="12" y="8" width="8" height="13"/>
+              <path d="M7 7h2M7 11h2M7 15h2M15 12h2M15 16h2"/>
+          </svg>
+          </span><div class="psumm-content"><div class="psumm-lbl">Type</div><input class="psumm-input" value="${p.ptype||''}" oninput="updateF(${p.id},'ptype',this.value)"/></div>
+        </div>
+        <div class="psumm-row"><span class="psumm-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 21s-6-5.33-6-11a6 6 0 1 1 12 0c0 5.67-6 11-6 11z"/>
+              <circle cx="12" cy="10" r="2"/>
+          </svg>
+          </span><div class="psumm-content"><div class="psumm-lbl">Location</div><input class="psumm-input" value="${p.location||''}" oninput="updateF(${p.id},'location',this.value)"/></div>
+        </div>
+        <div class="psumm-row"><span class="psumm-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.7 6.3a4 4 0 0 0-5.4 5.9L3 18.5 5.5 21l6.3-6.3a4 4 0 0 0 5.9-5.4l-3.2 3.2-2.5-2.5z"/>
+          </svg>
+          </span><div class="psumm-content"><div class="psumm-lbl">Const. Stage</div><input class="psumm-input" value="${p.cstage||''}" oninput="updateF(${p.id},'cstage',this.value)"/></div>
+        </div>
+        <div class="psumm-row"><span class="psumm-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          </span><div class="psumm-content"><div class="psumm-lbl">Start</div><input class="psumm-input" value="${p.startDate||'—'}" oninput="updateF(${p.id},'startDate',this.value)"/></div>
+        </div>
+        <div class="psumm-row"><span class="psumm-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 3v18"/>
+              <path d="M5 4h10l-2 4 2 4H5"/>
+          </svg>
+          </span><div class="psumm-content"><div class="psumm-lbl">Completion</div><input class="psumm-input" value="${p.endDate||'—'}" oninput="updateF(${p.id},'endDate',this.value)"/></div>
+        </div>
       </div>
       <div class="seg seg-dark" style="flex:1;">
         <div class="kh-sec-title"><span class="kh-sec-icon">⭐</span><span class="kh-sec-lbl">Key Highlights</span></div>
@@ -831,24 +918,68 @@ function buildPage(p){
       </div>
     </div>
     <div class="seg">
-      <div class="sec-hd"><div class="sec-hd-icon">🏗️</div><div class="sec-hd-title">Site Works Status</div></div>
+      <div class="sec-hd"><div class="sec-hd-icon">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <rect width="64" height="64" rx="14" fill="none"/>
+          <path d="M14 48H50" stroke="white" stroke-width="3"/>
+          <path d="M22 48V18" stroke="white" stroke-width="3"/>
+          <path d="M18 22L34 14L50 22H18Z" stroke="white" stroke-width="3"/>
+          <path d="M34 14V42" stroke="white" stroke-width="3"/>
+          <path d="M22 28H34" stroke="white" stroke-width="3"/>
+          <path d="M22 34H34" stroke="white" stroke-width="3"/>
+          <path d="M34 20H48" stroke="white" stroke-width="3"/>
+          <path d="M46 22V38" stroke="white" stroke-width="3"/>
+          <path d="M46 38L43 42L46 46L49 42L46 38Z" stroke="white" stroke-width="2"/>
+        </svg>
+      </div><div class="sec-hd-title">Site Works Status</div></div>
       <ul class="item-list">${siteRows||'<li style="color:var(--muted);font-size:11px;padding:4px 0;font-style:italic;">No site items yet.</li>'}</ul>
       <button class="add-item-btn" onclick="addItem(${p.id},'site')">＋ Add item</button>
     </div>
     <div class="seg">
-      <div class="sec-hd"><div class="sec-hd-icon">📐</div><div class="sec-hd-title">Drawings Status</div></div>
+      <div class="sec-hd"><div class="sec-hd-icon">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <rect width="64" height="64" rx="14" fill="none"/>
+          <path d="M18 14V50" stroke="white" stroke-width="3"/>
+          <path d="M18 22C18 18 20 18 22 18H48V50" stroke="white" stroke-width="3"/>
+          <path d="M30 28V46H46" stroke="white" stroke-width="3"/>
+          <path d="M30 46L46 46L30 28Z" stroke="white" stroke-width="3"/>
+          <path d="M34 42H42" stroke="white" stroke-width="2"/>
+          <path d="M34 38H39" stroke="white" stroke-width="2"/>
+        </svg>
+      </div><div class="sec-hd-title">Drawings Status</div></div>
       <ul class="item-list">${drawRows||'<li style="color:var(--muted);font-size:11px;padding:4px 0;font-style:italic;">No drawing items yet.</li>'}</ul>
       <button class="add-item-btn" onclick="addItem(${p.id},'draw')">＋ Add item</button>
     </div>
     <div class="seg seg-gold">
-      <div class="sec-hd sec-hd-gold"><div class="sec-hd-icon">⚠️</div><div class="sec-hd-title">Decisions / Actions</div></div>
+      <div class="sec-hd sec-hd-gold"><div class="sec-hd-icon">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <rect width="64" height="64" rx="14" fill="none"/>
+          <path d="M32 14L50 46H14L32 14Z" stroke="white" stroke-width="3"/>
+          <path d="M32 25V34" stroke="white" stroke-width="3"/>
+          <circle cx="32" cy="41" r="2.5" fill="white"/>
+        </svg>
+      </div><div class="sec-hd-title">Decisions / Actions</div></div>
       <ul class="item-list" id="list-${p.id}-dec">${decRows}</ul>
       <button class="add-item-btn" style="border-color:var(--gold-border);color:var(--amber);" onclick="addItem(${p.id},'dec')">＋ Add decision</button>
     </div>
   </div>
 
   <div class="pg-photos seg" style="margin-bottom:8px;">
-    <div class="sec-hd"><div class="sec-hd-icon">📷</div><div class="sec-hd-title">Site Photos</div></div>
+    <div class="sec-hd"><div class="sec-hd-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M7 6L8.5 4H15.5L17 6H20C20.55 6 21 6.45 21 7V17C21 17.55 20.55 18 20 18H4C3.45 18 3 17.55 3 17V7C3 6.45 3.45 6 4 6H7Z"
+              stroke="white"
+              stroke-width="1.8"
+              stroke-linejoin="round"/>
+
+        <circle cx="12" cy="12" r="4"
+                stroke="white"
+                stroke-width="1.8"/>
+
+        <circle cx="18" cy="8" r="1"
+                fill="white"/>
+      </svg>
+    </div><div class="sec-hd-title">Site Photos</div></div>
     <div class="photos-grid" id="photos-${p.id}" style="grid-template-columns:repeat(${cols},1fr)">
       ${thumbs}
       <button class="photo-add-card" onclick="openModal(${p.id},null)"><span style="font-size:20px">＋</span><span>Add Photo</span></button>
@@ -857,11 +988,41 @@ function buildPage(p){
 
   <div class="pg-bottom-row" style="margin-bottom:8px;">
     <div class="seg">
-      <div class="sec-hd"><div class="sec-hd-icon">💬</div><div class="sec-hd-title">Notes / Remarks</div></div>
+      <div class="sec-hd"><div class="sec-hd-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M6 6H18C19.1 6 20 6.9 20 8V14C20 15.1 19.1 16 18 16H10L6 19V16C4.9 16 4 15.1 4 14V8C4 6.9 4.9 6 6 6Z"
+                stroke="white"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"/>
+                
+          <circle cx="9" cy="11" r="1" fill="white"/>
+          <circle cx="12" cy="11" r="1" fill="white"/>
+          <circle cx="15" cy="11" r="1" fill="white"/>
+        </svg>
+      </div><div class="sec-hd-title">Notes / Remarks</div></div>
       <textarea class="notes-ta" placeholder="Add remarks, highlights, or next steps..." oninput="updateF(${p.id},'notes',this.value)">${p.notes||''}</textarea>
     </div>
     <div class="seg seg-gold">
-      <div class="sec-hd sec-hd-gold"><div class="sec-hd-icon">🎯</div><div class="sec-hd-title">Next 2-Week Targets</div></div>
+      <div class="sec-hd sec-hd-gold"><div class="sec-hd-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="7"
+                  stroke="white"
+                  stroke-width="1.8"/>
+
+          <circle cx="12" cy="12" r="3.5"
+                  stroke="white"
+                  stroke-width="1.8"/>
+
+          <path d="M16.5 7.5L12 12"
+                stroke="white"
+                stroke-width="1.8"
+                stroke-linecap="round"/>
+
+          <circle cx="12" cy="12" r="1.2"
+                  fill="white"/>
+        </svg>
+      </div><div class="sec-hd-title">Next 2-Week Targets</div></div>
       <div class="targets-grid">
         ${targetCards}
         <button class="add-target-btn" onclick="addTarget(${p.id})">＋</button>
@@ -876,7 +1037,7 @@ function buildPage(p){
     </div>
     <div class="pg-footer-right">
       <span class="pg-footer-logo">${(G.team||'TEAM').toUpperCase()}</span>
-      <span class="pg-footer-tagline">Thank you.</span>
+      <span class="pg-footer-tagline">Thank you !</span>
     </div>
   </div>
 </div>`;
@@ -1125,7 +1286,11 @@ function onFile(e){const f=e.target.files[0];if(!f)return;const r=new FileReader
 function onDrop(e){e.preventDefault();document.getElementById('dropZone').style.borderColor='var(--border)';const f=e.dataTransfer.files[0];if(!f||!f.type.startsWith('image/'))return;const r=new FileReader();r.onload=ev=>loadImg(ev.target.result,'');r.readAsDataURL(f);}
 function loadImg(src,cap){
   imgSrc=src;const img=document.getElementById('cropImg');img.src=src;
-  img.onload=()=>{imgW=img.naturalWidth;imgH=img.naturalHeight;const st=document.getElementById('cropStage');cZ=Math.max(st.clientWidth/imgW,st.clientHeight/imgH);cX=0;cY=0;cR=0;applyT();document.getElementById('zSlider').value=cZ;document.getElementById('zVal').textContent=cZ.toFixed(2)+'×';};
+  img.onload=()=>{imgW=img.naturalWidth;imgH=img.naturalHeight;const st=document.getElementById('cropStage');cZ=Math.max(st.clientWidth/imgW,st.clientHeight/imgH);setTimeout(()=>{
+  cZ=Math.max(st.clientWidth/imgW,st.clientHeight/imgH);
+  applyT();
+  document.getElementById('zSlider').value=cZ;
+},50);cX=0;cY=0;cR=0;applyT();document.getElementById('zSlider').value=cZ;document.getElementById('zVal').textContent=cZ.toFixed(2)+'×';};
   document.getElementById('dropZone').style.display='none';
   document.getElementById('cropAreaEl').style.display='block';
   document.getElementById('saveBtn').style.display='inline-flex';
@@ -1145,7 +1310,7 @@ function savePhoto(){
   if(!imgSrc){closeModal();return;}
   const st=document.getElementById('cropStage');const sw=st.clientWidth,sh=st.clientHeight;
   const cv=document.createElement('canvas');const dpr=window.devicePixelRatio||1;cv.width=sw*dpr;cv.height=sh*dpr;
-  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.fillStyle='#e8e8e8';ctx.fillRect(0,0,sw,sh);
   const ni=new Image();
   ni.onload=()=>{
     ctx.save();ctx.translate(sw/2+cX,sh/2+cY);ctx.rotate(cR*Math.PI/180);ctx.scale(cZ,cZ);ctx.drawImage(ni,-ni.naturalWidth/2,-ni.naturalHeight/2);ctx.restore();
