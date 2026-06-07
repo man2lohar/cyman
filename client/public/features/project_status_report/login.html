@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In | Team Report Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Akaya+Kanadaka&family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{
+      --orange:#2d98fd; --orange2:#60b8ff; --navy:#0f172a;
+      --bg:#f8fafc; --card:#ffffff; --input:#f1f5f9;
+      --border:rgba(99,102,241,0.15); --muted:#64748b; --red:#dc2626; --green:#059669;
+    }
+    [data-dark="1"]{--bg:#0a1628;--card:#0f2040;--navy:#e2e8f0;--input:#1a3a5c;--border:rgba(45,152,253,0.15);--muted:#94a3b8;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Open Sans',sans-serif;background:var(--bg);color:var(--navy);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;transition:background .4s,color .4s;}
+    .blob{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;}
+    .blob-1{width:520px;height:400px;background:rgba(45,152,253,.12);top:-80px;left:-100px;animation:b1 14s ease-in-out infinite alternate;}
+    .blob-2{width:420px;height:340px;background:rgba(45,152,253,.08);bottom:-60px;right:-80px;animation:b2 18s ease-in-out infinite alternate;}
+    @keyframes b1{from{transform:translate(0,0)}to{transform:translate(60px,-40px)}}
+    @keyframes b2{from{transform:translate(0,0)}to{transform:translate(-50px,50px)}}
+    .login-card{position:relative;z-index:1;background:var(--card);border-radius:24px;width:90%;max-width:440px;padding:36px 34px 32px;box-shadow:0 24px 64px rgba(26,18,0,.1);animation:popIn .45s cubic-bezier(.175,.885,.32,1.275) both;}
+    @keyframes popIn{from{opacity:0;transform:scale(.93) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:26px;}
+    .brand-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#2d98fd,#60b8ff);display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#fff;box-shadow:0 4px 14px rgba(45,152,253,.35);flex-shrink:0;}
+    .brand-name{font-family:'Montserrat',sans-serif;font-size:15px;font-weight:500;color:var(--orange);}
+    .brand-sub{font-size:10px;color:var(--muted);font-weight:500;margin-top:1px;letter-spacing:.5px;}
+    .tabs{display:flex;gap:0;margin-bottom:22px;background:var(--input);border-radius:10px;padding:3px;}
+    .tab{flex:1;padding:8px;border:none;background:transparent;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .15s;color:var(--muted);}
+    .tab.active{background:var(--card);color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+    .form-title{font-size:1.4rem;font-weight:800;letter-spacing:-.4px;margin-bottom:4px;font-family:'Montserrat',sans-serif;}
+    .form-sub{font-size:.8rem;color:var(--muted);margin-bottom:22px;}
+    .msg-banner{display:none;align-items:center;gap:8px;padding:10px 13px;border-radius:10px;font-size:.8rem;font-weight:600;margin-bottom:14px;}
+    .msg-banner.error{background:rgba(160,32,32,.08);border:1px solid rgba(160,32,32,.2);color:var(--red);display:flex;}
+    .msg-banner.success{background:rgba(26,122,72,.08);border:1px solid rgba(26,122,72,.2);color:var(--green);display:flex;}
+    .field{margin-bottom:13px;}
+    .field label{display:block;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:5px;}
+    .input-row{display:flex;align-items:center;gap:10px;background:var(--input);border:1.5px solid transparent;border-radius:10px;padding:0 13px;transition:.2s;}
+    .input-row:focus-within{border-color:var(--orange);box-shadow:0 0 0 3px rgba(45,152,253,.1);}
+    .input-row i{color:var(--muted);font-size:.9rem;flex-shrink:0;opacity:.55;}
+    .input-row input{flex:1;padding:12px 0;background:transparent;border:none;outline:none;color:var(--navy);font-family:inherit;font-size:.87rem;font-weight:500;}
+    .input-row input::placeholder{color:var(--muted);opacity:.55;}
+    .eye-btn{background:none;border:none;cursor:pointer;color:var(--muted);opacity:.45;display:flex;align-items:center;padding:0;transition:.2s;}
+    .eye-btn:hover{opacity:.9;}
+    .team-code-hint{font-size:.7rem;color:var(--muted);margin-top:4px;padding-left:2px;}
+    .team-code-found{font-size:.7rem;color:var(--green);margin-top:4px;padding-left:2px;display:none;}
+    .forgot{display:block;text-align:right;font-size:.76rem;color:var(--orange);font-weight:600;cursor:pointer;margin:-4px 0 14px;transition:opacity .2s;}
+    .forgot:hover{opacity:.7;}
+    .btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;border:none;border-radius:10px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;transition:.25s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(45,152,253,.35);}
+    .btn-primary:disabled{opacity:.65;pointer-events:none;}
+    .spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+    .btn-google{width:100%;padding:11px;background:#fff;color:#3c4043;border:1.5px solid var(--border);border-radius:10px;font-family:'Open Sans',sans-serif;font-weight:600;font-size:.87rem;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:2px;}
+    .btn-google:hover{background:#f8fafc;border-color:var(--orange);box-shadow:0 2px 8px rgba(99,102,241,.1);}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .divider{text-align:center;position:relative;margin:18px 0 12px;}
+    .divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border);}
+    .divider span{background:var(--card);padding:0 12px;font-size:.7rem;font-weight:600;color:var(--muted);position:relative;}
+    .switch-text{font-size:.78rem;text-align:center;color:var(--muted);margin-top:14px;}
+    .switch-text a{color:var(--orange);font-weight:700;cursor:pointer;}
+    .switch-text a:hover{text-decoration:underline;}
+    .team-code-badge{background:linear-gradient(135deg,var(--orange),var(--orange2));border-radius:10px;padding:14px 16px;margin-bottom:14px;display:none;}
+    .team-code-badge .label{font-size:.7rem;color:rgba(255,255,255,.7);font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+    .team-code-badge .code{font-family:'Montserrat',sans-serif;font-size:1.5rem;font-weight:900;color:#fff;letter-spacing:3px;}
+    .team-code-badge .hint{font-size:.72rem;color:rgba(255,255,255,.75);margin-top:4px;}
+    .reset-section{display:none;}
+    .back-link{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;color:var(--orange);font-weight:600;cursor:pointer;margin-bottom:16px;}
+    .back-link:hover{opacity:.75;}
+    .dark-toggle{position:fixed;bottom:20px;right:20px;width:38px;height:38px;border-radius:50%;background:var(--navy);color:var(--bg);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.12);transition:.3s;z-index:10;}
+    .dark-toggle:hover{transform:scale(1.08);}
+  </style>
+</head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="login-card">
+  <div class="brand">
+    <img src="../../assets/images/cymansquare_logo.svg" alt="CMS" style="width:38px;height:38px;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none';document.getElementById('brandFallback').style.display='flex'">
+    <div id="brandFallback" style="display:none;width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#2d98fd,#60b8ff);align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#fff;box-shadow:0 4px 14px rgba(45,152,253,.35);flex-shrink:0;">CMS</div>
+    <div>
+      <div class="brand-name" style="font-family:'Akaya Kanadaka',cursive;font-size:18px;letter-spacing:.5px;">CyManSquare</div>
+      <div class="brand-sub">TEAM REPORT BUILDER</div>
+    </div>
+  </div>
+
+  <div id="loginSection">
+    <div class="tabs">
+      <button class="tab active" id="tabLogin" onclick="setMode('login')">Sign In</button>
+      <button class="tab" id="tabRegister" onclick="setMode('register')">Register</button>
+    </div>
+
+    <h2 class="form-title" id="formTitle">Welcome back</h2>
+    <p class="form-sub" id="formSub">Sign in to access your team report.</p>
+
+    <div class="msg-banner" id="msgBox"></div>
+    <div class="team-code-badge" id="newTeamBadge">
+      <div class="label">Your Team Code — share with teammates</div>
+      <div class="code" id="newTeamCode">——</div>
+      <div class="hint">They enter this code when registering to join your team.</div>
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <div class="input-row">
+        <i class="bi bi-envelope"></i>
+        <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <div class="input-row">
+        <i class="bi bi-lock"></i>
+        <input type="password" id="passInput" placeholder="••••••••" autocomplete="current-password">
+        <button class="eye-btn" id="eyeBtn" type="button">
+          <i class="bi bi-eye-slash" id="eyeIcon"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="registerFields" style="display:none;">
+      <div class="field">
+        <label>Your Name / Role</label>
+        <div class="input-row">
+          <i class="bi bi-person"></i>
+          <input type="text" id="nameInput" placeholder="e.g. Alex / Project Lead">
+        </div>
+      </div>
+      <div class="field">
+        <label>Team Name <span style="font-weight:400;text-transform:none;letter-spacing:0;">(if creating new team)</span></label>
+        <div class="input-row">
+          <i class="bi bi-building"></i>
+          <input type="text" id="teamNameInput" placeholder="e.g. Studio Alpha — leave blank if joining">
+        </div>
+      </div>
+      <div class="field">
+        <label>Team Code <span style="font-weight:400;text-transform:none;letter-spacing:0;">(to join existing team)</span></label>
+        <div class="input-row">
+          <i class="bi bi-people"></i>
+          <input type="text" id="teamCodeInput" placeholder="e.g. X7KP2Q — leave blank to create new team"
+            oninput="this.value=this.value.toUpperCase();checkTeamCode(this.value)" autocomplete="off">
+        </div>
+        <div class="team-code-hint" id="teamCodeHint">Leave blank → a new team will be created for you.</div>
+        <div class="team-code-found" id="teamCodeFound">✓ Team found! You will join this team.</div>
+      </div>
+    </div>
+
+    <span class="forgot" id="forgotLink">Forgot password?</span>
+
+    <button class="btn-primary" id="submitBtn" onclick="submitForm()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnLabel">Sign In</span>
+      <i class="bi bi-arrow-right"></i>
+    </button>
+
+    <div class="divider"><span>or</span></div>
+    <button class="btn-google" id="googleBtn" onclick="signInGoogle()">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+    <p class="switch-text" id="switchText">
+      Don't have an account? <a onclick="setMode('register')">Register</a>
+    </p>
+  </div>
+
+  <div class="reset-section" id="resetSection">
+    <span class="back-link" id="backToLogin"><i class="bi bi-arrow-left"></i> Back to Sign In</span>
+    <h2 class="form-title">Reset Password</h2>
+    <p class="form-sub">Enter your email — we'll send a reset link.</p>
+    <div class="msg-banner" id="resetMsg"></div>
+    <div class="field">
+      <label>Email</label>
+      <div class="input-row">
+        <i class="bi bi-envelope"></i>
+        <input type="email" id="resetEmail" placeholder="you@example.com">
+      </div>
+    </div>
+    <button class="btn-primary" id="resetBtn" onclick="sendReset()">
+      <div class="spinner" id="resetSpinner"></div>
+      <span>Send Reset Email</span>
+      <i class="bi bi-send"></i>
+    </button>
+  </div>
+</div>
+
+<button class="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">
+  <i id="darkIcon" class="bi bi-moon-fill"></i>
+</button>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<script>
+  // ── PASTE YOUR FIREBASE CONFIG HERE ──
+  if (!firebase.apps.length) {
+    firebase.initializeApp({
+      apiKey:            "AIzaSyDYwO0SAoHcg076PnCGMGaAmvHfwPl6-n4",
+      authDomain:        "project-management-man2.firebaseapp.com",
+      databaseURL:       "https://project-management-man2-default-rtdb.firebaseio.com",
+      projectId:         "project-management-man2",
+      storageBucket:     "project-management-man2.firebasestorage.app",
+      messagingSenderId: "731310432635",
+      appId:             "1:731310432635:web:d617c81ee9cd0122a49dde",
+      measurementId:     "G-NJFELXSRRP"
+    });
+  }
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  const REDIRECT = 'Team_Report_Builder.html';
+
+  auth.onAuthStateChanged(user => { if (user) window.location.href = REDIRECT; });
+
+  // Dark mode
+  function applyDark(on) {
+    document.documentElement.setAttribute('data-dark', on ? '1' : '0');
+    document.getElementById('darkIcon').className = on ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    localStorage.setItem('trDark', on ? '1' : '0');
+  }
+  function toggleDark() { applyDark(localStorage.getItem('trDark') !== '1'); }
+  applyDark(localStorage.getItem('trDark') === '1');
+
+  // Mode switch
+  let mode = 'login';
+  function setMode(m) {
+    mode = m;
+    const isLogin = m === 'login';
+    document.getElementById('tabLogin').classList.toggle('active', isLogin);
+    document.getElementById('tabRegister').classList.toggle('active', !isLogin);
+    document.getElementById('registerFields').style.display = isLogin ? 'none' : 'block';
+    document.getElementById('forgotLink').style.display = isLogin ? 'block' : 'none';
+    document.getElementById('formTitle').textContent = isLogin ? 'Welcome back' : 'Create account';
+    document.getElementById('formSub').textContent = isLogin
+      ? 'Sign in to access your team report.'
+      : 'Register to start or join a team.';
+    document.getElementById('btnLabel').textContent = isLogin ? 'Sign In' : 'Create Account';
+    document.getElementById('switchText').innerHTML = isLogin
+      ? "Don't have an account? <a onclick=\"setMode('register')\">Register</a>"
+      : "Already have an account? <a onclick=\"setMode('login')\">Sign In</a>";
+    clearMsg();
+    document.getElementById('newTeamBadge').style.display = 'none';
+  }
+
+  // Team code live check
+  let teamCodeTimer = null;
+  async function checkTeamCode(val) {
+    const hint  = document.getElementById('teamCodeHint');
+    const found = document.getElementById('teamCodeFound');
+    if (!val || val.length < 4) {
+      hint.style.display = 'block'; hint.textContent = 'Leave blank → a new team will be created for you.';
+      found.style.display = 'none'; return;
+    }
+    clearTimeout(teamCodeTimer);
+    teamCodeTimer = setTimeout(async () => {
+      try {
+        const snap = await db.collection('teams').where('code','==',val).limit(1).get();
+        if (!snap.empty) {
+          hint.style.display  = 'none';
+          found.style.display = 'block';
+          found.textContent   = '✓ Team "' + snap.docs[0].data().name + '" found!';
+        } else {
+          hint.style.display  = 'block';
+          hint.textContent    = '⚠ No team found with this code.';
+          found.style.display = 'none';
+        }
+      } catch(e) {
+        hint.style.display = 'block';
+        hint.textContent = e.code === 'permission-denied' ? '⚠ Check Firestore rules (see below).' : '⚠ ' + e.message;
+      }
+    }, 600);
+  }
+
+  function showMsg(el, text, type) { el.textContent = text; el.className = 'msg-banner ' + type; }
+  function clearMsg() {
+    document.getElementById('msgBox').className = 'msg-banner';
+    document.getElementById('newTeamBadge').style.display = 'none';
+  }
+
+  const FRIENDLY = {
+    'auth/user-not-found':       'No account found with this email.',
+    'auth/wrong-password':       'Incorrect password.',
+    'auth/invalid-email':        'Invalid email address.',
+    'auth/email-already-in-use':'An account already exists with this email.',
+    'auth/weak-password':        'Password must be at least 6 characters.',
+    'auth/too-many-requests':    'Too many attempts. Please wait a moment.',
+    'auth/invalid-credential':   'Incorrect email or password.',
+    'auth/network-request-failed':'Network error. Check your connection.',
+  };
+
+  async function submitForm() {
+    const msg      = document.getElementById('msgBox');
+    const btn      = document.getElementById('submitBtn');
+    const spinner  = document.getElementById('spinner');
+    const email    = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passInput').value;
+    if (!email || !password) { showMsg(msg,'⚠ Please enter email and password.','error'); return; }
+    btn.disabled = true; spinner.style.display = 'block'; clearMsg();
+
+    try {
+      if (mode === 'login') {
+        await auth.signInWithEmailAndPassword(email, password);
+        // onAuthStateChanged will redirect
+
+      } else {
+        // REGISTER
+        const name      = document.getElementById('nameInput').value.trim();
+        const teamCode  = document.getElementById('teamCodeInput').value.trim().toUpperCase();
+        const teamNameInput = document.getElementById('teamNameInput').value.trim();
+        if (!name) { showMsg(msg,'⚠ Please enter your name.','error'); btn.disabled=false; spinner.style.display='none'; return; }
+
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        await cred.user.updateProfile({ displayName: name });
+
+        let teamId, teamName, isAdmin = false;
+
+        if (teamCode) {
+          // JOIN EXISTING TEAM
+          const snap = await db.collection('teams').where('code','==',teamCode).limit(1).get();
+          if (snap.empty) {
+            showMsg(msg,'⚠ Team code not found. Check with your admin.','error');
+            await cred.user.delete();
+            btn.disabled=false; spinner.style.display='none'; return;
+          }
+          teamId   = snap.docs[0].id;
+          teamName = snap.docs[0].data().name;
+          await db.collection('teams').doc(teamId).update({
+            members: firebase.firestore.FieldValue.arrayUnion(cred.user.uid)
+          });
+
+        } else {
+          // CREATE NEW TEAM
+          isAdmin  = true;
+          teamName = teamNameInput || (name + "'s Team");
+          teamId   = db.collection('teams').doc().id;
+          const newCode = Math.random().toString(36).substring(2,8).toUpperCase();
+          await db.collection('teams').doc(teamId).set({
+            name:      teamName,
+            code:      newCode,
+            createdBy: cred.user.uid,
+            members:   [cred.user.uid],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          document.getElementById('newTeamCode').textContent = newCode;
+          document.getElementById('newTeamBadge').style.display = 'block';
+        }
+
+        // Save user profile
+        await db.collection('users').doc(cred.user.uid).set({
+          name:      name,
+          email:     email,
+          teamId:    teamId,
+          teamName:  teamName,
+          role:      isAdmin ? 'admin' : 'member',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showMsg(msg, isAdmin
+          ? '✅ Team created! Note your team code above, then redirecting...'
+          : '✅ Joined "' + teamName + '"! Redirecting...', 'success');
+        setTimeout(() => window.location.href = REDIRECT, isAdmin ? 4000 : 1200);
+        return;
+      }
+    } catch(e) {
+      showMsg(msg, '⚠ ' + (FRIENDLY[e.code] || e.message), 'error');
+      btn.disabled = false; spinner.style.display = 'none';
+    }
+  }
+
+  document.getElementById('eyeBtn').onclick = () => {
+    const p = document.getElementById('passInput');
+    const i = document.getElementById('eyeIcon');
+    p.type = p.type === 'password' ? 'text' : 'password';
+    i.className = p.type === 'password' ? 'bi bi-eye-slash' : 'bi bi-eye';
+  };
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('loginSection').style.display !== 'none')
+      submitForm();
+  });
+
+  document.getElementById('forgotLink').onclick = () => {
+    const email = document.getElementById('emailInput').value;
+    document.getElementById('loginSection').style.display  = 'none';
+    document.getElementById('resetSection').style.display  = 'block';
+    if (email) document.getElementById('resetEmail').value = email;
+  };
+  document.getElementById('backToLogin').onclick = () => {
+    document.getElementById('resetSection').style.display = 'none';
+    document.getElementById('loginSection').style.display = 'block';
+  };
+  async function sendReset() {
+    const msg     = document.getElementById('resetMsg');
+    const email   = document.getElementById('resetEmail').value.trim();
+    const btn     = document.getElementById('resetBtn');
+    const spinner = document.getElementById('resetSpinner');
+    if (!email) { showMsg(msg,'⚠ Please enter your email.','error'); return; }
+    btn.disabled = true; spinner.style.display = 'block';
+    try {
+      await auth.sendPasswordResetEmail(email);
+      showMsg(msg,'📩 Reset email sent! Check your inbox.','success');
+    } catch(e) {
+      showMsg(msg,'⚠ ' + (FRIENDLY[e.code] || e.message),'error');
+    } finally {
+      btn.disabled = false; spinner.style.display = 'none';
+    }
+  }
+
+  // ── GOOGLE SIGN-IN ──
+  async function signInGoogle() {
+    const msg = document.getElementById('msgBox');
+    const btn = document.getElementById('googleBtn');
+    btn.disabled = true; btn.style.opacity = '.7'; clearMsg();
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const cred = await auth.signInWithPopup(provider);
+      const user = cred.user;
+      // Check if profile exists
+      const uSnap = await db.collection('users').doc(user.uid).get();
+      if (uSnap.exists) {
+        // Existing user — redirect (onAuthStateChanged will fire)
+        return;
+      }
+      // New Google user — show team setup
+      btn.disabled = false; btn.style.opacity = '1';
+      showGoogleSetup(user);
+    } catch(e) {
+      btn.disabled = false; btn.style.opacity = '1';
+      if (e.code !== 'auth/popup-closed-by-user')
+        showMsg(msg, '⚠ ' + (FRIENDLY[e.code] || e.message), 'error');
+    }
+  }
+
+  // After Google auth, if new user — show team setup overlay
+  function showGoogleSetup(user) {
+    const existing = document.getElementById('googleSetupOverlay');
+    if (existing) existing.remove();
+    const ov = document.createElement('div');
+    ov.id = 'googleSetupOverlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:200;display:flex;align-items:center;justify-content:center;';
+    ov.innerHTML = `
+      <div style="background:#fff;border-radius:18px;width:min(400px,92vw);padding:28px 26px;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange2));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:15px;">${(user.displayName||user.email||'?')[0].toUpperCase()}</div>
+          <div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:var(--navy);">Hello, ${user.displayName||'there'}!</div>
+            <div style="font-size:11px;color:var(--muted);">One more step to get started.</div>
+          </div>
+        </div>
+        <div id="gsMsg" style="display:none;padding:8px 12px;border-radius:7px;font-size:11.5px;font-weight:600;margin-bottom:12px;"></div>
+        <div style="margin-bottom:11px;">
+          <label style="display:block;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Team Name <span style="font-weight:400;text-transform:none;letter-spacing:0;">(leave blank to use default)</span></label>
+          <input id="gsTeamName" placeholder="e.g. Studio Alpha" style="width:100%;background:var(--input);border:1.5px solid transparent;border-radius:9px;padding:10px 13px;font-family:'Open Sans',sans-serif;font-size:12px;outline:none;color:var(--navy);" onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='transparent'" />
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Team Code <span style="font-weight:400;text-transform:none;letter-spacing:0;">(to join existing team — leave blank to create new)</span></label>
+          <input id="gsTeamCode" placeholder="e.g. X7KP2Q" style="width:100%;background:var(--input);border:1.5px solid transparent;border-radius:9px;padding:10px 13px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;outline:none;color:var(--navy);" onfocus="this.style.borderColor='var(--orange)'" onblur="this.style.borderColor='transparent'" oninput="this.value=this.value.toUpperCase()" />
+        </div>
+        <button onclick="finishGoogleSetup('${user.uid}','${user.displayName||user.email}','${user.email}')"
+          style="width:100%;padding:12px;background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;border:none;border-radius:9px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;">
+          Get Started →
+        </button>
+      </div>`;
+    document.body.appendChild(ov);
+  }
+
+  async function finishGoogleSetup(uid, displayName, email) {
+    const teamCodeVal = document.getElementById('gsTeamCode').value.trim().toUpperCase();
+    const teamNameVal = document.getElementById('gsTeamName').value.trim();
+    const gsMsg = document.getElementById('gsMsg');
+    gsMsg.style.display = 'none';
+    let teamId, teamName, role;
+    try {
+      if (teamCodeVal) {
+        const snap = await db.collection('teams').where('code','==',teamCodeVal).limit(1).get();
+        if (snap.empty) {
+          gsMsg.textContent = '⚠ Team code not found.';
+          gsMsg.style.background = '#fef2f2'; gsMsg.style.color = 'var(--red)';
+          gsMsg.style.display = 'block'; return;
+        }
+        teamId = snap.docs[0].id; teamName = snap.docs[0].data().name; role = 'member';
+        await db.collection('teams').doc(teamId).update({ members: firebase.firestore.FieldValue.arrayUnion(uid) });
+      } else {
+        role = 'admin';
+        teamName = teamNameVal || (displayName.split(' ')[0] + "'s Team");
+        teamId = db.collection('teams').doc().id;
+        const newCode = Math.random().toString(36).substring(2,8).toUpperCase();
+        await db.collection('teams').doc(teamId).set({ name:teamName, code:newCode, createdBy:uid, members:[uid], createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+      }
+      await db.collection('users').doc(uid).set({ name:displayName, email:email, teamId, teamName, role, createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+      window.location.href = REDIRECT;
+    } catch(e) {
+      gsMsg.textContent = '⚠ ' + e.message;
+      gsMsg.style.background = '#fef2f2'; gsMsg.style.color = 'var(--red)';
+      gsMsg.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>
