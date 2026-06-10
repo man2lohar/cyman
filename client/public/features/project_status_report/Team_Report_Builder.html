@@ -168,7 +168,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
 .kh-list{list-style:none;display:flex;flex-direction:column;gap:4px;}
 .kh-item{display:flex;align-items:flex-start;gap:5px;}
 .kh-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;color:#fff;}
-.kh-input{background:transparent;border:none;color:rgba(255,255,255,.78);font-family:'Open Sans',sans-serif;font-size:10.5px;line-height:1.35;outline:none;width:100%;resize:none;field-sizing:content;}
+.kh-input{background:transparent;border:none;color:rgba(255,255,255,.78);font-family:'Open Sans',sans-serif;font-size:10.5px;line-height:1.35;outline:none;width:100%;resize:none;height:auto;overflow:hidden;}
 .kh-del{background:transparent;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:12px;padding:0 2px;opacity:0;transition:opacity .15s;}
 .kh-item:hover .kh-del{opacity:1;}
 .kh-del:hover{color:#f07070;}
@@ -185,7 +185,7 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
 .irow.s-released{border-left-color:var(--blue);background:var(--blue-bg);}
 .irow-icon{width:16px;height:16px;border-radius:50%;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:8px;color:#fff;font-weight:900;transition:transform .15s;}
 .irow-icon:hover{transform:scale(1.3);}
-.irow-text{flex:1;background:transparent;border:none;color:var(--text2);font-family:'Open Sans',sans-serif;font-size:11.5px;outline:none;resize:none;min-height:16px;field-sizing:content;line-height:1.3;padding:1px 0;}
+.irow-text{flex:1;background:transparent;border:none;color:var(--text2);font-family:'Open Sans',sans-serif;font-size:11.5px;outline:none;resize:none;height:auto;overflow:hidden;min-height:16px;line-height:1.3;padding:1px 0;}
 .irow-del{background:transparent;border:none;color:var(--border);cursor:pointer;font-size:12px;padding:0 2px;opacity:0;transition:opacity .15s;}
 .irow:hover .irow-del{opacity:1;}
 .irow-del:hover{color:var(--red);}
@@ -204,14 +204,14 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
 .photo-date-lbl{font-size:9.5px;color:var(--muted);text-align:center;}
 .photo-add-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;aspect-ratio:4/3;border:2px dashed var(--border);border-radius:7px;cursor:pointer;background:transparent;color:var(--muted);font-family:'Open Sans',sans-serif;font-size:10.5px;transition:all .15s;}
 .photo-add-card:hover{border-color:var(--gold);color:var(--gold);}
-.notes-ta{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-family:'Open Sans',sans-serif;font-size:12px;padding:8px 10px;outline:none;resize:vertical;min-height:60px;field-sizing:content;transition:border-color .15s;font-style:italic;}
+.notes-ta{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-family:'Open Sans',sans-serif;font-size:12px;padding:8px 10px;outline:none;resize:none;min-height:60px;height:auto;overflow:hidden;transition:border-color .15s;font-style:italic;}
 .notes-ta:focus{border-color:var(--gold);color:var(--text2);font-style:normal;}
 .notes-ta::placeholder{color:var(--border);}
 .targets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:7px;}
 .target-card{background:#fff;border:1px solid var(--border2);border-radius:8px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;position:relative;}
 .target-icon-btn{width:34px;height:34px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;border:none;transition:background .15s;flex-shrink:0;}
 .target-icon-btn:hover{background:var(--navy3);}
-.target-text-input{background:transparent;border:none;color:var(--text);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;outline:none;resize:none;text-align:center;line-height:1.4;field-sizing:content;width:100%;}
+.target-text-input{background:transparent;border:none;color:var(--text);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;outline:none;resize:none;text-align:center;line-height:1.4;height:auto;overflow:hidden;width:100%;}
 .target-del{position:absolute;top:3px;right:3px;background:transparent;border:none;color:var(--border);cursor:pointer;font-size:11px;opacity:0;transition:opacity .15s;}
 .target-card:hover .target-del{opacity:1;}
 .target-del:hover{color:var(--red);}
@@ -294,16 +294,18 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
   .sidebar,.sb-footer,.add-item-btn,.add-kh-btn,.add-target-btn,
   .irow-del,.kh-del,.card-remove-btn,.photo-ov,.photo-add-card,
   .pct-ctrl,.stage-arr,.overlay,.crop-bd,.target-del,.ip-btn,
-  .icon-picker,#userBar,[class*="btn"]{display:none!important;}
+  .icon-picker,#userBar,[class*="btn"],
+  .status-legend-row{display:none!important;}
 
   body,html{height:auto;background:#fff!important;font-size:11px;margin:0;padding:0;}
+  .cover{page-break-after:auto;break-after:auto;}
   .app{display:block;height:auto;background:#fff!important;}
   .main{overflow:visible;background:#fff!important;padding:0;margin:0;}
 
   /* Each project = new page */
   .proj-page{display:block!important;margin:0;padding:10px 14px;
     page-break-before:always;break-before:page;background:#fff!important;}
-  .proj-page:first-child{page-break-before:auto;break-before:auto;}
+  .proj-page:first-of-type{page-break-before:avoid;break-before:avoid;}
 
   /* ── COVER ── */
   .cover{background:#fff4e6!important;border-bottom:4px solid #e07b00!important;}
@@ -418,10 +420,111 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
   /* Input resets */
   input,textarea,select{border:none!important;outline:none!important;
     background:transparent!important;resize:none!important;-webkit-appearance:none;}
+
+  /* FIX 8: Proper page breaks */
+  .proj-page{page-break-before:always!important;break-before:page!important;}
+  .proj-page:first-child{page-break-before:auto!important;break-before:auto!important;}
+  .seg{break-inside:avoid!important;page-break-inside:avoid!important;}
+  .pg-body{break-inside:avoid!important;}
+  .pg-photos{break-inside:avoid!important;}
+  .pg-bottom-row{break-inside:avoid!important;}
+  .ph{break-inside:avoid!important;}
+  .sec-hd{border-bottom-width:0.5px!important;}
+  .psumm-row{border-bottom-width:0.5px!important;}
+  .seg{border-width:0.5px!important;}
+
+  /* FIX 2: Hide loading screen in print */
+  #ksLoadScreen,#ksConfirmModal{display:none!important;}
+
+  /* FIX 10: Hide search in print */
+  .sb-search{display:none!important;}
+
+  /* FIX 11: Hide status legend in print */
+  [style*="TAP DOT"]{display:none!important;}
 }
+
+/* ── Loading Screen ── */
+#ksLoadScreen{
+  position:fixed;inset:0;
+  background:var(--navy);
+  z-index:99999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity .5s,visibility .5s;
+  opacity:1;visibility:visible;
+}
+#ksLoadScreen.hide{opacity:0;visibility:hidden;pointer-events:none;}
+.ks-spinner{
+  width:44px;height:44px;
+  border:3px solid rgba(255,255,255,.1);
+  border-top-color:var(--gold2);
+  border-radius:50%;
+  animation:ksSpin .75s linear infinite;
+}
+@keyframes ksSpin{to{transform:rotate(360deg)}}
+.ks-load-txt{
+  font-family:'Montserrat',sans-serif;
+  font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(255,255,255,.4);
+}
+
+/* ── Confirm Modal ── */
+#ksConfirmModal{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:9000;
+  display:none;align-items:center;justify-content:center;
+}
+#ksConfirmModal.open{display:flex;}
+.ks-confirm-box{
+  background:#fff;border-radius:14px;
+  padding:28px 28px 20px;
+  max-width:340px;width:90%;
+  box-shadow:0 20px 60px rgba(0,0,0,.2);
+  animation:popIn .2s cubic-bezier(.175,.885,.32,1.275) both;
+}
+@keyframes popIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+.ks-confirm-title{font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.ks-confirm-msg{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:20px;}
+.ks-confirm-btns{display:flex;gap:8px;justify-content:flex-end;}
+.ks-confirm-cancel{padding:8px 16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.5px;cursor:pointer;color:var(--muted);}
+.ks-confirm-ok{padding:8px 16px;background:var(--red);border:none;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.5px;cursor:pointer;color:#fff;}
+.ks-confirm-ok.safe{background:var(--gold);}
+
+/* ── Sidebar search ── */
+.sb-search{
+  padding:7px 11px;margin:4px 10px 4px;
+  border-radius:7px;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.8);
+  font-family:'Open Sans',sans-serif;font-size:11px;
+  outline:none;transition:border-color .15s;
+  width:calc(100% - 20px);display:block;
+}
+.sb-search::placeholder{color:rgba(255,255,255,.25);}
+.sb-search:focus{border-color:rgba(45,152,253,.5);}
+
 </style>
 </head>
 <body>
+
+<!-- FIX 2: Loading Screen -->
+<div id="ksLoadScreen">
+  <div class="ks-spinner"></div>
+  <div class="ks-load-txt">Loading your workspace...</div>
+</div>
+<!-- FIX 4: Confirm Modal -->
+<div id="ksConfirmModal">
+  <div class="ks-confirm-box">
+    <div class="ks-confirm-title" id="ksConfTitle">Are you sure?</div>
+    <div class="ks-confirm-msg" id="ksConfMsg"></div>
+    <div class="ks-confirm-btns">
+      <button class="ks-confirm-cancel" onclick="ksConfResolve(false)">Cancel</button>
+      <button class="ks-confirm-ok" id="ksConfOkBtn" onclick="ksConfResolve(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <div class="app">
 
 <!-- SIDEBAR -->
@@ -438,12 +541,13 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
     </div>
   </div>
   <div class="sb-sec">Projects</div>
+  <input class="sb-search" id="sbSearch" placeholder="🔍 Search projects..." oninput="filterNav(this.value)" />
   <div id="sbNav"></div>
   <div class="sb-footer">
-    <button class="btn btn-gold" onclick="window.print()">⬇ Export PDF</button>
+    <button class="btn btn-gold" onclick="window.print()" title="Ctrl+P">⬇ Export PDF</button>
     <button class="btn btn-outline" onclick="showAll()">⊞ All Projects</button>
-    <button class="btn btn-outline" onclick="addProject()">＋ New Project</button>
-    <button class="btn btn-outline" onclick="openSettings()">⚙ Settings</button>
+    <button class="btn btn-outline" onclick="addProject()" title="Ctrl+N">＋ New Project</button>
+    <button class="btn btn-outline" onclick="openSettings()" title="Ctrl+,">⚙ Settings</button>
   </div>
 </aside>
 
@@ -513,6 +617,16 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
         </div>
       </div>
     </div>
+    <div style="background:var(--bg);border-top:1px solid var(--border2);padding:12px 18px;">
+      <div style="font-family:'Montserrat',sans-serif;font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">⌨ Keyboard Shortcuts</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 12px;">
+        <div style="font-size:11px;color:var(--muted);"><kbd style="background:var(--border2);padding:1px 6px;border-radius:3px;font-size:9px;border:1px solid var(--border);">Ctrl+P</kbd>&nbsp; Export PDF</div>
+        <div style="font-size:11px;color:var(--muted);"><kbd style="background:var(--border2);padding:1px 6px;border-radius:3px;font-size:9px;border:1px solid var(--border);">Ctrl+N</kbd>&nbsp; New Project</div>
+        <div style="font-size:11px;color:var(--muted);"><kbd style="background:var(--border2);padding:1px 6px;border-radius:3px;font-size:9px;border:1px solid var(--border);">Ctrl+,</kbd>&nbsp; Settings</div>
+        <div style="font-size:11px;color:var(--muted);"><kbd style="background:var(--border2);padding:1px 6px;border-radius:3px;font-size:9px;border:1px solid var(--border);">Ctrl+F</kbd>&nbsp; Search</div>
+        <div style="font-size:11px;color:var(--muted);"><kbd style="background:var(--border2);padding:1px 6px;border-radius:3px;font-size:9px;border:1px solid var(--border);">Esc</kbd>&nbsp; Close modal</div>
+      </div>
+    </div>
     <div class="panel-ft">
       <button style="background:var(--bg);border:1px solid var(--border);color:var(--muted);padding:6px 13px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:.8px;border-radius:6px;cursor:pointer;" onclick="closeSettings()">Cancel</button>
       <button class="btn-apply" onclick="applySettings()">Apply Settings</button>
@@ -558,8 +672,16 @@ body{background:var(--bg);font-family:'Open Sans',sans-serif;font-size:13px;colo
           <button class="cc-btn" onclick="document.getElementById('fileIn').click()">↑ Change</button>
         </div>
         <div class="cap-wrap">
-          <div class="cap-lbl">Caption</div>
-          <input class="cap-input" id="capIn" placeholder="e.g. Exterior View · Jun-2026" />
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;">
+            <div>
+              <div class="cap-lbl">Caption</div>
+              <input class="cap-input" id="capIn" placeholder="e.g. Exterior View" />
+            </div>
+            <div>
+              <div class="cap-lbl">Date</div>
+              <input class="cap-input" type="date" id="capDate" style="width:150px;" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -649,15 +771,36 @@ function calcPct(p){
 function renderNav(){
   const nav=document.getElementById('sbNav');
   if(!D.length){nav.innerHTML='<div style="padding:12px 16px;font-size:10.5px;color:rgba(255,255,255,.25);font-style:italic;">No projects yet.</div>';return;}
-  nav.innerHTML=D.map(p=>{
+  nav.innerHTML=D.map((p,idx)=>{
     const sc=SC[p.status]||SC.ongoing;
-    return `<button class="sb-item ${active===p.id?'active':''}" onclick="showProject(${p.id})">
-      <span class="sb-num">${String(p.id).padStart(2,'0')}</span>
-      <span class="sb-dot" style="background:${sc.dot}"></span>
-      <span class="sb-name">${p.name}</span>
-      <span class="sb-pct">${calcPct(p)}%</span>
-    </button>`;
+    return `<div class="sb-item-wrap" style="position:relative;display:flex;align-items:stretch;">
+      <button class="sb-item ${active===p.id?'active':''}" style="flex:1;" onclick="showProject(${p.id})">
+        <span class="sb-num">${String(p.id).padStart(2,'0')}</span>
+        <span class="sb-dot" style="background:${sc.dot}"></span>
+        <span class="sb-name">${p.name}</span>
+        <span class="sb-pct sb-pct-${p.id}">${calcPct(p)}%</span>
+      </button>
+      <div class="sb-item-actions" id="sba-${p.id}" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);display:none;gap:1px;align-items:center;background:rgba(26,18,0,.95);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:2px 3px;">
+        ${idx>0?`<button title="Move up" onclick="moveProject(${p.id},-1);event.stopPropagation();" style="background:transparent;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:10px;padding:1px 3px;line-height:1;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.4)'">▲</button>`:''}
+        ${idx<D.length-1?`<button title="Move down" onclick="moveProject(${p.id},1);event.stopPropagation();" style="background:transparent;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:10px;padding:1px 3px;line-height:1;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.4)'">▼</button>`:''}
+        <button title="Duplicate" onclick="duplicateProject(${p.id});event.stopPropagation();" style="background:transparent;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:9px;padding:1px 3px;line-height:1;" onmouseover="this.style.color='var(--gold2)'" onmouseout="this.style.color='rgba(255,255,255,.4)'">⧉</button>
+      </div>
+    </div>`;
   }).join('');
+  // Show action buttons on hover
+  nav.querySelectorAll('.sb-item-wrap').forEach(wrap=>{
+    const actions = wrap.querySelector('.sb-item-actions');
+    if(!actions) return;
+    const pctEl = wrap.querySelector('[class^="sb-pct"]');
+    wrap.addEventListener('mouseenter',()=>{
+      actions.style.display='flex';
+      if(pctEl) pctEl.style.visibility='hidden';
+    });
+    wrap.addEventListener('mouseleave',()=>{
+      actions.style.display='none';
+      if(pctEl) pctEl.style.visibility='visible';
+    });
+  });
 }
 
 function renderSummary(){
@@ -695,6 +838,7 @@ function renderSummary(){
 
 function renderPages(){
   const area=document.getElementById('pagesArea');
+  setTimeout(initTextareaGrow,80);
   if(!D.length){
     area.innerHTML=`<div class="empty-state">
       <div class="empty-icon">📋</div>
@@ -725,7 +869,7 @@ function buildPage(p){
   const khRows=(p.kh||[]).map((k,i)=>`
     <li class="kh-item">
       <span class="kh-dot" style="background:${sc.dot}">${sc.icon}</span>
-      <textarea class="kh-input" rows="1" oninput="updateKH(${p.id},${i},this.value)">${k.t}</textarea>
+      <textarea class="kh-input" rows="1" oninput="updateKH(${p.id},${i},this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px';">${k.t}</textarea>
       <button class="kh-del" onclick="delKH(${p.id},${i})">×</button>
     </li>`).join('');
   const cols=G.photoCols;
@@ -747,7 +891,7 @@ function buildPage(p){
       <div class="icon-picker" id="ip-${p.id}-${i}">
         ${ALL_ICONS.map(ic=>`<button class="ip-btn" onclick="pickIcon(${p.id},${i},'${ic}')">${ic}</button>`).join('')}
       </div>
-      <textarea class="target-text-input" rows="2" oninput="updateTarget(${p.id},${i},this.value)">${t.text}</textarea>
+      <textarea class="target-text-input" rows="2" oninput="updateTarget(${p.id},${i},this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px';">${t.text}</textarea>
       <button class="target-del" onclick="delTarget(${p.id},${i})">×</button>
     </div>`).join('');
   const isO=p.pctO!==null&&p.pctO!==undefined;
@@ -837,12 +981,15 @@ function buildPage(p){
           </div>
         </div>
         <div class="stage-info-sub" id="stageDesc-${p.id}">${sg.d}</div>
-        <button class="card-remove-btn" onclick="removeProject(${p.id})" title="Delete project" style="margin-top:4px;">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
-          </svg>
-          <span style="margin-left:4px;">Delete This Project</span>
-        </button>
+        <button class="card-remove-btn" onclick="removeProject(${p.id})" title="Delete project"
+  style="margin-top:6px;display:flex;align-items:center;gap:5px;background:transparent;border:1px solid rgba(255,100,100,.25);border-radius:6px;color:rgba(255,120,120,.45);cursor:pointer;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:.5px;padding:4px 9px;transition:all .15s;"
+  onmouseover="this.style.color='#f07070';this.style.borderColor='rgba(255,100,100,.6)';this.style.background='rgba(255,80,80,.08)'"
+  onmouseout="this.style.color='rgba(255,120,120,.45)';this.style.borderColor='rgba(255,100,100,.25)';this.style.background='transparent'">
+  <svg width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+  </svg>
+  Delete This Project
+</button>
       </div>
     </div>
   </div>
@@ -934,6 +1081,13 @@ function buildPage(p){
       </div><div class="sec-hd-title">Site Works Status</div></div>
       <ul class="item-list">${siteRows||'<li style="color:var(--muted);font-size:11px;padding:4px 0;font-style:italic;">No site items yet.</li>'}</ul>
       <button class="add-item-btn" onclick="addItem(${p.id},'site')">＋ Add item</button>
+      <div class="status-legend-row" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:5px;font-size:9.5px;">
+        <span style="color:var(--muted);font-family:'Montserrat',sans-serif;font-size:8px;letter-spacing:.5px;">TAP DOT TO CHANGE:</span>
+        <span style="color:var(--green);">● Done</span>
+        <span style="color:var(--amber);">● Ongoing</span>
+        <span style="color:var(--red);">● Pending</span>
+        <span style="color:var(--blue);">● Released</span>
+      </div>
     </div>
     <div class="seg">
       <div class="sec-hd"><div class="sec-hd-icon">
@@ -1001,7 +1155,7 @@ function buildPage(p){
           <circle cx="15" cy="11" r="1" fill="white"/>
         </svg>
       </div><div class="sec-hd-title">Notes / Remarks</div></div>
-      <textarea class="notes-ta" placeholder="Add remarks, highlights, or next steps..." oninput="updateF(${p.id},'notes',this.value)">${p.notes||''}</textarea>
+      <textarea class="notes-ta" placeholder="Add remarks, highlights, or next steps..." oninput="updateF(${p.id},'notes',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px';">${p.notes||''}</textarea>
     </div>
     <div class="seg seg-gold">
       <div class="sec-hd sec-hd-gold"><div class="sec-hd-icon">
@@ -1046,8 +1200,8 @@ function buildPage(p){
 function irow(pid,key,item,idx){
   const sc=SC[item.s]||SC.pending;
   return `<li class="irow s-${item.s}">
-    <span class="irow-icon" style="background:${sc.dot}" onclick="cycleStatus(${pid},'${key}',${idx})">${sc.icon}</span>
-    <textarea class="irow-text" rows="1" oninput="updateItem(${pid},'${key}',${idx},this.value)">${item.t}</textarea>
+    <span class="irow-icon" style="background:${sc.dot}" onclick="cycleStatus(${pid},'${key}',${idx})" title="Click to change status: done → ongoing → pending → released">${sc.icon}</span>
+    <textarea class="irow-text" rows="1" oninput="updateItem(${pid},'${key}',${idx},this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px';">${item.t}</textarea>
     <button class="irow-del" onclick="delItem(${pid},'${key}',${idx})">×</button>
   </li>`;
 }
@@ -1060,7 +1214,7 @@ function showProject(id){
   const c=document.getElementById('page-'+id); if(c) c.classList.add('visible');
   renderNav();
 }
-function showAll(){active=null;document.getElementById('mainEl').classList.add('all-visible');renderNav();}
+function showAll(){active=null;document.getElementById('mainEl').classList.add('all-visible');renderNav();document.title='All Projects — CyMan² Report';}
 
 // DATA UPDATES
 function updateF(id,f,v){const p=D.find(x=>x.id===id);if(p)p[f]=v;}
@@ -1120,9 +1274,10 @@ function renderStageManager(){
     </div>`).join('');
 }
 function settAddStageRow(){STAGES.push({k:'S_'+Date.now(),l:'New Stage',d:'Description'});renderStageManager();rebuildAllStageDds();}
-function settDeleteStage(k){
-  if(STAGES.length<=1){alert('Cannot remove the last stage.');return;}
-  if(!confirm('Remove this stage?'))return;
+async function settDeleteStage(k){
+  if(STAGES.length<=1){await showKsAlert('Cannot Remove','At least one stage must remain.');return;}
+  const ok=await ksConfirm('Remove Stage','Are you sure you want to remove this stage? Projects using it will be moved to the first stage.','Remove',false);
+  if(!ok)return;
   STAGES=STAGES.filter(s=>s.k!==k);
   D.forEach(p=>{if(p.stage===k)p.stage=STAGES[0].k;});
   renderStageManager();rebuildAllStageDds();
@@ -1278,7 +1433,16 @@ function openModal(pid,idx){
   document.getElementById('fileIn').value='';
   imgSrc=null;cX=0;cY=0;cZ=1;cR=0;
   const p=D.find(x=>x.id===pid);
-  if(idx!==null&&p&&p.photos[idx]){const ph=p.photos[idx];loadImg(ph.src,ph.cap||'');cX=ph.cX||0;cY=ph.cY||0;cZ=ph.cZ||1;cR=ph.cR||0;}
+  if(idx!==null&&p&&p.photos[idx]){
+    const ph=p.photos[idx];loadImg(ph.src,ph.cap||'');
+    cX=ph.cX||0;cY=ph.cY||0;cZ=ph.cZ||1;cR=ph.cR||0;
+    // FIX 9: restore saved date when editing
+    const cdEl2=document.getElementById('capDate');
+    if(cdEl2&&ph.date){
+      try{const parts=ph.date.split('-');if(parts.length===3){const months={'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'};cdEl2.value=parts[2]+'-'+(months[parts[1]]||parts[1])+'-'+parts[0].padStart(2,'0');}}catch(e){}
+    }
+  }
+  const cdEl=document.getElementById('capDate');if(cdEl)cdEl.value=new Date().toISOString().slice(0,10);
   document.getElementById('cropModal').classList.add('open');
 }
 function closeModal(){document.getElementById('cropModal').classList.remove('open');}
@@ -1316,13 +1480,265 @@ function savePhoto(){
     ctx.save();ctx.translate(sw/2+cX,sh/2+cY);ctx.rotate(cR*Math.PI/180);ctx.scale(cZ,cZ);ctx.drawImage(ni,-ni.naturalWidth/2,-ni.naturalHeight/2);ctx.restore();
     const url=cv.toDataURL('image/jpeg',0.9);
     const cap=document.getElementById('capIn').value.trim();
+    const capDateVal=document.getElementById('capDate')?.value;
+    const capDateFmt=capDateVal ? new Date(capDateVal).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).replace(/ /g,'-') : today();
     const p=D.find(x=>x.id===cPid);if(!p)return;
-    const obj={src:url,cap,date:today(),cX,cY,cZ,cR};
+    const obj={src:url,cap,date:capDateFmt,cX,cY,cZ,cR};
     if(cIdx!==null&&p.photos[cIdx])p.photos[cIdx]=obj;else{if(!p.photos)p.photos=[];p.photos.push(obj);}
+    // Check doc size to warn if near Firestore 1MB limit
+    const {_fsId:_ign,...pClean}=p;
+    const docSize=JSON.stringify({...pClean,photos:[...p.photos]}).length;
+    const LIMIT=900000;
+    if(docSize>LIMIT){
+      // remove the photo we just added since it exceeds limit
+      if(cIdx!==null&&p.photos[cIdx])p.photos[cIdx]=p.photos[cIdx];
+      else p.photos.pop();
+      showKsAlert("⚠️ Photo limit reached","This project is near Firestore 1MB limit. Remove older photos before adding more. Use smaller images.");
+      closeModal(); return;
+    }
     closeModal();refresh(cPid);
   };ni.src=imgSrc;
 }
 function delPhoto(pid,idx){const p=D.find(x=>x.id===pid);if(!p)return;p.photos.splice(idx,1);refresh(pid);}
+
+// Expose key functions to window scope so inline HTML onclick works reliably
+window.showAll        = showAll;
+window.addProject     = addProject;
+window.openSettings   = openSettings;
+window.onTeamInput    = onTeamInput;
+window.onByInput      = onByInput;
+window.onPeriodInput  = onPeriodInput;
+window.showProject    = showProject;
+window.filterNav      = filterNav;
+window.setStatus      = setStatus;
+window.setStage       = setStage;
+window.toggleStageDd  = toggleStageDd;
+window.cycleStatus    = cycleStatus;
+window.addItem        = addItem;
+window.delItem        = delItem;
+window.addKH          = addKH;
+window.delKH          = delKH;
+window.addTarget      = addTarget;
+window.delTarget      = delTarget;
+window.toggleIconPicker = toggleIconPicker;
+window.pickIcon       = pickIcon;
+window.updateF        = updateF;
+window.updateNameFull = updateNameFull;
+window.updateNameOnly = updateNameOnly;
+window.updateItem     = updateItem;
+window.updateKH       = updateKH;
+window.updateTarget   = updateTarget;
+window.duplicateProject = duplicateProject;
+window.moveProject    = moveProject;
+window.openModal      = openModal;
+window.closeModal     = closeModal;
+window.setZ           = setZ;
+window.resetCrop      = resetCrop;
+window.rotCrop        = rotCrop;
+window.dStart         = dStart;
+window.dMove          = dMove;
+window.dEnd           = dEnd;
+window.tStart         = tStart;
+window.tMove          = tMove;
+window.wZoom          = wZoom;
+window.savePhoto      = savePhoto;
+window.delPhoto       = delPhoto;
+window.removeProject  = removeProject;
+window.settDeleteStage = settDeleteStage;
+window.settAddStageRow = settAddStageRow;
+window.renderStageManager = renderStageManager;
+window.addNewStage    = addNewStage;
+window.toggleAddStageForm = toggleAddStageForm;
+window.ksConfirm      = ksConfirm;
+window.showKsAlert    = showKsAlert;
+window.applySettings  = applySettings;
+window.closeSettings  = closeSettings;
+window.initTextareaGrow = initTextareaGrow;
+
+// ═══════════════════════════════════════════════════════
+// FIX 4: Custom confirm dialog (replaces browser confirm())
+// ═══════════════════════════════════════════════════════
+window.ksConfResolve = null;
+function ksConfirm(title, msg, okLabel='Delete', safe=false){
+  return new Promise(resolve => {
+    window.ksConfResolve = v => {
+      document.getElementById('ksConfirmModal').classList.remove('open');
+      resolve(v);
+    };
+    document.getElementById('ksConfTitle').textContent = title;
+    document.getElementById('ksConfMsg').textContent = msg;
+    const btn = document.getElementById('ksConfOkBtn');
+    btn.textContent = okLabel;
+    btn.className = 'ks-confirm-ok' + (safe?' safe':'');
+    document.getElementById('ksConfirmModal').classList.add('open');
+  });
+}
+
+
+// FIX 4 helper: non-blocking alert
+function showKsAlert(title, msg){
+  return new Promise(resolve=>{
+    window.ksConfResolve = v=>{ document.getElementById('ksConfirmModal').classList.remove('open'); resolve(v); };
+    document.getElementById('ksConfTitle').textContent = title;
+    document.getElementById('ksConfMsg').textContent = msg;
+    const btn = document.getElementById('ksConfOkBtn');
+    btn.textContent = 'OK';
+    btn.className = 'ks-confirm-ok safe';
+    document.getElementById('ksConfirmModal').querySelector('.ks-confirm-cancel').style.display='none';
+    document.getElementById('ksConfirmModal').classList.add('open');
+  }).then(()=>{
+    document.getElementById('ksConfirmModal').querySelector('.ks-confirm-cancel').style.display='';
+  });
+}
+// ═══════════════════════════════════════════════════════
+// FIX 4: Override removeProject to use custom confirm
+// ═══════════════════════════════════════════════════════
+async function removeProject(id){
+  const p = D.find(x=>x.id===id);
+  const ok = await ksConfirm(
+    'Remove Project',
+    `Are you sure you want to remove "${p?.name||'this project'}"? This cannot be undone.`,
+    'Remove', false
+  );
+  if(!ok) return;
+  const i=D.findIndex(x=>x.id===id); if(i>-1) D.splice(i,1);
+  document.getElementById('page-'+id)?.remove();
+  if(active===id){active=D[0]?.id||null; if(active) showProject(active); else renderPages();}
+  renderNav(); renderSummary();
+  if(window._deleteProjectFS) window._deleteProjectFS(id);
+}
+
+// ═══════════════════════════════════════════════════════
+// FIX 5: Project reorder — move up/down
+// ═══════════════════════════════════════════════════════
+function moveProject(id, dir){
+  const i = D.findIndex(x=>x.id===id);
+  if(i<0) return;
+  const swapI = i + dir;
+  if(swapI<0||swapI>=D.length) return;
+  [D[i],D[swapI]] = [D[swapI],D[i]];
+  renderNav();
+  // Save new order to Firestore
+  if(window._saveProjectFS){ window._saveProjectFS(D[i].id); window._saveProjectFS(D[swapI].id); }
+}
+
+// ═══════════════════════════════════════════════════════
+// FIX 6: Duplicate project
+// ═══════════════════════════════════════════════════════
+function duplicateProject(id){
+  const p = D.find(x=>x.id===id);
+  if(!p) return;
+  counter++;
+  const clone = JSON.parse(JSON.stringify(p));
+  clone.id = counter;
+  clone.name = p.name + ' (Copy)';
+  clone.photos = []; // don't clone photos (too large)
+  D.push(clone);
+  renderNav(); renderSummary();
+  const area = document.getElementById('pagesArea');
+  const div = document.createElement('div');
+  div.innerHTML = buildPage(clone);
+  area.appendChild(div.firstElementChild);
+  showProject(counter);
+  if(window._saveProjectFS) window._saveProjectFS(counter);
+}
+
+// ═══════════════════════════════════════════════════════
+// FIX 10: Sidebar search/filter
+// ═══════════════════════════════════════════════════════
+function filterNav(q){
+  const search = q.toLowerCase().trim();
+  const items = document.querySelectorAll('#sbNav .sb-item');
+  items.forEach(btn=>{
+    const name = btn.querySelector('.sb-name')?.textContent.toLowerCase()||'';
+    btn.style.display = (!search || name.includes(search)) ? '' : 'none';
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// FIX 11: Item status tooltip already in HTML; add legend
+// ═══════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════
+// FIX 12: Firefox textarea auto-grow fallback
+// ═══════════════════════════════════════════════════════
+function initTextareaGrow(){
+  document.querySelectorAll('textarea').forEach(ta=>{
+    if(ta._growInit) return;
+    ta._growInit=true;
+    const grow=()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';};
+    ta.addEventListener('input',grow);
+    grow();
+  });
+}
+// Re-run after every page refresh
+const _origRefreshForGrow = window.refresh;
+window.refresh = function(pid){
+  if(_origRefreshForGrow) _origRefreshForGrow(pid);
+  setTimeout(initTextareaGrow,50);
+};
+document.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(initTextareaGrow, 100);
+  // Run again after Firebase loads data
+  setTimeout(initTextareaGrow, 2000);
+  setTimeout(initTextareaGrow, 4000);
+});
+
+// ═══════════════════════════════════════════════════════
+// FIX 13: Dynamic page title
+// ═══════════════════════════════════════════════════════
+const _origShowProject = window.showProject;
+window.showProject = function(id){
+  if(_origShowProject) _origShowProject(id);
+  else {
+    active=id;
+    document.querySelectorAll('.proj-page').forEach(c=>c.classList.remove('visible'));
+    document.getElementById('mainEl').classList.remove('all-visible');
+    const el=document.getElementById('page-'+id); if(el) el.classList.add('visible');
+    renderNav();
+  }
+  const p=D.find(x=>x.id===id);
+  if(p) document.title = (G.team) + ' — Projects Status Report';
+};
+function showProject(id){
+  active=id;
+  document.querySelectorAll('.proj-page').forEach(c=>c.classList.remove('visible'));
+  document.getElementById('mainEl').classList.remove('all-visible');
+  const el=document.getElementById('page-'+id); if(el) el.classList.add('visible');
+  renderNav();
+  const p=D.find(x=>x.id===id);
+  if(p) document.title = (G.team) + ' — Projects Status Report';
+}
+
+// ═══════════════════════════════════════════════════════
+// FIX 14: Keyboard shortcuts
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  // Escape closes any open modal
+  if(e.key==='Escape'){
+    document.querySelectorAll('.overlay.open,.crop-bd.open').forEach(m=>m.classList.remove('open'));
+    document.getElementById('ksConfirmModal')?.classList.remove('open');
+    return;
+  }
+  // Ctrl+P = Export PDF
+  if((e.ctrlKey||e.metaKey) && e.key==='p'){
+    e.preventDefault(); window.print(); return;
+  }
+  // Ctrl+N = New project
+  if((e.ctrlKey||e.metaKey) && e.key==='n'){
+    e.preventDefault(); addProject(); return;
+  }
+  // Ctrl+, = Settings
+  if((e.ctrlKey||e.metaKey) && e.key===','){
+    e.preventDefault(); openSettings(); return;
+  }
+  // Ctrl+F = Focus search
+  if((e.ctrlKey||e.metaKey) && e.key==='f'){
+    const s=document.getElementById('sbSearch');
+    if(s){e.preventDefault();s.focus();}
+    return;
+  }
+});
 </script>
 
 <!-- CHANGE TEAM MODAL -->
@@ -1418,6 +1834,7 @@ function delPhoto(pid,idx){const p=D.find(x=>x.id===pid);if(!p)return;p.photos.s
     if (!teamId) { alert('No team linked. Contact your admin.'); await auth.signOut(); return; }
     showUserBar(user);
     await loadGlobalSettings();
+    startSettingsListener();
     startProjectListener();
   });
 
@@ -1573,6 +1990,7 @@ function delPhoto(pid,idx){const p=D.find(x=>x.id===pid);if(!p)return;p.photos.s
         if (d.slogan)    G.slogan = d.slogan;
         if (d.photoCols) G.photoCols = d.photoCols;
         if (d.stages && Array.isArray(d.stages) && d.stages.length) STAGES = d.stages;
+        if (d.rDate) { const el=document.getElementById('rDate'); if(el) el.value=d.rDate; }
       }
     } catch(e) { console.warn('Settings load:', e.message); }
   }
@@ -1584,6 +2002,7 @@ function delPhoto(pid,idx){const p=D.find(x=>x.id===pid);if(!p)return;p.photos.s
       await col('settings').doc('global').set({
         firm:G.firm, rtitle:G.rtitle, team:G.team, by:G.by, period:G.period,
         slogan:G.slogan, photoCols:G.photoCols, stages:STAGES,
+        rDate: document.getElementById('rDate')?.value||'',
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         updatedBy: currentUser.uid
       }, { merge: true });
@@ -1619,6 +2038,25 @@ function delPhoto(pid,idx){const p=D.find(x=>x.id===pid);if(!p)return;p.photos.s
     }
   };
 
+  // ── FIX 15: REAL-TIME SETTINGS LISTENER ──
+  function startSettingsListener(){
+    col('settings').doc('global').onSnapshot(snap=>{
+      if(!snap.exists) return;
+      const d=snap.data();
+      // Only apply if changed by another user (updatedBy !== currentUser.uid)
+      if(d.updatedBy && d.updatedBy===currentUser.uid) return;
+      if(d.team)      { G.team=d.team; setEl('globalTeam',d.team,'v'); document.querySelectorAll('.ph-team-val').forEach(e=>e.textContent=d.team); }
+      if(d.firm)      { G.firm=d.firm; setEl('globalFirmEl',d.firm,'t'); }
+      if(d.by)        { G.by=d.by;     setEl('globalBy',d.by,'v'); }
+      if(d.period)    { G.period=d.period; setEl('globalPeriod',d.period,'v'); }
+      if(d.slogan)    G.slogan=d.slogan;
+      if(d.photoCols) G.photoCols=d.photoCols;
+      if(d.stages && Array.isArray(d.stages) && d.stages.length) STAGES=d.stages;
+      if(d.rDate)     { const el=document.getElementById('rDate'); if(el) el.value=d.rDate; }
+      showToast('⚙ Settings updated by teammate');
+    },err=>console.warn('Settings listener:',err.message));
+  }
+
   // ── REAL-TIME PROJECT LISTENER (this team only) ──
   function startProjectListener() {
     // Sync teamName into cover if G.team is blank
@@ -1629,6 +2067,8 @@ function delPhoto(pid,idx){const p=D.find(x=>x.id===pid);if(!p)return;p.photos.s
       document.querySelectorAll('.pg-footer-logo').forEach(e => e.textContent = teamName.toUpperCase());
     }
     unsubProjects = col('projects').orderBy('order','asc').onSnapshot(snap => {
+      // FIX 2: Hide loading screen on first data
+      const ls=document.getElementById('ksLoadScreen');if(ls)ls.classList.add('hide');
       D.length = 0;
       snap.forEach(d => D.push({ _fsId: d.id, ...d.data() }));
       counter = Math.max(...D.map(p => (typeof p.id === 'number' ? p.id : 0)), 0);
@@ -1656,7 +2096,10 @@ function delPhoto(pid,idx){const p=D.find(x=>x.id===pid);if(!p)return;p.photos.s
         updatedBy: currentUser.uid
       }, { merge: true });
       showToast('💾 Saved');
-    } catch(e) { console.warn('Save failed:', e.message); }
+    } catch(e) {
+      showToast('⚠️ Save failed — check connection');
+      console.warn('Save failed:', e.message);
+    }
   };
 
   window._deleteProjectFS = async (pid) => {
