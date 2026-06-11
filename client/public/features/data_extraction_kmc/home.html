@@ -58,6 +58,9 @@
       opacity:0; transition:opacity .25s;
     }
     .type-card:hover { border-color:var(--orange); transform:translateY(-4px); box-shadow:0 16px 40px rgba(45,152,253,.15); }
+    #sanctionCard:hover    { border-color:#2d98fd; box-shadow:0 16px 40px rgba(45,152,253,.15); }
+    #completionCard:hover  { border-color:#16a34a; box-shadow:0 16px 40px rgba(22,163,74,.15); }
+    .type-card.check-card:hover { border-color:#8b5cf6; box-shadow:0 16px 40px rgba(139,92,246,.15); }
     .type-card:hover::before { opacity:1; }
     .type-card .tc-icon { font-size:2rem; margin-bottom:12px; }
     .type-card h3 { font-size:1rem; font-weight:800; letter-spacing:-.3px; margin-bottom:8px; color:var(--brown); }
@@ -82,7 +85,15 @@
     .sub-btn svg { flex-shrink:0; }
     .sub-btn .coming { font-size:.65rem; background:rgba(0,0,0,.06); color:var(--muted); padding:2px 7px; border-radius:100px; margin-left:auto; }
     .back-btn { background:none; border:none; cursor:pointer; font-size:.75rem; color:var(--muted); font-weight:600; padding:4px 0; display:flex; align-items:center; gap:4px; font-family:inherit; }
-    .back-btn:hover { color:var(--orange); }
+    /* Icon containers */
+    .tc-icon {
+      width:48px; height:48px; border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom:16px; flex-shrink:0;
+    }
+    .tc-icon-sanction  { background:rgba(45,152,253,.12); }
+    .tc-icon-completion{ background:rgba(22,163,74,.12); }
+    .tc-icon-check     { background:rgba(139,92,246,.12); }
   </style>
 </head>
 <body>
@@ -106,7 +117,15 @@
       <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr;max-width:860px;">
         <!-- Sanction card -->
         <div class="type-card" id="sanctionCard" onclick="showSub('sanction')">
-          <div class="tc-icon">📋</div>
+          <div class="tc-icon tc-icon-sanction">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2d98fd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
           <h3>Sanction</h3>
           <p>Calculate areas for sanction-related architectural drawings.</p>
 
@@ -127,7 +146,12 @@
 
         <!-- Completion card -->
         <div class="type-card" id="completionCard" onclick="showSub('completion')">
-          <div class="tc-icon">✅</div>
+          <div class="tc-icon tc-icon-completion">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
           <h3>Completion</h3>
           <p>Calculate areas for completion-related architectural drawings.</p>
 
@@ -147,14 +171,21 @@
           </div>
         </div>
         <!-- Check Drawing card -->
-        <a class="type-card" href="check.html" style="text-decoration:none;display:block;position:relative;overflow:hidden;">
-          <div class="tc-icon">🔍</div>
+        <a class="type-card check-card" href="check.html" style="text-decoration:none;display:block;position:relative;overflow:hidden;">
+          <div class="tc-icon tc-icon-check">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="11" y1="8" x2="11" y2="14"/>
+              <line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+          </div>
           <h3>Check Drawing</h3>
           <p>Upload any DXF drawing to instantly extract and review all KMC layers.</p>
           <div style="
             display:inline-flex; align-items:center; gap:6px;
             margin-top:16px; font-size:.75rem; font-weight:700;
-            color:var(--orange); text-transform:uppercase; letter-spacing:.5px;
+            color:#8b5cf6; text-transform:uppercase; letter-spacing:.5px;
           ">
             Open Tool
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
