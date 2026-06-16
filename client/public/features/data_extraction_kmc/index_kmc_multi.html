@@ -741,7 +741,7 @@
       if(c==='0'&&v==='LAYER'){if(cur&&cur.name)ld[cur.name]={color:cur.color,linetype:cur.linetype,lineweight:cur.lineweight,plot:cur.plot};cur={};continue;}
       if(cur){if(c==='2')cur.name=v;if(c==='62')cur.color=parseInt(v);if(c==='6')cur.linetype=v||'Continuous';if(c==='370')cur.lineweight=parseInt(v);if(c==='290')cur.plot=v==='1';}
     }
-    var ET=new Set(['LINE','LWPOLYLINE','POLYLINE','POINT','INSERT']),raw=[],sec='',ent=null;
+    var ET=new Set(['LINE','LWPOLYLINE','POLYLINE','POINT','INSERT','HATCH']),raw=[],sec='',ent=null;
     for(var i=0;i<n;i++){var p=pairs[i],c=p.code,v=p.val;
       if(c==='0'&&v==='SECTION')continue;
       if(c==='2'&&(v==='BLOCKS'||v==='ENTITIES')){if(ent)raw.push(finE(ent,ld));ent=null;sec=v;continue;}
@@ -753,6 +753,7 @@
       if(c==='70'&&(ent.type==='LWPOLYLINE'||ent.type==='POLYLINE'))ent.closed=(parseInt(v)&1)===1;
       if(ent.type==='LINE'){if(c==='10')ent.x1=parseFloat(v);if(c==='20')ent.y1=parseFloat(v);if(c==='11')ent.x2=parseFloat(v);if(c==='21')ent.y2=parseFloat(v);}
       if(ent.type==='LWPOLYLINE'){if(c==='10'){if(ent.curX!==null&&ent.curY!==null)ent.vertices.push([ent.curX,ent.curY,ent.curBulge]);ent.curX=parseFloat(v);ent.curY=null;ent.curBulge=0;}if(c==='20')ent.curY=parseFloat(v);if(c==='42')ent.curBulge=parseFloat(v);}    }
+      if(ent.type==='HATCH'){if(c==='91')ent.hatchLoopCount=parseInt(v);}
     if(ent)raw.push(finE(ent,ld));
     function dd(ax,ay,bx,by){return Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));}
     function aL(x1,y1,x2,y2,b){var ch=dd(x1,y1,x2,y2);if(!b||ch===0)return ch;var th=4*Math.atan(Math.abs(b));return(ch/(2*Math.sin(th/2)))*th;}
@@ -766,7 +767,7 @@
     var rows=[];
     raw.forEach(function(e){
       if(!TS.has(e.layer))return;
-      var nm=e.type==='LINE'?'Line':(e.type==='LWPOLYLINE'||e.type==='POLYLINE')?'Polyline':e.type==='POINT'?'Point':e.type==='INSERT'?'Insert':e.type;
+      var nm=e.type==='LINE'?'Line':(e.type==='LWPOLYLINE'||e.type==='POLYLINE')?'Polyline':e.type==='POINT'?'Point':e.type==='INSERT'?'Insert':e.type==='HATCH'?'Hatch':e.type;
       var isP=(e.type==='LWPOLYLINE'||e.type==='POLYLINE'),isL=(e.type==='LINE'),isCl=e.closed||false;
       var sL=(isL||isP)&&(e.length||0)>0,sA=isP&&isCl&&(e.area||0)>0;
       var lw=e.lineweight,lwL=(lw==null||lw===-3)?'ByLayer':lw===-1?'ByLayer':lw===-2?'ByBlock':lw>=0?(lw/100).toFixed(2)+' mm':'ByLayer';
@@ -892,7 +893,7 @@
       else if(clr==='ByLayer')rowErrors.push('In '+lyr+' Layer: Color should not be ByLayer');
       else if(['ByLayer','DASHED','PHANTOM2'].indexOf(lt)<0)rowErrors.push('In '+lyr+' Layer: Invalid Linetype');
       else if(nm==='Polyline'&&closed==='0')rowErrors.push('In '+lyr+' Layer: Polyline must be closed');
-      else if(['Polyline','Line','Point'].indexOf(nm)<0)rowErrors.push('In '+lyr+' Layer: Invalid Object Name');
+      else if(['Polyline','Line','Point','Hatch'].indexOf(nm)<0)rowErrors.push('In '+lyr+' Layer: Invalid Object Name');
       else if(nm==='Polyline'&&area==='')rowErrors.push('In '+lyr+' Layer: Polyline area is missing');
       else if(OCC_LAYERS_SET.has(lyr)&&['ByLayer','DASHED'].indexOf(lt)<0)rowErrors.push('In '+lyr+' Layer: Linetype should be ByLayer or DASHED');
       else if(BYLAYER_LW_SET.has(lyr)&&lw!=='ByLayer')rowErrors.push('In '+lyr+' Layer: Lineweight must be ByLayer');
