@@ -61,9 +61,11 @@ function _resetCompareTable() {
 }
 
 /* ══════════════════════════════════════════
-   FLOOR AREA TABLE  (ported from sanction.js)
+   FLOOR AREA TOTALS — pure calculation
+   (ported from sanction.js, shared by the per-block
+   table renderer AND the Combined view)
 ══════════════════════════════════════════ */
-function _buildFloorAreaTable(csv) {
+function _computeFloorAreaRows(csv) {
   const validLayers = [
     'Residential', 'Mercantile_wholesale', 'Mercantile_retail', 'Business',
     'Institutional', 'Storage', 'Assembly', 'Hazardous', 'Industrial', 'Educational'
@@ -71,16 +73,6 @@ function _buildFloorAreaTable(csv) {
 
   const rows          = csv.split('\n');
   const mainTableData = _parseCSV(csv);
-
-  const tableBody                  = document.getElementById('sanction-floor-table').querySelector('tbody');
-  const totalFloorAreaCell         = document.getElementById('s-total-floor-area');
-  const totalStairWellCell         = document.getElementById('s-total-stair-well');
-  const totalLiftWellCell          = document.getElementById('s-total-lift-well');
-  const totalDuctCutoutCell        = document.getElementById('s-total-duct-cutout');
-  const totalEffectiveFloorCell    = document.getElementById('s-total-effective-floor-area');
-  const totalStairwayCell          = document.getElementById('s-total-stairway');
-  const totalLiftLobbyCell         = document.getElementById('s-total-lift-lobby');
-  const totalNetFloorAreaCell      = document.getElementById('s-total-net-floor-area');
 
   const uniqueColors      = new Set();
   const totalAreas        = {};
@@ -189,31 +181,70 @@ function _buildFloorAreaTable(csv) {
     });
   });
 
-  /* ── Build sorted data array & render rows ── */
-  const sortedData = Array.from(uniqueColors).map(color => ({
-    color,
-    totalArea:      totalAreas[color]      || 0,
-    stairWellArea:  stairWellAreas[color]  || 0,
-    liftWellArea:   liftWellAreas[color]   || 0,
-    ductCutoutArea: ductCutoutAreas[color] || 0,
-    stairwayArea:   stairwayAreas[color]   || 0,
-    liftLobbyArea:  liftLobbyAreas[color]  || 0,
-  }));
+  /* ── Build sorted data array (effectiveFloor / netFloorArea per colour) ── */
+  const sortedData = Array.from(uniqueColors).map(color => {
+    const totalArea      = totalAreas[color]      || 0;
+    const stairWellArea  = stairWellAreas[color]  || 0;
+    const liftWellArea   = liftWellAreas[color]   || 0;
+    const ductCutoutArea = ductCutoutAreas[color] || 0;
+    const stairwayArea   = stairwayAreas[color]   || 0;
+    const liftLobbyArea  = liftLobbyAreas[color]  || 0;
+    const effectiveFloor = totalArea - stairWellArea - liftWellArea - ductCutoutArea;
+    const netFloorArea   = effectiveFloor - stairwayArea - liftLobbyArea;
+    return { color, totalArea, stairWellArea, liftWellArea, ductCutoutArea, stairwayArea, liftLobbyArea, effectiveFloor, netFloorArea };
+  });
   sortedData.sort((a, b) => a.color - b.color);
 
-  let totalSum            = 0;
-  let stairWellSum        = 0;
-  let liftWellSum         = 0;
-  let ductCutoutSum       = 0;
-  let effectiveFloorSum   = 0;
-  let stairwaySum         = 0;
-  let liftLobbySum        = 0;
-  let netFloorAreaSum     = 0;
+  return sortedData;
+}
+
+/* Sum an array of rows produced by _computeFloorAreaRows() into totals */
+function _sumFloorAreaRows(sortedData) {
+  const totals = {
+    totalArea: 0, stairWellArea: 0, liftWellArea: 0, ductCutoutArea: 0,
+    effectiveFloor: 0, stairwayArea: 0, liftLobbyArea: 0, netFloorArea: 0,
+  };
+  sortedData.forEach(d => {
+    totals.totalArea      += d.totalArea;
+    totals.stairWellArea  += d.stairWellArea;
+    totals.liftWellArea   += d.liftWellArea;
+    totals.ductCutoutArea += d.ductCutoutArea;
+    totals.effectiveFloor += d.effectiveFloor;
+    totals.stairwayArea   += d.stairwayArea;
+    totals.liftLobbyArea  += d.liftLobbyArea;
+    totals.netFloorArea   += d.netFloorArea;
+  });
+  return totals;
+}
+
+/* Public pure helper — used by the multi-block Combined view to get one
+   block's grand totals without touching the DOM at all. */
+window.computeFloorAreaTotals = function (csv) {
+  if (!csv) {
+    return { totalArea: 0, stairWellArea: 0, liftWellArea: 0, ductCutoutArea: 0,
+             effectiveFloor: 0, stairwayArea: 0, liftLobbyArea: 0, netFloorArea: 0 };
+  }
+  return _sumFloorAreaRows(_computeFloorAreaRows(csv));
+};
+
+/* ══════════════════════════════════════════
+   FLOOR AREA TABLE — DOM rendering
+   (renders the rows/totals computed above into #sanction-floor-table)
+══════════════════════════════════════════ */
+function _buildFloorAreaTable(csv) {
+  const tableBody               = document.getElementById('sanction-floor-table').querySelector('tbody');
+  const totalFloorAreaCell      = document.getElementById('s-total-floor-area');
+  const totalStairWellCell      = document.getElementById('s-total-stair-well');
+  const totalLiftWellCell       = document.getElementById('s-total-lift-well');
+  const totalDuctCutoutCell     = document.getElementById('s-total-duct-cutout');
+  const totalEffectiveFloorCell = document.getElementById('s-total-effective-floor-area');
+  const totalStairwayCell       = document.getElementById('s-total-stairway');
+  const totalLiftLobbyCell      = document.getElementById('s-total-lift-lobby');
+  const totalNetFloorAreaCell   = document.getElementById('s-total-net-floor-area');
+
+  const sortedData = _computeFloorAreaRows(csv);
 
   sortedData.forEach(d => {
-    const effectiveFloor = d.totalArea - d.stairWellArea - d.liftWellArea - d.ductCutoutArea;
-    const netFloorArea   = effectiveFloor - d.stairwayArea - d.liftLobbyArea;
-
     const tr = tableBody.insertRow();
     [
       d.color,
@@ -221,35 +252,34 @@ function _buildFloorAreaTable(csv) {
       _fmt(d.stairWellArea),
       _fmt(d.liftWellArea),
       _fmt(d.ductCutoutArea),
-      _fmt(effectiveFloor),
+      _fmt(d.effectiveFloor),
       _fmt(d.stairwayArea),
       _fmt(d.liftLobbyArea),
-      _fmt(netFloorArea),
+      _fmt(d.netFloorArea),
     ].forEach(v => { tr.insertCell().textContent = v; });
-
-    totalSum          += d.totalArea;
-    stairWellSum      += d.stairWellArea;
-    liftWellSum       += d.liftWellArea;
-    ductCutoutSum     += d.ductCutoutArea;
-    effectiveFloorSum += effectiveFloor;
-    stairwaySum       += d.stairwayArea;
-    liftLobbySum      += d.liftLobbyArea;
-    netFloorAreaSum   += netFloorArea;
   });
 
-  // Totals row
-  totalFloorAreaCell.textContent      = _fmt(totalSum);
-  totalStairWellCell.textContent      = _fmt(stairWellSum);
-  totalLiftWellCell.textContent       = _fmt(liftWellSum);
-  totalDuctCutoutCell.textContent     = _fmt(ductCutoutSum);
-  totalEffectiveFloorCell.textContent = _fmt(effectiveFloorSum);
-  totalStairwayCell.textContent       = _fmt(stairwaySum);
-  totalLiftLobbyCell.textContent      = _fmt(liftLobbySum);
-  totalNetFloorAreaCell.textContent   = _fmt(netFloorAreaSum);
+  const totals = _sumFloorAreaRows(sortedData);
 
-  // Save to localStorage for downstream use
-  localStorage.setItem('effectiveFloorAreaSum', effectiveFloorSum);
-  localStorage.setItem('netFloorAreaSum', netFloorAreaSum);
+  // Totals row
+  totalFloorAreaCell.textContent      = _fmt(totals.totalArea);
+  totalStairWellCell.textContent      = _fmt(totals.stairWellArea);
+  totalLiftWellCell.textContent       = _fmt(totals.liftWellArea);
+  totalDuctCutoutCell.textContent     = _fmt(totals.ductCutoutArea);
+  totalEffectiveFloorCell.textContent = _fmt(totals.effectiveFloor);
+  totalStairwayCell.textContent       = _fmt(totals.stairwayArea);
+  totalLiftLobbyCell.textContent      = _fmt(totals.liftLobbyArea);
+  totalNetFloorAreaCell.textContent   = _fmt(totals.netFloorArea);
+
+  // Save to localStorage for downstream use (per-block Final Summary, etc.)
+  localStorage.setItem('effectiveFloorAreaSum', totals.effectiveFloor);
+  localStorage.setItem('netFloorAreaSum', totals.netFloorArea);
+  localStorage.setItem('totalFloorAreaSum', totals.totalArea);
+  localStorage.setItem('stairWellAreaSum', totals.stairWellArea);
+  localStorage.setItem('liftWellAreaSum', totals.liftWellArea);
+  localStorage.setItem('ductCutoutAreaSum', totals.ductCutoutArea);
+  localStorage.setItem('stairwayAreaSum', totals.stairwayArea);
+  localStorage.setItem('liftLobbyAreaSum', totals.liftLobbyArea);
 }
 
 /* ══════════════════════════════════════════
