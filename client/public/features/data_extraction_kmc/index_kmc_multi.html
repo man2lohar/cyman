@@ -1240,14 +1240,14 @@
   }
 
   /* Per-tab view state — tracks whether 'master' or a block label is active for each tab */
-  var _mbTabView={tables:null,filtered:null,parking:null}; // null = use active block
+  var _mbTabView={tables:null,filtered:null,parking:null,sanction:null}; // null = use active block
 
   function renderBar(barId,fnName){
     var bar=document.getElementById(barId);if(!bar)return;
     var blks=KMCMulti.getBlocks(),active=KMCMulti.getActiveBlock();
     if(!blks.length&&!KMCMulti.getMasterCSV()){bar.innerHTML='';bar.className='';return;}
     bar.className='multi-block-bar';
-    var tabKey=barId==='bb-tables'?'tables':barId==='bb-filtered'?'filtered':barId==='bb-parking'?'parking':null;
+    var tabKey=barId==='bb-tables'?'tables':barId==='bb-filtered'?'filtered':barId==='bb-parking'?'parking':barId==='bb-sanction'?'sanction':null;
     var activePill=(tabKey&&_mbTabView[tabKey]!=null)?_mbTabView[tabKey]:(active||(blks[0]||''));
     var html='<span style="font-family:var(--font-mono);font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Block:</span>';
     /* Master pill for tables/filtered only */
@@ -1257,6 +1257,10 @@
     blks.forEach(function(b){
       html+='<button class="mblk-pill'+(b===activePill?' active':'')+'" onclick="selBlk(\''+b+'\',\''+fnName+'\')">'+b+'</button>';
     });
+    /* Combined pill for the Floor Area (sanction) bar only */
+    if(barId==='bb-sanction'&&blks.length>1){
+      html+='<button class="mblk-pill'+(activePill==='combined'?' active':'')+'" onclick="selBlk(\'combined\',\''+fnName+'\')">Combined</button>';
+    }
     /* Provided Parkings + Required Parkings pills for parking bar only */
     if(barId==='bb-parking'){
       html+='<button class="mblk-pill-special'+(activePill==='provided'?' active':'')+
@@ -1271,8 +1275,9 @@
     if(fnName==='mRefreshTables')  _mbTabView.tables  =lbl;
     if(fnName==='mRefreshFiltered')_mbTabView.filtered=lbl;
     if(fnName==='mRefreshParking') _mbTabView.parking =lbl;
+    if(fnName==='mRefreshSanction')_mbTabView.sanction=lbl;
     /* Set active block for real block selections */
-    if(lbl!=='master'&&lbl!=='provided'&&lbl!=='required')KMCMulti.setActiveBlock(lbl);
+    if(lbl!=='master'&&lbl!=='provided'&&lbl!=='required'&&lbl!=='combined')KMCMulti.setActiveBlock(lbl);
     var fn=window[fnName];if(typeof fn==='function')fn();
   };
 
@@ -1313,12 +1318,74 @@
     else loadScript('../../../src/js/data_extraction_kmc/kmc_filtered_multi.js',run);
   };
   window.mRefreshSanction=function(){
-    var a=KMCMulti.getActiveBlock();renderBar('bb-sanction','mRefreshSanction');
+    var view=_mbTabView.sanction!=null?_mbTabView.sanction:KMCMulti.getActiveBlock();
+    renderBar('bb-sanction','mRefreshSanction');
+
+    /* ── Combined view — one row per block, same columns as Floor Area table ── */
+    if(view==='combined'){
+      var cmpContainer0=document.getElementById('sanction-compare-container');
+      if(cmpContainer0)cmpContainer0.style.display='none';
+      function runCombined(){renderSanctionCombined();}
+      if(typeof computeFloorAreaTotals==='function')runCombined();
+      else loadScript('../../../src/js/data_extraction_kmc/kmc_sanction.js',runCombined);
+      return;
+    }
+
+    /* ── Normal single-block view ── */
+    var a=view;
     var l1=document.getElementById('lbl-sanction'),l2=document.getElementById('lbl-sanction-cmp');if(l1)l1.textContent=a||'—';if(l2)l2.textContent=a||'—';
+    /* Restore the table's first header back to "Floor" in case Combined changed it */
+    var floorTh=document.querySelector('#sanction-floor-table thead th');
+    if(floorTh)floorTh.textContent='Floor';
     if(!a)return;injectBlockCSV(a);
     function run(){if(typeof generateSanctionTables!=='function')return;generateSanctionTables();saveSanctionKeys(a);}
     if(typeof generateSanctionTables==='function')run();else loadScript('../../../src/js/data_extraction_kmc/kmc_sanction.js',run);
   };
+
+  /* Renders the Combined Floor Area view — reuses #sanction-floor-table,
+     relabels the first header "Block", and shows one aggregated row per
+     block (computed fresh from each block's own CSV via computeFloorAreaTotals). */
+  function renderSanctionCombined(){
+    var l1=document.getElementById('lbl-sanction'),l2=document.getElementById('lbl-sanction-cmp');
+    if(l1)l1.textContent='All Blocks Combined';if(l2)l2.textContent='All Blocks Combined';
+
+    var table=document.getElementById('sanction-floor-table');if(!table)return;
+    var headTh=table.querySelector('thead th');if(headTh)headTh.textContent='Block';
+    var tbody=table.querySelector('tbody');tbody.innerHTML='';
+
+    var blks=KMCMulti.getBlocks();
+    var grand={totalArea:0,stairWellArea:0,liftWellArea:0,ductCutoutArea:0,effectiveFloor:0,stairwayArea:0,liftLobbyArea:0,netFloorArea:0};
+
+    blks.forEach(function(b){
+      var csv=KMCMulti.getBlockCombined(b);
+      var t=computeFloorAreaTotals(csv);
+      var tr=tbody.insertRow();
+      ['Block '+b,
+        t.totalArea.toFixed(3), t.stairWellArea.toFixed(3), t.liftWellArea.toFixed(3),
+        t.ductCutoutArea.toFixed(3), t.effectiveFloor.toFixed(3), t.stairwayArea.toFixed(3),
+        t.liftLobbyArea.toFixed(3), t.netFloorArea.toFixed(3)
+      ].forEach(function(v){tr.insertCell().textContent=v;});
+
+      grand.totalArea      +=t.totalArea;
+      grand.stairWellArea  +=t.stairWellArea;
+      grand.liftWellArea   +=t.liftWellArea;
+      grand.ductCutoutArea +=t.ductCutoutArea;
+      grand.effectiveFloor +=t.effectiveFloor;
+      grand.stairwayArea   +=t.stairwayArea;
+      grand.liftLobbyArea  +=t.liftLobbyArea;
+      grand.netFloorArea   +=t.netFloorArea;
+    });
+
+    function se(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
+    se('s-total-floor-area',           grand.totalArea.toFixed(3));
+    se('s-total-stair-well',           grand.stairWellArea.toFixed(3));
+    se('s-total-lift-well',            grand.liftWellArea.toFixed(3));
+    se('s-total-duct-cutout',          grand.ductCutoutArea.toFixed(3));
+    se('s-total-effective-floor-area', grand.effectiveFloor.toFixed(3));
+    se('s-total-stairway',             grand.stairwayArea.toFixed(3));
+    se('s-total-lift-lobby',           grand.liftLobbyArea.toFixed(3));
+    se('s-total-net-floor-area',       grand.netFloorArea.toFixed(3));
+  }
   window.mRefreshParking=function(){
     var view=_mbTabView.parking!=null?_mbTabView.parking:KMCMulti.getActiveBlock();
     renderBar('bb-parking','mRefreshParking');
