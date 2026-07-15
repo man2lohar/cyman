@@ -8,8 +8,10 @@
 import { initializeApp }                                          from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword,
          createUserWithEmailAndPassword, signOut,
+         updateProfile,
          onAuthStateChanged, GoogleAuthProvider,
          signInWithPopup }                                        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFunctions, httpsCallable }                             from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
 import { getDatabase, ref, onValue }                              from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* ── Firebase init ───────────────────────────────────────────── */
@@ -24,6 +26,8 @@ const firebaseConfig = {
 };
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const functionsClient = getFunctions(app);
+const resendVerification = httpsCallable(functionsClient, 'resendVerificationEmail');
 const db   = getDatabase(app);
 
 /* ── Slide navigation ────────────────────────────────────────── */
@@ -186,9 +190,27 @@ document.getElementById('authForm').onsubmit = async e => {
 
   try {
     if (isLoginMode) {
-      await signInWithEmailAndPassword(auth, email, password);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      if (!cred.user.emailVerified) {
+        await resendVerification();
+        await signOut(auth);
+        err.style.display = 'flex';
+        err.querySelector('span') && (err.querySelector('span').textContent =
+          'Please verify your email first — a new link was just sent to ' + email + '.');
+        return;
+      }
     } else {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      const fullName = (document.getElementById('nameField')?.value || '').trim();
+      if (fullName) await updateProfile(cred.user, { displayName: fullName });
+      // No sendEmailVerification() call here — the sendVerificationOnCreate
+      // Cloud Function fires automatically and sends the branded email.
+      await signOut(auth);
+      err.style.display = 'flex';
+      err.querySelector('span') && (err.querySelector('span').textContent =
+        'Account created! Check ' + email + ' for a verification link, then log in.');
+      err.style.color = 'inherit';
+      return;
     }
     document.getElementById('authOverlay').classList.remove('active');
     window.openDashboard();
