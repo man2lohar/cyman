@@ -8,10 +8,9 @@
 import { initializeApp }                                          from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword,
          createUserWithEmailAndPassword, signOut,
-         updateProfile,
+         sendEmailVerification, updateProfile,
          onAuthStateChanged, GoogleAuthProvider,
          signInWithPopup }                                        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFunctions, httpsCallable }                             from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
 import { getDatabase, ref, onValue }                              from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* ── Firebase init ───────────────────────────────────────────── */
@@ -26,8 +25,6 @@ const firebaseConfig = {
 };
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const functionsClient = getFunctions(app);
-const resendVerification = httpsCallable(functionsClient, 'resendVerificationEmail');
 const db   = getDatabase(app);
 
 /* ── Slide navigation ────────────────────────────────────────── */
@@ -192,7 +189,7 @@ document.getElementById('authForm').onsubmit = async e => {
     if (isLoginMode) {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       if (!cred.user.emailVerified) {
-        await resendVerification();
+        await sendEmailVerification(cred.user);
         await signOut(auth);
         err.style.display = 'flex';
         err.querySelector('span') && (err.querySelector('span').textContent =
@@ -203,8 +200,7 @@ document.getElementById('authForm').onsubmit = async e => {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       const fullName = (document.getElementById('nameField')?.value || '').trim();
       if (fullName) await updateProfile(cred.user, { displayName: fullName });
-      // No sendEmailVerification() call here — the sendVerificationOnCreate
-      // Cloud Function fires automatically and sends the branded email.
+      await sendEmailVerification(cred.user);
       await signOut(auth);
       err.style.display = 'flex';
       err.querySelector('span') && (err.querySelector('span').textContent =
