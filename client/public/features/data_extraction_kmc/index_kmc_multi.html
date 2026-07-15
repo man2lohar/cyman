@@ -1263,9 +1263,9 @@
     }
     /* Provided Parkings + Required Parkings pills for parking bar only */
     if(barId==='bb-parking'){
-      html+='<button class="mblk-pill-special'+(activePill==='provided'?' active':'')+
+      html+='<button class="mblk-pill'+(activePill==='provided'?' active':'')+
         '" onclick="selBlk(\'provided\',\''+fnName+'\')">🅿 Provided Parkings</button>';
-      html+='<button class="mblk-pill-special'+(activePill==='required'?' active':'')+
+      html+='<button class="mblk-pill'+(activePill==='required'?' active':'')+
         '" onclick="selBlk(\'required\',\''+fnName+'\')">📋 Required Parkings</button>';
     }
     bar.innerHTML=html;
