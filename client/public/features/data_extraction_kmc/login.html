@@ -268,6 +268,7 @@
   <!-- Firebase compat SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-functions-compat.js"></script>
 
   <script>
     /* ── Firebase ── */
@@ -283,6 +284,7 @@
       });
     }
     const auth = firebase.auth();
+    const resendVerification = firebase.functions().httpsCallable('resendVerificationEmail');
 
     /* ── URL params ── */
     const params   = new URLSearchParams(location.search);
@@ -372,14 +374,26 @@
 
       try {
         if (isLogin) {
-          await auth.signInWithEmailAndPassword(email, password);
+          const cred = await auth.signInWithEmailAndPassword(email, password);
+          if (!cred.user.emailVerified) {
+            await resendVerification();
+            await auth.signOut();
+            showMsg(msg, '⚠️ Please verify your email first. A new verification link was sent to ' + email + '.', 'error');
+            btn.disabled = false; spinner.style.display = 'none';
+            return;
+          }
         } else {
-          await auth.createUserWithEmailAndPassword(email, password);
-          // Update display name if provided
+          const cred = await auth.createUserWithEmailAndPassword(email, password);
           const name = document.getElementById('nameInput').value.trim();
-          if (name && auth.currentUser) await auth.currentUser.updateProfile({ displayName: name });
+          if (name) await cred.user.updateProfile({ displayName: name });
+          // No sendEmailVerification() call here — the sendVerificationOnCreate
+          // Cloud Function fires automatically and sends the branded email.
+          await auth.signOut();
+          showMsg(msg, '✅ Account created! Check ' + email + ' for a verification link, then log in.', 'success');
+          btn.disabled = false; spinner.style.display = 'none';
+          return;
         }
-        showMsg(msg, '✅ ' + (isLogin ? 'Signed in! Redirecting…' : 'Account created! Redirecting…'), 'success');
+        showMsg(msg, '✅ Signed in! Redirecting…', 'success');
         setTimeout(() => location.href = redirect, 900);
       } catch (err) {
         showMsg(msg, '⚠️ ' + (FRIENDLY[err.code] || err.message), 'error');
