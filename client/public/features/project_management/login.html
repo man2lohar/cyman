@@ -268,7 +268,6 @@
   <!-- Firebase compat SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-functions-compat.js"></script>
 
   <script>
     /* ── Firebase ── */
@@ -284,7 +283,6 @@
       });
     }
     const auth = firebase.auth();
-    const resendVerification = firebase.functions().httpsCallable('resendVerificationEmail');
 
     /* ── URL params ── */
     const params   = new URLSearchParams(location.search);
@@ -295,6 +293,7 @@
 
     /* ── Auto-redirect if already logged in ── */
     auth.onAuthStateChanged(user => {
+      if (user && !user.emailVerified) { auth.signOut(); return; }
       if (user) location.href = redirect;
     });
 
@@ -358,7 +357,7 @@
         if (isLogin) {
           const cred = await auth.signInWithEmailAndPassword(email, password);
           if (!cred.user.emailVerified) {
-            await resendVerification();
+            await cred.user.sendEmailVerification();
             await auth.signOut();
             showMsg(msg, '⚠️ Please verify your email first. A new verification link was sent to ' + email + '.', 'error');
             btn.disabled = false; spinner.style.display = 'none';
@@ -368,8 +367,7 @@
           const cred = await auth.createUserWithEmailAndPassword(email, password);
           const name = document.getElementById('nameInput').value.trim();
           if (name) await cred.user.updateProfile({ displayName: name });
-          // No sendEmailVerification() call here — the sendVerificationOnCreate
-          // Cloud Function fires automatically and sends the branded email.
+          await cred.user.sendEmailVerification();
           await auth.signOut();
           showMsg(msg, '✅ Account created! Check ' + email + ' for a verification link, then log in.', 'success');
           btn.disabled = false; spinner.style.display = 'none';
