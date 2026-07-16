@@ -138,8 +138,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 let isLoginMode  = true;
 
+function isUsableSession(user) {
+  if (!user) return false;
+  // Google accounts come pre-verified by Google — only gate email/password accounts.
+  if (user.providerData.some(p => p.providerId === 'google.com')) return true;
+  return user.emailVerified;
+}
+
 onAuthStateChanged(auth, user => {
   const ag = document.getElementById('authGroup');
+  if (user && !isUsableSession(user)) {
+    // Signed in but not verified — never grant access, kick them back out.
+    signOut(auth);
+    return;
+  }
   if (user) {
     const init = (user.displayName || user.email)[0].toUpperCase();
     ag.innerHTML = `<div class="profile-trigger" onclick="openDashboard()" title="Open Dashboard">
