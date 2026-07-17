@@ -423,14 +423,20 @@
   }
 
   function loadParkingTotals() {
-    const req    = parseInt(localStorage.getItem('totalParkingRequired')) || 0;
-    const reqCar = parseInt(localStorage.getItem('totalReqCarParking'))   || 0;
-    set('per-car', req + reqCar);
-    const nos  = localStorage.getItem('totalParkingNos');
-    const area = localStorage.getItem('reqParkingArea');
-    if (nos)  set('pro-car',       nos);
-    if (area) set('per-park-area', area + ' Sq.m.');
-  }
+     const req    = parseInt(localStorage.getItem('totalParkingRequired')) || 0;
+     const reqCar = parseInt(localStorage.getItem('totalReqCarParking'))   || 0;
+     set('per-car', req + reqCar);
+     const nos  = localStorage.getItem('totalParkingNos');
+     const area = localStorage.getItem('reqParkingArea');
+     if (nos)  set('pro-car',       nos);
+     if (area) set('per-park-area', area + ' Sq.m.');
+   
+     // Actual Bonus — pulled directly from the Provided Parking table (Parking tab)
+     const actualNos  = localStorage.getItem('totalParkingNos');
+     const actualArea = localStorage.getItem('totalParkingArea');
+     if (actualNos)  set('act-car',       actualNos);
+     if (actualArea) set('act-park-area', parseFloat(actualArea).toFixed(3) + ' Sq.m.');
+   }
 
   function loadFloorTotals() {
     const layerSum = parseFloat(localStorage.getItem('layerSumTotal'))         || 0;
