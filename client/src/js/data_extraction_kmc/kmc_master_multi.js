@@ -344,6 +344,43 @@
     }
   }
 
+   window.showFarCalcPopup = function () {
+    const landArea    = parseFloat(document.getElementById('land-area')?.textContent.replace(/,/g, '')) || 0;
+    const landDoc     = parseFloat(document.getElementById('land-area-doc')?.textContent.replace(/,/g, '')) || 0;
+    const actualBonus = parseFloat(localStorage.getItem('totalParkingArea')) || 0;
+    const netFloor    = parseFloat(localStorage.getItem('netFloorAreaSum')) || 0;
+    const minLand     = Math.min(landArea, landDoc);
+    const netPark     = Math.min(ParkingAreaSum, actualBonus);
+    const proFar      = minLand > 0 ? (netFloor - netPark) / minLand : 0;
+
+    const rows = [
+      ['Land Area as per Boundary Declaration', `${landArea.toFixed(3)} Sq.m.`],
+      ['Land Area as per Document (min.)',      `${landDoc.toFixed(3)} Sq.m.`],
+      ['→ Min. Land Area used',                 `${minLand.toFixed(3)} Sq.m.`],
+      ['Net Floor Area (Floor Area table)',     `${netFloor.toFixed(3)} Sq.m.`],
+      ['Proposed Car Parking Area',             `${ParkingAreaSum.toFixed(3)} Sq.m.`],
+      ['Actual Bonus Car Parking Area',         `${actualBonus.toFixed(3)} Sq.m.`],
+      ['→ Net Parking Deduction = min(Proposed, Actual Bonus)', `${netPark.toFixed(3)} Sq.m.`],
+      ['Formula',      '(Net Floor Area − Net Parking Deduction) / Min. Land Area'],
+      ['Calculation',  `(${netFloor.toFixed(3)} − ${netPark.toFixed(3)}) / ${minLand.toFixed(3)}`],
+      ['Proposed F.A.R.', proFar.toFixed(3)],
+    ];
+
+    const tbody = document.getElementById('far-calc-steps');
+    if (tbody) {
+      tbody.innerHTML = rows.map(([label, val], i) => {
+        const isResult = i === rows.length - 1;
+        return `<tr style="${isResult ? 'font-weight:700;border-top:2px solid var(--accent);' : 'border-bottom:1px solid var(--border);'}">
+          <td style="padding:7px 8px;">${label}</td>
+          <td style="padding:7px 8px;text-align:right;">${val}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    const popup = document.getElementById('far-calc-popup');
+    if (popup) popup.style.display = 'flex';
+  };
+
   function calculateGroundCoverage() {
     const landArea   = parseFloat(document.getElementById('land-area')?.textContent.replace(/,/g, '').split(' ')[0]);
     const landDoc    = parseFloat(document.getElementById('land-area-doc')?.textContent.replace(/,/g, '').split(' ')[0]);
