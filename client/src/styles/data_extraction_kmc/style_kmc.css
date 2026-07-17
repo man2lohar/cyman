@@ -34,6 +34,7 @@
      AC — NEW: Guide & Updates pages
      AD — NEW: Theme toggle button
      AE — Responsive
+     AF — FAR calculation steps Popup
 ════════════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
@@ -1251,3 +1252,17 @@ body.dark-mode .home-col:hover { border-color: rgba(255,255,255,.16); }
   .sh-right .status-bar { display: none; }
 }
 
+/* ════════════════════════════════════════════════════════════
+   SECTION AE — FAR CALCULATION STEPS
+════════════════════════════════════════════════════════════ */
+#far-calc-popup {
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,24,20,0.58); backdrop-filter: blur(6px);
+  z-index: 3500; align-items: center; justify-content: center;
+  animation: fadeIn .2s ease;
+}
+#far-calc-popup .master-popup-box { max-width: 520px; }
+.far-info-icon {
+  width: 14px; height: 14px; cursor: pointer; vertical-align: middle;
+  margin-left: 5px; stroke: var(--accent); fill: none; stroke-width: 2;
+}
