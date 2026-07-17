@@ -1263,6 +1263,8 @@ body.dark-mode .home-col:hover { border-color: rgba(255,255,255,.16); }
 }
 #far-calc-popup .master-popup-box { max-width: 520px; }
 .far-info-icon {
-  width: 14px; height: 14px; cursor: pointer; vertical-align: middle;
-  margin-left: 5px; stroke: var(--accent); fill: none; stroke-width: 2;
+  width: 16px; height: 16px; cursor: pointer; vertical-align: -3px;
+  margin-left: 6px; color: var(--accent); flex-shrink: 0;
+  display: inline-block;
 }
+.far-info-icon:hover { opacity: 0.7; }
