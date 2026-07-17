@@ -332,13 +332,13 @@
   }
 
   function calculateProposedFAR() {
-    const landArea   = parseFloat(document.getElementById('land-area')?.textContent.replace(/,/g, '')) || 0;
-    const landDoc    = parseFloat(document.getElementById('land-area-doc')?.textContent.replace(/,/g, '')) || 0;
-   const totalPark  = parseFloat(localStorage.getItem('reqParkingArea')) || parseFloat(localStorage.getItem('totalParkingArea')) || 0;
-    const netFloor   = parseFloat(localStorage.getItem('netFloorAreaSum')) || 0;
-    const minLand    = Math.min(landArea, landDoc);
+    const landArea    = parseFloat(document.getElementById('land-area')?.textContent.replace(/,/g, '')) || 0;
+    const landDoc     = parseFloat(document.getElementById('land-area-doc')?.textContent.replace(/,/g, '')) || 0;
+    const actualBonus = parseFloat(localStorage.getItem('totalParkingArea')) || 0;   // Actual Bonus car parking area
+    const netFloor    = parseFloat(localStorage.getItem('netFloorAreaSum')) || 0;
+    const minLand     = Math.min(landArea, landDoc);
     if (minLand > 0) {
-      const netPark  = Math.min(totalPark, ParkingAreaSum);
+      const netPark  = Math.min(ParkingAreaSum, actualBonus); // min of Proposed & Actual Bonus
       const el = document.getElementById('pro-far');
       if (el) el.textContent = ((netFloor - netPark) / minLand).toFixed(3);
     }
