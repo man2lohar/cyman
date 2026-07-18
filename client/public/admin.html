@@ -172,6 +172,19 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 .tb-btn-blue:hover{border-color:var(--blue);color:#93c5fd}
 .tb-btn-green{border-color:rgba(16,185,129,.3);color:var(--green);background:var(--green-dim)}
 .tb-btn-green:hover{border-color:var(--green);color:#6ee7b7}
+.tr-sortable{cursor:pointer;user-select:none;white-space:nowrap;}
+.tr-sortable:hover{color:var(--accent);}
+.tr-sort-arrow{font-size:9px;opacity:.5;margin-left:2px;}
+.tr-row-clickable{cursor:pointer;transition:background .12s;}
+.tr-row-clickable:hover{background:var(--surface2);}
+#tr-detail-overlay{animation:trFadeIn .15s ease;}
+@keyframes trFadeIn{from{opacity:0}to{opacity:1}}
+#tr-detail-panel{animation:trSlideIn .2s ease;}
+@keyframes trSlideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.tr-detail-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.tr-detail-item:last-child{border-bottom:none;}
+.tr-detail-section-title{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin:18px 0 8px;}
+.tr-detail-section-title:first-child{margin-top:0;}
 
 /* ── Theme toggle ── */
 #theme-toggle{
@@ -627,15 +640,9 @@ mark{background:rgba(245,166,35,.25);color:var(--accent);border-radius:2px;paddi
   <div class="sa-card">
     <div class="sa-title">🔑 Sync All Firebase Auth Users</div>
     <div class="sa-sub">
-      Paste your service account JSON to fetch all user accounts — including existing ones. Key is used in memory only, never stored.<br><br>
-      <b>Get it from:</b>
-      <ol>
-        <li>Firebase Console → Project Settings → Service Accounts</li>
-        <li>Click <code>Generate new private key</code> → download JSON</li>
-        <li>Paste the full file content below</li>
-      </ol>
+      This pulls every Firebase Auth account into the database, refreshing names, emails, and last-login times.<br><br>
+      Runs securely on the server — no key or token ever touches this browser. You must be a verified admin for this to work.
     </div>
-    <textarea class="sa-ta" id="sa-json" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN RSA PRIVATE KEY-----\n...","client_email":"..."}'></textarea>
     <div class="sa-err" id="sa-err"></div>
     <div class="sa-prog" id="sa-prog"></div>
     <div class="upload-bar" id="sa-bar" style="display:none"><div class="upload-bar-fill" id="sa-bar-fill" style="width:0%"></div></div>
@@ -719,6 +726,10 @@ mark{background:rgba(245,166,35,.25);color:var(--accent);border-radius:2px;paddi
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
       Projects
     </div>
+    <div class="nav-item" onclick="nav('teamreport',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Team Report
+    </div>
     <div class="nav-item" onclick="nav('tasks',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Tasks
@@ -741,13 +752,9 @@ mark{background:rgba(245,166,35,.25);color:var(--accent);border-radius:2px;paddi
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Activity Log
     </div>
-    <div class="nav-item" onclick="nav('analytics',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      Analytics
-    </div>
 
     <div class="sb-label">System</div>
-    <div class="nav-item" onclick="nav('settings',this)">
+    <div class="nav-item" id="nav-settings" onclick="nav('settings',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07"/><path d="M4.93 4.93A10 10 0 0 0 19.07 19.07"/></svg>
       Settings
     </div>
@@ -758,7 +765,7 @@ mark{background:rgba(245,166,35,.25);color:var(--accent);border-radius:2px;paddi
   </div>
 
   <div class="sb-footer">
-    <div class="sb-admin" onclick="nav('settings',document.querySelector('.nav-item:nth-of-type(10)'))">
+    <div class="sb-admin" onclick="nav('settings',document.getElementById('nav-settings'))">
       <div class="sb-av" id="sb-av">A</div>
       <div style="flex:1;overflow:hidden">
         <div class="sb-ad-name" id="sb-name">Admin</div>
@@ -1037,6 +1044,214 @@ mark{background:rgba(245,166,35,.25);color:var(--accent);border-radius:2px;paddi
           <thead><tr><th>Project</th><th>Owner</th><th>Tasks</th><th>Done</th><th>Progress</th><th>Created</th><th>Actions</th></tr></thead>
           <tbody id="projects-body"><tr class="loading-row"><td colspan="7"><span class="spin"></span>Loading…</td></tr></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ═══ TEAM REPORT ANALYTICS ════════════════════ -->
+    <div class="tab-panel" id="tab-teamreport">
+      <div class="sec-hdr">
+        <div class="sec-title">Team Report Analytics</div>
+        <div class="sec-badge" id="tr-proj-count">—</div>
+        <div class="sec-actions">
+          <button class="tb-btn" onclick="loadTeamReportData()" title="Refresh">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+          <a href="features/project_status_report/Team_Report_Builder.html" target="_blank" class="tb-btn" style="text-decoration:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Open Builder
+          </a>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div id="tr-filter-bar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0 14px;border-bottom:1px solid var(--border);margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);">Team</span>
+          <select id="tr-filter-team" onchange="trSetTeam(this.value)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;min-width:140px;font-weight:600;">
+            <option value="all">All Teams</option>
+          </select>
+        </div>
+        <div style="width:1px;height:24px;background:var(--border);flex-shrink:0;"></div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);">Stage</span>
+          <select id="tr-filter-stage" onchange="trApplyFilters()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;">
+            <option value="all">All Stages</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);">Status</span>
+          <select id="tr-filter-status" onchange="trApplyFilters()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;">
+            <option value="all">All Status</option>
+            <option value="ongoing">Active</option>
+            <option value="done">Completed</option>
+            <option value="pending">On Hold</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);">Health</span>
+          <select id="tr-filter-health" onchange="trApplyFilters()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;">
+            <option value="all">All Health</option>
+            <option value="Healthy">Healthy</option>
+            <option value="Completed">Completed</option>
+            <option value="Attention Needed">Attention</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);">Progress</span>
+          <select id="tr-filter-progress" onchange="trApplyFilters()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;">
+            <option value="all">Any %</option>
+            <option value="0-25">0-25%</option>
+            <option value="26-50">26-50%</option>
+            <option value="51-75">51-75%</option>
+            <option value="76-100">76-100%</option>
+          </select>
+        </div>
+        <button class="tb-btn" onclick="trResetFilters()" style="margin-left:auto;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3"/></svg>
+          Reset Filters
+        </button>
+        <span id="tr-filter-count" style="display:none;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;">0 filters</span>
+      </div>
+
+      <!-- TEAM MEMBERS CARD — visible only when a specific team is selected -->
+      <div id="tr-team-members-card" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);">👥 Team Members</div>
+          <span id="tr-members-count" class="sec-badge" style="font-size:10px;"></span>
+        </div>
+        <div id="tr-members-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;"></div>
+      </div>
+
+      <!-- ROW 1: Summary Cards -->
+      <div id="tr-summary-cards" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;">
+        <div class="stat-card"><div class="stat-val" id="tr-c-total">—</div><div class="stat-lbl">Total Projects</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--green)" id="tr-c-active">—</div><div class="stat-lbl">Active</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--blue)" id="tr-c-done">—</div><div class="stat-lbl">Completed</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--accent)" id="tr-c-hold">—</div><div class="stat-lbl">On Hold</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--red)" id="tr-c-delayed">—</div><div class="stat-lbl">Delayed / Critical</div></div>
+      </div>
+      <div id="tr-summary-cards2" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;">
+        <div class="stat-card"><div class="stat-val" style="color:var(--cyan)" id="tr-c-avgpct">—%</div><div class="stat-lbl">Avg Progress</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--green)" id="tr-c-highpct">—%</div><div class="stat-lbl">Highest Progress</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--red)" id="tr-c-lowpct">—%</div><div class="stat-lbl">Lowest Progress</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--purple)" id="tr-c-updated">—</div><div class="stat-lbl">Updated This Week</div></div>
+      </div>
+
+      <!-- ROW 2: Charts -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+        <!-- Stage Distribution -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:14px;">Project Stage Distribution</div>
+          <div id="tr-stage-bars" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+        <!-- Progress Bands -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:14px;">Progress Distribution</div>
+          <div id="tr-progress-bands" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+      </div>
+
+      <!-- ROW 3: Deadlines + Decisions -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+        <!-- Upcoming Deadlines -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:12px;">⏰ Upcoming Deadlines</div>
+          <div id="tr-deadlines" style="display:flex;flex-direction:column;gap:6px;font-size:12px;"></div>
+        </div>
+        <!-- Pending Decisions -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:12px;">⚡ Pending Decisions & Actions</div>
+          <div id="tr-decisions" style="display:flex;flex-direction:column;gap:6px;font-size:12px;"></div>
+        </div>
+      </div>
+
+      <!-- ROW 4: Drawing Status + Site Works -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+        <!-- Drawing Status -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:12px;">📐 Drawing Status</div>
+          <div id="tr-drawings" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+        <!-- Site Works -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:12px;">🏗️ Site Works Tracker</div>
+          <div id="tr-siteworks" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+      </div>
+
+      <!-- ROW 5: Team Performance + Project Health -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+        <!-- Team Performance -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:12px;">👥 Team Performance</div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="color:var(--text3);font-size:10px;">
+              <th style="text-align:left;padding:4px 0;font-weight:600;">Team</th>
+              <th style="text-align:center;padding:4px 0;font-weight:600;">Projects</th>
+              <th style="text-align:center;padding:4px 0;font-weight:600;">Avg Progress</th>
+              <th style="text-align:center;padding:4px 0;font-weight:600;">Completed</th>
+            </tr></thead>
+            <tbody id="tr-team-perf"></tbody>
+          </table>
+        </div>
+        <!-- Project Health -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:12px;">🩺 Project Health Score</div>
+          <div id="tr-health" style="display:flex;flex-direction:column;gap:6px;font-size:12px;"></div>
+        </div>
+      </div>
+
+      <!-- ROW 6: Photo Analytics + Recent Updates -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+        <!-- Photo Analytics -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:12px;">📷 Photo Analytics</div>
+          <div id="tr-photos" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+        </div>
+        <!-- Recently Updated -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:12px;">🕐 Recently Updated Projects</div>
+          <div id="tr-recent" style="display:flex;flex-direction:column;gap:6px;font-size:12px;"></div>
+        </div>
+      </div>
+
+      <!-- ROW 7: All Projects Table -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);">📋 All Projects</div>
+          <div class="sec-search" style="margin-left:auto;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="tr-search-input" placeholder="Search project name…" oninput="trApplyFilters()"/>
+          </div>
+          <button class="tb-btn" onclick="trExportCSV()" title="Export filtered view to CSV">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+        </div>
+        <div class="tbl-wrap" style="margin:0;">
+          <table>
+            <thead><tr>
+              <th class="tr-sortable" data-sort="name" onclick="trSortBy('name')">Project <span class="tr-sort-arrow"></span></th>
+              <th class="tr-sortable" data-sort="team" onclick="trSortBy('team')">Team <span class="tr-sort-arrow"></span></th>
+              <th class="tr-sortable" data-sort="stage" onclick="trSortBy('stage')">Stage <span class="tr-sort-arrow"></span></th>
+              <th class="tr-sortable" data-sort="status" onclick="trSortBy('status')">Status <span class="tr-sort-arrow"></span></th>
+              <th class="tr-sortable" data-sort="progress" onclick="trSortBy('progress')">Progress <span class="tr-sort-arrow"></span></th>
+              <th class="tr-sortable" data-sort="end" onclick="trSortBy('end')">End Date <span class="tr-sort-arrow"></span></th>
+              <th class="tr-sortable" data-sort="pending" onclick="trSortBy('pending')">Pending <span class="tr-sort-arrow"></span></th>
+              <th class="tr-sortable" data-sort="health" onclick="trSortBy('health')">Health <span class="tr-sort-arrow"></span></th>
+            </tr></thead>
+            <tbody id="tr-all-projects"><tr class="loading-row"><td colspan="8"><span class="spin"></span>Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TEAM REPORT — PROJECT DETAIL SLIDE-OUT ═══ -->
+    <div id="tr-detail-overlay" onclick="trCloseDetail(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;">
+      <div id="tr-detail-panel" onclick="event.stopPropagation()" style="position:absolute;top:0;right:0;height:100%;width:420px;max-width:92vw;background:var(--surface);border-left:1px solid var(--border);box-shadow:-8px 0 30px rgba(0,0,0,.4);overflow-y:auto;padding:20px;">
+        <div id="tr-detail-content">Loading…</div>
       </div>
     </div>
 
@@ -1391,6 +1606,8 @@ set(ref(db, `users/${user.uid}/profile`), {
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 <script>
 /* ══════════════ FIREBASE ══════════════ */
 firebase.initializeApp({
@@ -1404,6 +1621,7 @@ firebase.initializeApp({
 });
 const auth = firebase.auth();
 const db   = firebase.database();
+const fns  = firebase.functions();
 
 /* ══════════════ STATE ══════════════ */
 let D = {};             // allUsersData
@@ -1487,7 +1705,7 @@ function bootAdmin(){
 }
 
 /* ══════════════ NAVIGATION ══════════════ */
-const PAGE_LABELS={overview:'Dashboard',analytics:'Analytics',users:'Users',uploads:'KMC Uploads',projects:'Projects',tasks:'Tasks',trash:'Trash',admins:'Admins',activity:'Activity Log',settings:'Settings'};
+const PAGE_LABELS={overview:'Dashboard',analytics:'Analytics',users:'Users',uploads:'KMC Uploads',projects:'Projects',teamreport:'Team Report Analytics',tasks:'Tasks',trash:'Trash',admins:'Admins',activity:'Activity Log',settings:'Settings'};
 function nav(tab,el){
   // Normalise: strip leading 'tab-' so we always work with bare key
   const key=tab.startsWith('tab-')?tab.slice(4):tab;
@@ -1500,21 +1718,52 @@ function nav(tab,el){
   if(key==='activity') renderActivityLog();
   if(key==='broadcast') loadBroadcastHistory();
   if(key==='analytics') setTimeout(renderAnalytics,50);
+  if(key==='teamreport') setTimeout(loadTeamReportData,50);
 }
 
-function renderActivityLog(){
+async function renderActivityLog(){
   const body=document.getElementById('activity-body');
   if(!body) return;
-  if(!activityLog.length){
-    body.innerHTML='<tr class="loading-row"><td colspan="4">No actions yet this session</td></tr>';
-    return;
+  body.innerHTML='<tr class="loading-row"><td colspan="4"><span class="spin"></span>Loading…</td></tr>';
+  try{
+    // Pull the server-persisted log (written by the logActivity Cloud Function).
+    // This is the real audit trail — visible across reloads and across every admin,
+    // unlike the old version which only showed actions from the current browser tab.
+    const snap = await db.ref('activity_log').orderByChild('time').limitToLast(200).once('value');
+    const val = snap.val() || {};
+    const serverLog = Object.values(val)
+      .sort((a,b)=>(b.time||0)-(a.time||0))
+      .map(l=>({
+        time: l.time ? new Date(l.time).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—',
+        action: l.action||'', target: l.target||'', detail: l.detail||'',
+        byEmail: l.byEmail||''
+      }));
+
+    if(!serverLog.length){
+      body.innerHTML='<tr class="loading-row"><td colspan="4">No actions logged yet</td></tr>';
+      return;
+    }
+    body.innerHTML=serverLog.map(l=>`<tr>
+      <td class="td-mono td-dim">${esc(l.time)}</td>
+      <td style="font-size:12px">${esc(l.action)}</td>
+      <td class="td-email">${esc(l.target)}</td>
+      <td class="td-dim" style="font-size:11px">${esc(l.detail)}${l.byEmail?` <span style="color:var(--text3)">· ${esc(l.byEmail)}</span>`:''}</td>
+    </tr>`).join('');
+  }catch(e){
+    // Fall back to session-local log if the server log can't be read
+    // (e.g. Cloud Functions not deployed yet, or rules not updated)
+    console.warn('Could not load server activity log, showing local session log:', e.message);
+    if(!activityLog.length){
+      body.innerHTML='<tr class="loading-row"><td colspan="4">No actions yet this session</td></tr>';
+      return;
+    }
+    body.innerHTML=activityLog.map(l=>`<tr>
+      <td class="td-mono td-dim">${l.time}</td>
+      <td style="font-size:12px">${esc(l.action)}</td>
+      <td class="td-email">${esc(l.target)}</td>
+      <td class="td-dim" style="font-size:11px">${esc(l.detail)}</td>
+    </tr>`).join('');
   }
-  body.innerHTML=activityLog.map(l=>`<tr>
-    <td class="td-mono td-dim">${l.time}</td>
-    <td style="font-size:12px">${esc(l.action)}</td>
-    <td class="td-email">${esc(l.target)}</td>
-    <td class="td-dim" style="font-size:11px">${esc(l.detail)}</td>
-  </tr>`).join('');
 }
 
 /* ══════════════ REFRESH ══════════════ */
@@ -2301,9 +2550,15 @@ document.addEventListener('click',function(e){
 
 /* ══════════════ ACTIONS ══════════════ */
 function logAction(action,target,detail=''){
+  // Instant local render so the UI feels immediate (used as fallback only)
   activityLog.unshift({time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),action,target,detail});
   if(activityLog.length>200) activityLog.pop();
-  renderActivityLog();
+  // Persist to server so the log survives reloads and is visible to every admin.
+  // Fire-and-forget: a logging failure should never block the action that triggered it.
+  // (Activity tab re-fetches the server log fresh each time it's opened — see renderActivityLog.)
+  try{
+    fns.httpsCallable('logActivity')({action,target,detail}).catch(e=>console.warn('Activity log not persisted:',e.message));
+  }catch(e){console.warn('Activity log not persisted:',e.message);}
 }
 
 // Confirm helper
@@ -2462,84 +2717,35 @@ async function deleteUserData(uid){
   });
 }
 
-/* ══════════════ SERVICE ACCOUNT SYNC ══════════════ */
+/* ══════════════ SYNC AUTH USERS (via secure Cloud Function) ══════════════
+   The private-key / JWT-signing flow that used to run in the browser has
+   been moved server-side into a Cloud Function (syncAuthUsers). The browser
+   never sees a service account key — it just calls the function while
+   signed in, and the function verifies admin status itself before doing
+   anything. See cyman-functions/functions/index.js for the server code. */
 function openSa(){document.getElementById('sa-modal').classList.add('open');}
 function closeSa(){document.getElementById('sa-modal').classList.remove('open');document.getElementById('sa-err').textContent='';document.getElementById('sa-prog').textContent='';document.getElementById('sa-bar').style.display='none';}
 
 async function startSync(){
-  const raw=document.getElementById('sa-json').value.trim();
   const errEl=document.getElementById('sa-err'), progEl=document.getElementById('sa-prog');
   const barEl=document.getElementById('sa-bar'), fillEl=document.getElementById('sa-bar-fill');
   const btn=document.getElementById('sa-go-btn');
   errEl.textContent=''; progEl.textContent='';
-  let sa;
-  try{sa=JSON.parse(raw);}catch(_){errEl.textContent='Invalid JSON — paste the full service account file.';return;}
-  if(!sa.private_key||!sa.client_email){errEl.textContent='Missing private_key or client_email.';return;}
-  btn.disabled=true; barEl.style.display='block'; fillEl.style.width='10%';
+  btn.disabled=true; barEl.style.display='block'; fillEl.style.width='20%';
   try{
-    progEl.textContent='Generating JWT…';
-    const token=await getAccessToken(sa);
-    fillEl.style.width='30%'; progEl.textContent='Fetching auth users…';
-    const users=await listAuthUsers(token);
-    fillEl.style.width='60%'; progEl.textContent=`Writing ${users.length} profiles…`;
-    await writeProfiles(users,fillEl,progEl);
-    fillEl.style.width='100%'; progEl.textContent=`✓ Synced ${users.length} users!`;
-    logAction('Sync Auth Users','all',`${users.length} profiles synced`);
-    toast(`✓ Synced ${users.length} auth profiles`,'ok');
+    progEl.textContent='Syncing auth users…';
+    fillEl.style.width='50%';
+    const callSync = fns.httpsCallable('syncAuthUsers');
+    const result = await callSync();
+    const count = result.data?.count ?? 0;
+    fillEl.style.width='100%'; progEl.textContent=`✓ Synced ${count} users!`;
+    toast(`✓ Synced ${count} auth profiles`,'ok');
     setTimeout(()=>{closeSa();refreshAll();},1500);
-  }catch(e){errEl.textContent=e.message||String(e);fillEl.style.width='0%';}
-  btn.disabled=false;
-}
-
-async function getAccessToken(sa){
-  const enc=o=>btoa(JSON.stringify(o)).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-  const now=Math.floor(Date.now()/1000);
-  const hdr={alg:'RS256',typ:'JWT'};
-  const pay={iss:sa.client_email,scope:'https://www.googleapis.com/auth/firebase https://www.googleapis.com/auth/cloud-platform',aud:'https://oauth2.googleapis.com/token',iat:now,exp:now+3600};
-  const si=enc(hdr)+'.'+enc(pay);
-  const key=await importKey(sa.private_key);
-  const sig=await crypto.subtle.sign({name:'RSASSA-PKCS1-v1_5'},key,new TextEncoder().encode(si));
-  const jwt=si+'.'+btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-  const r=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:`grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`});
-  const d=await r.json();
-  if(!d.access_token) throw new Error(d.error_description||'Failed to get access token');
-  return d.access_token;
-}
-async function importKey(pem){
-  const der=Uint8Array.from(atob(pem.replace(/-----[^-]+-----/g,'').replace(/\s/g,'')),c=>c.charCodeAt(0));
-  return crypto.subtle.importKey('pkcs8',der.buffer,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
-}
-async function listAuthUsers(token){
-  let users=[],next=null;
-  do{
-    const url=new URL(`https://identitytoolkit.googleapis.com/v1/projects/project-management-man2/accounts:batchGet`);
-    url.searchParams.set('maxResults','1000');
-    if(next) url.searchParams.set('nextPageToken',next);
-    const r=await fetch(url,{headers:{Authorization:`Bearer ${token}`}});
-    const d=await r.json();
-    if(!r.ok) throw new Error(d.error?.message||`API error ${r.status}`);
-    if(d.users) users=users.concat(d.users);
-    next=d.nextPageToken||null;
-  }while(next);
-  return users;
-}
-async function writeProfiles(users,fillEl,progEl){
-  const chunks=[]; for(let i=0;i<users.length;i+=50) chunks.push(users.slice(i,i+50));
-  let done=0;
-  for(const chunk of chunks){
-    await Promise.all(chunk.map(u=>db.ref(`users/${u.localId}/profile`).set({
-      uid:u.localId, email:u.email||'', displayName:u.displayName||'',
-      photoURL:u.photoUrl||'', providerId:u.providerUserInfo?.[0]?.providerId||'password',
-      createdAt:u.createdAt?new Date(parseInt(u.createdAt)).toISOString():'',
-      lastLogin:u.lastLoginAt?new Date(parseInt(u.lastLoginAt)).toISOString():'',
-      lastLoginMs:u.lastLoginAt?parseInt(u.lastLoginAt):0,
-      emailVerified:u.emailVerified||false, disabled:u.disabled||false,
-      syncedAt:new Date().toISOString(), syncedByAdmin:true,
-    })));
-    done+=chunk.length;
-    if(fillEl) fillEl.style.width=(60+done/users.length*40).toFixed(0)+'%';
-    if(progEl) progEl.textContent=`Writing profiles… ${done}/${users.length}`;
+  }catch(e){
+    errEl.textContent = e.message || String(e);
+    fillEl.style.width='0%';
   }
+  btn.disabled=false;
 }
 
 /* ══════════════ HELPERS ══════════════ */
@@ -2795,16 +3001,30 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* ── Auto-refresh every 90 seconds ── */
+/* ── Auto-refresh every 90 seconds ──
+   Skips tabs with no time-sensitive data (Settings, Admins, Activity Log)
+   and skips entirely while Team Report tab is open (it has its own Firestore refresh). */
+const TABS_NO_AUTOREFRESH = ['settings','admins','activity','teamreport'];
 let _autoRefreshTimer=null;
+let _refreshInFlight=false;
+
+function _currentTabKey(){
+  const active=document.querySelector('.tab-panel.active');
+  return active ? active.id.replace('tab-','') : 'overview';
+}
+
 function startAutoRefresh(){
   clearInterval(_autoRefreshTimer);
   _autoRefreshTimer=setInterval(()=>{
-    if(document.visibilityState==='visible') refreshAll();
+    if(document.visibilityState!=='visible') return;
+    if(TABS_NO_AUTOREFRESH.includes(_currentTabKey())) return;
+    refreshAll();
   }, 90000);
 }
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible') refreshAll();
+  if(document.visibilityState==='visible' && !TABS_NO_AUTOREFRESH.includes(_currentTabKey())){
+    refreshAll();
+  }
 });
 
 /* ── Last refreshed indicator ── */
@@ -2814,13 +3034,16 @@ function updateLastRefreshed(){
 }
 
 // Patch refreshAll to also update last-refreshed and start auto-refresh
+// Guarded against overlapping calls (rapid tab switches / clicks can't stack fetches)
 const _origRefreshAll=refreshAll;
 async function refreshAll(){
+  if(_refreshInFlight) return;
+  _refreshInFlight=true;
   const btn=document.getElementById('refresh-btn');
   if(btn){btn.classList.add('refreshing');btn.disabled=true;}
   try{await loadAll(); updateLastRefreshed(); startAutoRefresh();}
   catch(e){toast('Error: '+e.message,'err');}
-  finally{if(btn){btn.classList.remove('refreshing');btn.disabled=false;}}
+  finally{if(btn){btn.classList.remove('refreshing');btn.disabled=false;} _refreshInFlight=false;}
 }
 
 /* ── Toast supports warn type ── */
@@ -3307,6 +3530,708 @@ function postLoadNotifs(){
   if(overdue>0&&localStorage.getItem('cm2_last_overdue')!=overdue){pushNotif(`⚠ ${overdue} tasks are overdue across all users`,'red');localStorage.setItem('cm2_last_overdue',overdue);}
   if(expiring>0&&localStorage.getItem('cm2_last_expiring')!=expiring){pushNotif(`⏰ ${expiring} uploads expiring within 7 days`,'amber');localStorage.setItem('cm2_last_expiring',expiring);}
   if(disabled>0&&localStorage.getItem('cm2_last_disabled')!=disabled){pushNotif(`🔒 ${disabled} user accounts are disabled`,'blue');localStorage.setItem('cm2_last_disabled',disabled);}
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   TEAM REPORT ANALYTICS — loads from Firestore teams collection
+══════════════════════════════════════════════════════════════════ */
+
+let _trLoaded = false;
+let _fsdb = null;
+let _trAllProjects = []; // master copy — never filtered
+let _trFilters = { team:'all', stage:'all', status:'all', health:'all', progress:'all' };
+let _trTeamsByName = {}; // teamName -> { id, name, members:[uid...], code, ... }
+let _trUsersById = {};   // uid -> { uid, name, email, teamId, teamName, role }
+
+function trSetTeam(teamName){
+  _trFilters.team = teamName;
+  const sel = document.getElementById('tr-filter-team');
+  if(sel && sel.value !== teamName) sel.value = teamName;
+  _trRenderTeamMembers(teamName);
+  trApplyFilters();
+}
+
+function _trRenderTeamMembers(teamName){
+  const card = document.getElementById('tr-team-members-card');
+  const list = document.getElementById('tr-members-list');
+  const countEl = document.getElementById('tr-members-count');
+  if(!card || !list) return;
+
+  if(teamName === 'all'){
+    card.style.display = 'none';
+    return;
+  }
+
+  const team = _trTeamsByName[teamName];
+  if(!team){ card.style.display = 'none'; return; }
+
+  const memberIds = team.members || [];
+  const members = memberIds.map(uid => _trUsersById[uid] || { name: 'Unknown user', email: uid, role:'' });
+
+  card.style.display = 'block';
+  if(countEl) countEl.textContent = members.length;
+
+  list.innerHTML = members.length ? members.map(m => {
+    const initial = (m.name || m.email || '?').charAt(0).toUpperCase();
+    const roleColor = m.role === 'admin' ? 'var(--accent)' : 'var(--text3)';
+    return `<div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:8px;padding:10px;">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--blue-dim);color:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">${esc(initial)}</div>
+      <div style="overflow:hidden;">
+        <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(m.name || 'Unnamed')}</div>
+        <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(m.email || '')}</div>
+      </div>
+      ${m.role ? `<span style="margin-left:auto;font-size:9px;font-weight:700;color:${roleColor};text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;">${esc(m.role)}</span>` : ''}
+    </div>`;
+  }).join('') : '<div style="color:var(--text3);font-size:12px;">No members found in this team.</div>';
+}
+
+// ── SORTING ──
+let _trSortField = 'progress';
+let _trSortDir = 'desc'; // 'asc' | 'desc'
+let _trFilteredCache = [];
+
+function trSortBy(field){
+  if(_trSortField === field){
+    _trSortDir = _trSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    _trSortField = field;
+    _trSortDir = field === 'name' || field === 'team' || field === 'stage' ? 'asc' : 'desc';
+  }
+  // Update header arrows
+  document.querySelectorAll('.tr-sortable').forEach(th=>{
+    const arrow = th.querySelector('.tr-sort-arrow');
+    if(th.dataset.sort === field){
+      arrow.textContent = _trSortDir === 'asc' ? '▲' : '▼';
+      arrow.style.opacity = '1';
+    } else {
+      arrow.textContent = '';
+      arrow.style.opacity = '.5';
+    }
+  });
+  trApplyFilters();
+}
+
+function _trSortProjects(list){
+  const field = _trSortField, dir = _trSortDir;
+  const sorted = [...list].sort((a,b)=>{
+    let va, vb;
+    switch(field){
+      case 'name':     va=(a.name||'').toLowerCase(); vb=(b.name||'').toLowerCase(); break;
+      case 'team':     va=(a._teamName||'').toLowerCase(); vb=(b._teamName||'').toLowerCase(); break;
+      case 'stage':    va=(a.stage||'').toLowerCase(); vb=(b.stage||'').toLowerCase(); break;
+      case 'status':   va=_trStatusLabel(a.status); vb=_trStatusLabel(b.status); break;
+      case 'progress': va=_trPct(a); vb=_trPct(b); break;
+      case 'end':      va=a.endDate&&a.endDate!=='—'?new Date(a.endDate).getTime():-Infinity; vb=b.endDate&&b.endDate!=='—'?new Date(b.endDate).getTime():-Infinity; break;
+      case 'pending':  va=[...(a.site||[]),...(a.draw||[]),...(a.dec||[])].filter(i=>i.s==='pending').length; vb=[...(b.site||[]),...(b.draw||[]),...(b.dec||[])].filter(i=>i.s==='pending').length; break;
+      case 'health':   { const order={Critical:0,'Attention Needed':1,Healthy:2,Completed:3}; va=order[_trHealthScore(a).label]??9; vb=order[_trHealthScore(b).label]??9; break; }
+      default: va=0; vb=0;
+    }
+    if(va < vb) return dir==='asc' ? -1 : 1;
+    if(va > vb) return dir==='asc' ? 1 : -1;
+    return 0;
+  });
+  return sorted;
+}
+
+// ── ROW CLICK → DETAIL SLIDE-OUT ──
+function trOpenDetail(teamId, projId){
+  const p = _trAllProjects.find(x => x._teamId===teamId && x._fsId===projId);
+  if(!p){ console.warn('Project not found for detail view'); return; }
+  const pct = _trPct(p);
+  const health = _trHealthScore(p);
+  const sections = [
+    { title:'Site Works', items:p.site||[] },
+    { title:'Drawings', items:p.draw||[] },
+    { title:'Decisions / Actions', items:p.dec||[] },
+  ];
+  const statusDotColor = i => i.s==='done'||i.s==='released' ? 'var(--green)' : i.s==='ongoing' ? 'var(--blue)' : 'var(--red)';
+
+  const html = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+      <div>
+        <div style="font-size:17px;font-weight:800;color:var(--text);">${esc(p.name||'—')}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${esc(p._teamName||'—')} · ${esc(p.stage||'—')}</div>
+      </div>
+      <button onclick="trCloseDetail()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;">×</button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin:14px 0;">
+      <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${pct>=70?'var(--green)':pct>=40?'var(--accent)':'var(--red)'};border-radius:4px;"></div>
+      </div>
+      <span style="font-weight:700;font-size:13px;color:var(--text);">${pct}%</span>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <span class="badge" style="background:var(--surface2);color:${_trStatusColor(p.status)};">${_trStatusLabel(p.status)}</span>
+      <span class="badge" style="background:var(--surface2);color:${health.color};">${health.icon} ${health.label}</span>
+      ${p.endDate && p.endDate!=='—' ? `<span class="badge" style="background:var(--surface2);color:var(--text2);">Due ${esc(p.endDate)}</span>` : ''}
+    </div>
+
+    ${(p.kh && p.kh.length && p.kh[0].t) ? `
+    <div class="tr-detail-section-title">Key Highlights</div>
+    ${p.kh.map(k=>`<div class="tr-detail-item"><span style="color:var(--text2);">${esc(k.t||'')}</span></div>`).join('')}
+    ` : ''}
+
+    ${sections.map(sec => sec.items.length ? `
+      <div class="tr-detail-section-title">${sec.title} (${sec.items.length})</div>
+      ${sec.items.map(i=>`
+        <div class="tr-detail-item">
+          <span style="display:flex;align-items:center;gap:7px;color:var(--text2);">
+            <span style="width:7px;height:7px;border-radius:50%;background:${statusDotColor(i)};flex-shrink:0;"></span>
+            ${esc(i.t||i.name||'Untitled item')}
+          </span>
+          <span style="font-size:10px;color:var(--text3);text-transform:capitalize;">${esc(i.s||'')}</span>
+        </div>
+      `).join('')}
+    ` : '').join('')}
+
+    ${p.notes ? `<div class="tr-detail-section-title">Notes</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">${esc(p.notes)}</div>` : ''}
+
+    ${p.photos && p.photos.length ? `<div class="tr-detail-section-title">Site Photos (${p.photos.length})</div>` : ''}
+  `;
+
+  document.getElementById('tr-detail-content').innerHTML = html;
+  document.getElementById('tr-detail-overlay').style.display = 'block';
+}
+
+function trCloseDetail(e){
+  if(e && e.target.id !== 'tr-detail-overlay') return;
+  document.getElementById('tr-detail-overlay').style.display = 'none';
+}
+
+// ── CSV EXPORT ──
+function trExportCSV(){
+  const rows = _trFilteredCache.length ? _trFilteredCache : _trAllProjects;
+  if(!rows.length){ alert('No data to export.'); return; }
+  const headers = ['Project','Team','Stage','Status','Progress %','End Date','Pending Items','Health'];
+  const lines = [headers.join(',')];
+  rows.forEach(p=>{
+    const pct = _trPct(p);
+    const pending = [...(p.site||[]),...(p.draw||[]),...(p.dec||[])].filter(i=>i.s==='pending').length;
+    const health = _trHealthScore(p).label;
+    const escCsv = v => `"${String(v??'').replace(/"/g,'""')}"`;
+    lines.push([escCsv(p.name),escCsv(p._teamName),escCsv(p.stage),escCsv(_trStatusLabel(p.status)),pct,escCsv(p.endDate&&p.endDate!=='—'?p.endDate:''),pending,escCsv(health)].join(','));
+  });
+  const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const teamSuffix = _trFilters.team !== 'all' ? '_'+_trFilters.team.replace(/[^a-z0-9]/gi,'') : '';
+  a.href = url;
+  a.download = `team_report${teamSuffix}_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function trApplyFilters(){
+  const f = _trFilters;
+  f.stage    = document.getElementById('tr-filter-stage')?.value    || 'all';
+  f.status   = document.getElementById('tr-filter-status')?.value   || 'all';
+  f.health   = document.getElementById('tr-filter-health')?.value   || 'all';
+  f.progress = document.getElementById('tr-filter-progress')?.value || 'all';
+  const search = (document.getElementById('tr-search-input')?.value || '').trim().toLowerCase();
+
+  let filtered = [..._trAllProjects];
+
+  if(f.team !== 'all')     filtered = filtered.filter(p => p._teamName === f.team);
+  if(f.stage !== 'all')    filtered = filtered.filter(p => (p.stage||'') === f.stage);
+  if(f.status !== 'all')   filtered = filtered.filter(p => (p.status||'') === f.status);
+  if(f.health !== 'all')   filtered = filtered.filter(p => _trHealthScore(p).label === f.health);
+  if(f.progress !== 'all'){
+    const [min,max] = f.progress.split('-').map(Number);
+    filtered = filtered.filter(p => { const pct=_trPct(p); return pct>=min && pct<=max; });
+  }
+  if(search) filtered = filtered.filter(p => (p.name||'').toLowerCase().includes(search));
+
+  filtered = _trSortProjects(filtered);
+  _trFilteredCache = filtered; // used by CSV export
+
+  // Update filter count badge
+  const activeCount = [f.team!=='all', f.stage!=='all', f.status!=='all', f.health!=='all', f.progress!=='all'].filter(Boolean).length;
+  const badge = document.getElementById('tr-filter-count');
+  if(badge){ badge.style.display = activeCount ? 'inline' : 'none'; badge.textContent = activeCount + ' filter' + (activeCount!==1?'s':''); }
+
+  // Update project count badge
+  const projBadge = document.getElementById('tr-proj-count');
+  if(projBadge) projBadge.textContent = filtered.length + (filtered.length !== _trAllProjects.length ? ' / '+_trAllProjects.length : '');
+
+  // Re-render all widgets with filtered data
+  _renderTRSummaryCards(filtered);
+  _renderTRStageDistribution(filtered);
+  _renderTRProgressBands(filtered);
+  _renderTRDeadlines(filtered);
+  _renderTRDecisions(filtered);
+  _renderTRDrawings(filtered);
+  _renderTRSiteWorks(filtered);
+  _renderTRTeamPerformance(filtered, []);
+  _renderTRHealth(filtered);
+  _renderTRPhotoAnalytics(filtered);
+  _renderTRRecent(filtered);
+  _renderTRAllProjects(filtered);
+}
+
+function trResetFilters(){
+  _trFilters = { team:'all', stage:'all', status:'all', health:'all', progress:'all' };
+  ['tr-filter-team','tr-filter-stage','tr-filter-status','tr-filter-health','tr-filter-progress'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value='all';
+  });
+  const searchEl = document.getElementById('tr-search-input');
+  if(searchEl) searchEl.value = '';
+  _trRenderTeamMembers('all');
+  trApplyFilters();
+}
+
+function _trPopulateTeamDropdown(projects){
+  const teams = [...new Set(projects.map(p=>p._teamName))].sort();
+  const el = document.getElementById('tr-filter-team');
+  if(!el) return;
+  const cur = el.value || _trFilters.team || 'all';
+  el.innerHTML = '<option value="all">All Teams</option>' +
+    teams.map(t=>`<option value="${esc(t)}" ${cur===t?'selected':''}>${esc(t)}</option>`).join('');
+}
+
+function _trPopulateStageDropdown(projects){
+  const stages = [...new Set(projects.map(p=>p.stage||'Unknown'))].sort();
+  const el = document.getElementById('tr-filter-stage');
+  if(!el) return;
+  const cur = el.value;
+  el.innerHTML = '<option value="all">All Stages</option>' +
+    stages.map(s=>`<option value="${esc(s)}" ${cur===s?'selected':''}>${esc(s)}</option>`).join('');
+}
+
+function getFS(){
+  if(_fsdb) return _fsdb;
+  // Firestore compat SDK — same Firebase app already initialised
+  if(typeof firebase !== 'undefined' && firebase.apps.length){
+    try { _fsdb = firebase.firestore(); } catch(e){ console.warn('Firestore not loaded:', e.message); }
+  }
+  return _fsdb;
+}
+
+async function loadTeamReportData(){
+  const fs = getFS();
+  if(!fs){
+    document.getElementById('tr-all-projects').innerHTML =
+      '<tr class="loading-row"><td colspan="8">⚠ Firestore SDK not loaded. Add firebase-firestore-compat.js to admin.html.</td></tr>';
+    return;
+  }
+
+  // Show loading state
+  document.getElementById('tr-all-projects').innerHTML =
+    '<tr class="loading-row"><td colspan="8"><span class="spin"></span>Loading from Firestore…</td></tr>';
+
+  try {
+    // 1. Fetch all teams
+    const teamsSnap = await fs.collection('teams').get();
+    const teams = [];
+    teamsSnap.forEach(d => teams.push({ id: d.id, ...d.data() }));
+
+    // 2. Fetch all users (for resolving team member names/emails)
+    const usersSnap = await fs.collection('users').get();
+    _trUsersById = {};
+    usersSnap.forEach(d => { _trUsersById[d.id] = { uid: d.id, ...d.data() }; });
+
+    // 3. Fetch all projects across all teams
+    let allProjects = [];
+    await Promise.all(teams.map(async team => {
+      const projSnap = await fs.collection('teams').doc(team.id).collection('projects').get();
+      projSnap.forEach(d => {
+        allProjects.push({ _teamId: team.id, _teamName: team.name || team.id, _fsId: d.id, ...d.data() });
+      });
+    }));
+
+    // Store master copies for filtering / member lookups
+    _trAllProjects = allProjects;
+    _trTeamsByName = {};
+    teams.forEach(t => { _trTeamsByName[t.name || t.id] = t; });
+
+    // Populate team dropdown and stage dropdown from real data
+    _trPopulateTeamDropdown(allProjects);
+    _trPopulateStageDropdown(allProjects);
+
+    // Update badge
+    const badge = document.getElementById('tr-proj-count');
+    if(badge) badge.textContent = allProjects.length;
+
+    // Render with current filters (reset to all on fresh load)
+    trResetFilters();
+
+  } catch(e){
+    console.error('Team Report load error:', e);
+    document.getElementById('tr-all-projects').innerHTML =
+      `<tr class="loading-row"><td colspan="8">⚠ Error: ${e.message}</td></tr>`;
+  }
+}
+
+function _trPct(p){
+  if(p.pctO !== null && p.pctO !== undefined) return p.pctO;
+  const all = [...(p.site||[]), ...(p.draw||[]), ...(p.dec||[])];
+  if(!all.length) return 0;
+  return Math.round(all.filter(i=>i.s==='done'||i.s==='released').length / all.length * 100);
+}
+
+function _trStatusLabel(s){
+  return {done:'Completed', ongoing:'Active', pending:'On Hold', released:'Released'}[s] || s || '—';
+}
+
+function _trStatusColor(s){
+  return {done:'var(--green)', ongoing:'var(--cyan)', pending:'var(--accent)', released:'var(--blue)'}[s] || 'var(--text2)';
+}
+
+function _trHealthScore(p){
+  const pct = _trPct(p);
+  const pending = [...(p.site||[]),...(p.draw||[])].filter(i=>i.s==='pending').length;
+  const dec = (p.dec||[]).filter(i=>i.s==='pending').length;
+  const score = pct - (pending * 3) - (dec * 5);
+  if(p.status === 'done') return {icon:'🟢', label:'Completed', color:'var(--green)'};
+  if(score >= 50) return {icon:'🟢', label:'Healthy', color:'var(--green)'};
+  if(score >= 20) return {icon:'🟡', label:'Attention Needed', color:'var(--accent)'};
+  return {icon:'🔴', label:'Critical', color:'var(--red)'};
+}
+
+function _renderTRSummaryCards(projects){
+  const now = Date.now();
+  const weekAgo = now - 7 * 86400000;
+  const total = projects.length;
+  const active = projects.filter(p=>p.status==='ongoing').length;
+  const done = projects.filter(p=>p.status==='done').length;
+  const hold = projects.filter(p=>p.status==='pending').length;
+  const delayed = projects.filter(p=>{
+    if(p.status==='done') return false;
+    if(p.endDate && p.endDate !== '—'){
+      try{ return new Date(p.endDate) < new Date(); } catch(e){ return false; }
+    }
+    return false;
+  }).length;
+  const pcts = projects.map(p=>_trPct(p));
+  const avg = pcts.length ? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length) : 0;
+  const high = pcts.length ? Math.max(...pcts) : 0;
+  const low = pcts.length ? Math.min(...pcts) : 0;
+  const updatedWeek = projects.filter(p=>{
+    if(!p.updatedAt) return false;
+    const ts = p.updatedAt.toMillis ? p.updatedAt.toMillis() : (p.updatedAt.seconds ? p.updatedAt.seconds*1000 : 0);
+    return ts >= weekAgo;
+  }).length;
+
+  const sv = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  sv('tr-c-total', total);
+  sv('tr-c-active', active);
+  sv('tr-c-done', done);
+  sv('tr-c-hold', hold);
+  sv('tr-c-delayed', delayed);
+  sv('tr-c-avgpct', avg+'%');
+  sv('tr-c-highpct', high+'%');
+  sv('tr-c-lowpct', low+'%');
+  sv('tr-c-updated', updatedWeek);
+}
+
+function _renderTRStageDistribution(projects){
+  const el = document.getElementById('tr-stage-bars');
+  if(!el) return;
+  // Count by stage label
+  const counts = {};
+  projects.forEach(p => {
+    const k = p.stage || 'Unknown';
+    counts[k] = (counts[k]||0) + 1;
+  });
+  const total = projects.length || 1;
+  const colors = ['var(--blue)','var(--green)','var(--accent)','var(--purple)','var(--cyan)','var(--red)'];
+  el.innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([stage,count],i)=>{
+    const pct = Math.round(count/total*100);
+    return `<div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+        <span style="color:var(--text)">${esc(stage)}</span>
+        <span style="color:var(--text2)">${count} project${count!==1?'s':''}</span>
+      </div>
+      <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${colors[i%colors.length]};border-radius:3px;transition:width .5s;"></div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);font-size:12px;">No projects found</div>';
+}
+
+function _renderTRProgressBands(projects){
+  const el = document.getElementById('tr-progress-bands');
+  if(!el) return;
+  const bands = [
+    {label:'0–25%', min:0, max:25, color:'var(--red)'},
+    {label:'26–50%', min:26, max:50, color:'var(--accent)'},
+    {label:'51–75%', min:51, max:75, color:'var(--blue)'},
+    {label:'76–100%', min:76, max:100, color:'var(--green)'},
+  ];
+  const total = projects.length || 1;
+  el.innerHTML = bands.map(b=>{
+    const count = projects.filter(p=>{ const pct=_trPct(p); return pct>=b.min && pct<=b.max; }).length;
+    const pct = Math.round(count/total*100);
+    return `<div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+        <span style="color:var(--text)">${b.label}</span>
+        <span style="color:var(--text2)">${count} project${count!==1?'s':''}</span>
+      </div>
+      <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${b.color};border-radius:3px;transition:width .5s;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _renderTRDeadlines(projects){
+  const el = document.getElementById('tr-deadlines');
+  if(!el) return;
+  const now = new Date();
+  const upcoming = projects
+    .filter(p => p.endDate && p.endDate !== '—' && p.status !== 'done')
+    .map(p => {
+      try {
+        const d = new Date(p.endDate);
+        const daysLeft = Math.ceil((d - now) / 86400000);
+        return { name: p.name, daysLeft, dateStr: p.endDate, team: p._teamName, teamId: p._teamId, fsId: p._fsId };
+      } catch(e){ return null; }
+    })
+    .filter(Boolean)
+    .sort((a,b) => a.daysLeft - b.daysLeft)
+    .slice(0, 8);
+
+  if(!upcoming.length){
+    el.innerHTML = '<div style="color:var(--text3);">No upcoming deadlines with dates set</div>';
+    return;
+  }
+  el.innerHTML = upcoming.map(u => {
+    const color = u.daysLeft < 0 ? 'var(--red)' : u.daysLeft <= 7 ? 'var(--red)' : u.daysLeft <= 14 ? 'var(--accent)' : 'var(--green)';
+    const label = u.daysLeft < 0 ? `${Math.abs(u.daysLeft)}d overdue` : u.daysLeft === 0 ? 'Today' : `${u.daysLeft}d left`;
+    return `<div class="tr-row-clickable" onclick="trOpenDetail('${esc(u.teamId)}','${esc(u.fsId)}')" style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);border-radius:4px;">
+      <div>
+        <div style="color:var(--text);font-weight:600;">${esc(u.name)}</div>
+        <div style="color:var(--text3);font-size:10px;">${esc(u.team)} · ${u.dateStr}</div>
+      </div>
+      <div style="color:${color};font-size:11px;font-weight:700;white-space:nowrap;margin-left:10px;">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+function _renderTRDecisions(projects){
+  const el = document.getElementById('tr-decisions');
+  if(!el) return;
+  let totalPending = 0, totalDone = 0;
+  const byProject = [];
+  projects.forEach(p => {
+    const dec = p.dec || [];
+    const pending = dec.filter(d => d.s === 'pending').length;
+    const done = dec.filter(d => d.s === 'done').length;
+    totalPending += pending;
+    totalDone += done;
+    if(pending > 0) byProject.push({ name: p.name, pending, team: p._teamName });
+  });
+  byProject.sort((a,b) => b.pending - a.pending);
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:var(--red);">${totalPending}</div>
+        <div style="font-size:10px;color:var(--text3);">Pending</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:var(--green);">${totalDone}</div>
+        <div style="font-size:10px;color:var(--text3);">Resolved</div>
+      </div>
+    </div>
+    ${byProject.slice(0,5).map(p=>`
+      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--text);">${esc(p.name)}</span>
+        <span style="color:var(--red);font-weight:700;">${p.pending} pending</span>
+      </div>`).join('')}
+    ${!byProject.length ? '<div style="color:var(--text3);">No pending decisions</div>' : ''}
+  `;
+}
+
+function _renderTRDrawings(projects){
+  const el = document.getElementById('tr-drawings');
+  if(!el) return;
+  let released=0, pending=0, revision=0, ongoing=0;
+  projects.forEach(p => {
+    (p.draw||[]).forEach(d => {
+      if(d.s==='released'||d.s==='done') released++;
+      else if(d.s==='pending') pending++;
+      else if(d.s==='ongoing') ongoing++;
+      else revision++;
+    });
+  });
+  const items = [
+    {label:'GFC / Released', count:released, color:'var(--green)'},
+    {label:'In Progress', count:ongoing, color:'var(--blue)'},
+    {label:'Pending Approval', count:pending, color:'var(--accent)'},
+    {label:'Revision Required', count:revision, color:'var(--red)'},
+  ];
+  el.innerHTML = items.map(item=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--surface2);border-radius:6px;">
+      <span style="color:var(--text);font-size:12px;">${item.label}</span>
+      <span style="color:${item.color};font-weight:700;font-size:14px;">${item.count}</span>
+    </div>`).join('');
+}
+
+function _renderTRSiteWorks(projects){
+  const el = document.getElementById('tr-siteworks');
+  if(!el) return;
+  let done=0, ongoing=0, pending=0;
+  projects.forEach(p => {
+    (p.site||[]).forEach(s => {
+      if(s.s==='done'||s.s==='released') done++;
+      else if(s.s==='ongoing') ongoing++;
+      else pending++;
+    });
+  });
+  const total = done + ongoing + pending || 1;
+  const bands = [
+    {label:'Completed', count:done, color:'var(--green)'},
+    {label:'Ongoing', count:ongoing, color:'var(--accent)'},
+    {label:'Pending', count:pending, color:'var(--red)'},
+  ];
+  el.innerHTML = bands.map(b => {
+    const pct = Math.round(b.count/total*100);
+    return `<div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+        <span style="color:var(--text)">${b.label}</span>
+        <span style="color:var(--text2)">${b.count} items (${pct}%)</span>
+      </div>
+      <div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${b.color};border-radius:4px;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _renderTRTeamPerformance(projects, teams){
+  const tbody = document.getElementById('tr-team-perf');
+  if(!tbody) return;
+  const byTeam = {};
+  projects.forEach(p => {
+    if(!byTeam[p._teamName]) byTeam[p._teamName] = [];
+    byTeam[p._teamName].push(p);
+  });
+  tbody.innerHTML = Object.entries(byTeam).sort((a,b)=>b[1].length-a[1].length).map(([team, projs])=>{
+    const avg = Math.round(projs.reduce((a,p)=>a+_trPct(p),0)/projs.length);
+    const done = projs.filter(p=>p.status==='done').length;
+    return `<tr class="tr-row-clickable" onclick="trSetTeam('${esc(team)}')">
+      <td style="padding:6px 0;color:var(--text);">${esc(team)}</td>
+      <td style="text-align:center;color:var(--text2);">${projs.length}</td>
+      <td style="text-align:center;">
+        <span style="color:${avg>=70?'var(--green)':avg>=40?'var(--accent)':'var(--red)'};">${avg}%</span>
+      </td>
+      <td style="text-align:center;color:var(--green);">${done}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="4" style="color:var(--text3);padding:8px 0;">No data</td></tr>';
+}
+
+function _renderTRHealth(projects){
+  const el = document.getElementById('tr-health');
+  if(!el) return;
+  const scored = projects.map(p => ({ name:p.name, team:p._teamName, teamId:p._teamId, fsId:p._fsId, ...  _trHealthScore(p), pct: _trPct(p) }));
+  const critical = scored.filter(p=>p.label==='Critical');
+  const attention = scored.filter(p=>p.label==='Attention Needed');
+  const healthy = scored.filter(p=>p.label==='Healthy' || p.label==='Completed');
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;">
+      <div style="background:var(--green-dim);border:1px solid var(--green);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:var(--green);">${healthy.length}</div>
+        <div style="font-size:9px;color:var(--text3);">🟢 Healthy</div>
+      </div>
+      <div style="background:var(--accent-dim);border:1px solid var(--accent);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:var(--accent);">${attention.length}</div>
+        <div style="font-size:9px;color:var(--text3);">🟡 Attention</div>
+      </div>
+      <div style="background:var(--red-dim);border:1px solid var(--red);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:var(--red);">${critical.length}</div>
+        <div style="font-size:9px;color:var(--text3);">🔴 Critical</div>
+      </div>
+    </div>
+    ${[...critical,...attention].slice(0,5).map(p=>`
+      <div class="tr-row-clickable" onclick="trOpenDetail('${esc(p.teamId)}','${esc(p.fsId)}')" style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);border-radius:4px;">
+        <div><span style="font-size:12px;">${p.icon}</span> <span style="color:var(--text);">${esc(p.name)}</span></div>
+        <span style="color:${p.color};font-size:11px;">${p.label}</span>
+      </div>`).join('')}
+  `;
+}
+
+function _renderTRPhotoAnalytics(projects){
+  const el = document.getElementById('tr-photos');
+  if(!el) return;
+  const now = Date.now();
+  const weekAgo = now - 7*86400000;
+  let totalPhotos = 0;
+  let photosThisWeek = 0;
+  let noPhotos = 0;
+  projects.forEach(p => {
+    const ph = p.photos || [];
+    totalPhotos += ph.length;
+    if(!ph.length) noPhotos++;
+    ph.forEach(photo => {
+      if(photo.addedAt && photo.addedAt >= weekAgo) photosThisWeek++;
+    });
+  });
+  const items = [
+    {label:'Total Site Photos', val:totalPhotos, color:'var(--blue)'},
+    {label:'Uploaded This Week', val:photosThisWeek, color:'var(--green)'},
+    {label:'Projects Without Photos', val:noPhotos, color:'var(--red)'},
+    {label:'Avg Photos/Project', val:projects.length ? Math.round(totalPhotos/projects.length) : 0, color:'var(--cyan)'},
+  ];
+  el.innerHTML = items.map(item=>`
+    <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;">
+      <div style="font-size:20px;font-weight:800;color:${item.color};">${item.val}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px;">${item.label}</div>
+    </div>`).join('');
+}
+
+function _renderTRRecent(projects){
+  const el = document.getElementById('tr-recent');
+  if(!el) return;
+  const sorted = [...projects].sort((a,b)=>{
+    const ta = a.updatedAt?.toMillis?.() || (a.updatedAt?.seconds||0)*1000;
+    const tb = b.updatedAt?.toMillis?.() || (b.updatedAt?.seconds||0)*1000;
+    return tb - ta;
+  }).slice(0, 8);
+
+  if(!sorted.length){ el.innerHTML='<div style="color:var(--text3);">No data</div>'; return; }
+  el.innerHTML = sorted.map(p => {
+    const ts = p.updatedAt?.toMillis?.() || (p.updatedAt?.seconds||0)*1000;
+    const ago = ts ? relTime(ts) : '—';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="color:var(--text);font-weight:600;font-size:12px;">${esc(p.name)}</div>
+        <div style="color:var(--text3);font-size:10px;">${esc(p._teamName)}</div>
+      </div>
+      <div style="color:var(--text3);font-size:11px;white-space:nowrap;margin-left:10px;">${ago}</div>
+    </div>`;
+  }).join('');
+}
+
+function _renderTRAllProjects(projects){
+  const tbody = document.getElementById('tr-all-projects');
+  if(!tbody) return;
+  if(!projects.length){ tbody.innerHTML='<tr class="loading-row"><td colspan="8">No projects match the current filters</td></tr>'; return; }
+  tbody.innerHTML = projects.map(p => {
+    const pct = _trPct(p);
+    const health = _trHealthScore(p);
+    const pendingItems = [...(p.site||[]),...(p.draw||[]),...(p.dec||[])].filter(i=>i.s==='pending').length;
+    const pctColor = pct>=70?'var(--green)':pct>=40?'var(--accent)':'var(--red)';
+    return `<tr class="tr-row-clickable" onclick="trOpenDetail('${esc(p._teamId)}','${esc(p._fsId)}')">
+      <td style="font-weight:600;color:var(--text);">${esc(p.name||'—')}</td>
+      <td class="td-email">${esc(p._teamName||'—')}</td>
+      <td><span class="badge" style="background:var(--surface2);color:var(--text2);">${esc(p.stage||'—')}</span></td>
+      <td><span style="color:${_trStatusColor(p.status)};font-size:11px;font-weight:600;">${_trStatusLabel(p.status)}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="flex:1;height:4px;background:var(--surface2);border-radius:2px;min-width:50px;">
+            <div style="height:100%;width:${pct}%;background:${pctColor};border-radius:2px;"></div>
+          </div>
+          <span style="color:${pctColor};font-size:11px;font-weight:700;min-width:30px;">${pct}%</span>
+        </div>
+      </td>
+      <td class="td-dim">${p.endDate && p.endDate!=='—' ? p.endDate : '—'}</td>
+      <td style="color:${pendingItems>0?'var(--red)':'var(--text3)'};">${pendingItems}</td>
+      <td>${health.icon} <span style="color:${health.color};font-size:11px;">${health.label}</span></td>
+    </tr>`;
+  }).join('');
 }
 
 // Initial notification render
