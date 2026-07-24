@@ -216,7 +216,7 @@ document.getElementById('authForm').onsubmit = async e => {
       await signOut(auth);
       err.style.display = 'flex';
       err.querySelector('span') && (err.querySelector('span').textContent =
-        'Account created! Check ' + email + ' for a verification link, then log in.');
+        'Account created! Check your Spam folder in ' + email + ' for a verification link, then log in.');
       err.style.color = 'inherit';
       return;
     }
