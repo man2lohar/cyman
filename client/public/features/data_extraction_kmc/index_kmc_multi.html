@@ -848,7 +848,7 @@
     });
 
     /* Lineweight tracker for Strip/Splay/Plot/Tree Cover */
-    var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set(),'Existing':new Set(),'Lift':()};
+    var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set(),'Existing':new Set(),'Lift':{}};
 
     /* Stair/Lift missing-line checks (computed once before row loop) */
     var expectedLW=['0.15 mm','0.20 mm','0.25 mm','0.30 mm'];
