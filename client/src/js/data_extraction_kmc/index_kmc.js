@@ -112,7 +112,9 @@ function displayData(csv) {
         'Strip': new Set(),
         'Splay': new Set(),
         'Plot': new Set(),
-        'Tree Cover': new Set()
+        'Tree Cover': new Set(),
+        'Existing': new Set(),
+        'Lift': {}
     };
 
     // Second pass: Create table and apply styles
@@ -182,24 +184,37 @@ function displayData(csv) {
             }
 
             // Check for duplicate lineweights for below layers
-            if (['Strip', 'Splay', 'Plot', 'Tree Cover'].includes(layer)) {
-                // Skip check for Tree Cover layer with name "Point"
+            if (['Strip', 'Splay', 'Plot', 'Tree Cover', 'Existing', 'Lift'].includes(layer)) {
+                // Skip Tree Cover Point
                 if (layer === 'Tree Cover' && name === 'Point') {
-                    // Skip the duplicate check
-                    console.log('Skipping duplicate check for Tree Cover with name "Point"');
+                    // Skip
                 } else {
-                    const key = `${lineweight}:${name}`; // Combine lineweight and name into a unique string key
-                    
-                    if (lineweightTracker[layer].has(key)) {
-                        // Duplicate found
-                        newRow.classList.add('text-red');
-                        errorMessages.push(`Duplicate lineweight and name combination found for ${layer} layer: ${name} with lineweight ${lineweight}`);
+                    const key = `${lineweight}:${name}`;
+                    if (layer === 'Lift') {
+                        // Count occurrences for Lift
+                        lineweightTracker.Lift[key] = (lineweightTracker.Lift[key] || 0) + 1;
+                        // Show error only from the 3rd occurrence onwards
+                        if (lineweightTracker.Lift[key] > 2) {
+                            newRow.classList.add('text-red');
+                            errorMessages.push(
+                                `Duplicate Lift Layer found with lineweight ${lineweight}`
+                            );
+                        }
                     } else {
-                        // Add to tracker
-                        lineweightTracker[layer].add(key);
+            
+                        // Original duplicate logic
+                        if (lineweightTracker[layer].has(key)) {
+                            newRow.classList.add('text-red');
+                            errorMessages.push(
+                                `Duplicate lineweight and name combination found for ${layer} layer: ${name} with lineweight ${lineweight}`
+                            );
+                        } else {
+                            lineweightTracker[layer].add(key);
+                        }
                     }
                 }
             }
+
             
 
 
