@@ -182,7 +182,7 @@ function displayData(csv) {
             }
 
             // Check for duplicate lineweights for below layers
-            if (['Strip', 'Splay', 'Plot', 'Tree Cover', 'Existing'].includes(layer)) {
+            if (['Strip', 'Splay', 'Plot', 'Tree Cover'].includes(layer)) {
                 // Skip check for Tree Cover layer with name "Point"
                 if (layer === 'Tree Cover' && name === 'Point') {
                     // Skip the duplicate check
