@@ -201,12 +201,11 @@ function displayData(csv) {
                             );
                         }
                     } else {
-            
                         // Original duplicate logic
                         if (lineweightTracker[layer].has(key)) {
                             newRow.classList.add('text-red');
                             errorMessages.push(
-                                `Duplicate lineweight and name combination found for ${layer} layer: ${name} with lineweight ${lineweight}`
+                                `Duplicate lineweight found for ${layer} layer: ${name} with lineweight ${lineweight}`
                             );
                         } else {
                             lineweightTracker[layer].add(key);
@@ -214,10 +213,6 @@ function displayData(csv) {
                     }
                 }
             }
-
-            
-
-
 
             // Check for missing lines for each expected lineweight in the Stair layer
             if (layer === 'Stair' && name === 'Polyline') {
