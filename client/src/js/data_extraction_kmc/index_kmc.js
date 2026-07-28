@@ -205,7 +205,7 @@ function displayData(csv) {
                         if (lineweightTracker[layer].has(key)) {
                             newRow.classList.add('text-red');
                             errorMessages.push(
-                                `Duplicate lineweight found for ${layer} layer: ${name} with lineweight ${lineweight}`
+                                `Duplicate lineweight found for ${layer} layer with lineweight ${lineweight}`
                             );
                         } else {
                             lineweightTracker[layer].add(key);
