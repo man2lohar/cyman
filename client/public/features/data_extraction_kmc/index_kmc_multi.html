@@ -848,7 +848,7 @@
     });
 
     /* Lineweight tracker for Strip/Splay/Plot/Tree Cover */
-    var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set()};
+    var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set(),'Existing':new Set(),'Lift':()};
 
     /* Stair/Lift missing-line checks (computed once before row loop) */
     var expectedLW=['0.15 mm','0.20 mm','0.25 mm','0.30 mm'];
@@ -903,14 +903,26 @@
           (lyr==='Ground Coverage'&&(colorNum<53||colorNum>152)&&nm==='Polyline')))
         rowErrors.push('In '+lyr+' Layer: Invalid color for Plot or Ground Coverage');
 
-      /* Lineweight tracker for Strip/Splay/Plot/Tree Cover */
-      if(['Strip','Splay','Plot','Tree Cover'].indexOf(lyr)>=0){
-        if(!(lyr==='Tree Cover'&&nm==='Point')){
-          var lwKey=lw+':'+nm;
-          if(lwTracker[lyr].has(lwKey))rowErrors.push('Duplicate lineweight+name for '+lyr+': '+nm+' / '+lw);
-          else lwTracker[lyr].add(lwKey);
+      /* Lineweight tracker for Strip/Splay/Plot/Tree Cover/Lift/Existing */
+      if (['Strip', 'Splay', 'Plot', 'Tree Cover', 'Lift'].indexOf(lyr) >= 0) {
+        if (!(lyr === 'Tree Cover' && nm === 'Point')) {
+          var lwKey = lw + ':' + nm; 
+          if (lyr === 'Lift') {
+            // Allow up to 2 occurrences
+            lwTracker[lyr][lwKey] = (lwTracker[lyr][lwKey] || 0) + 1;
+            if (lwTracker[lyr][lwKey] > 2) {
+              rowErrors.push('duplicate lineweights found for Lift with ' + lw);
+            }  
+          } else {
+            // Original behaviour
+            if (lwTracker[lyr].has(lwKey))
+              rowErrors.push('Duplicate lineweight found for ' + lyr + ' with ' + lw);
+            else
+              lwTracker[lyr].add(lwKey);
+          }
         }
       }
+
 
       /* Stair missing line */
       if(lyr==='Stair'&&nm==='Polyline'){
