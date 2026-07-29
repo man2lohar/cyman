@@ -372,12 +372,13 @@
      that actually have a drawn line get an entry (B|C simply never appears
      if you never drew a line near both B and C's ground coverage) */
   function _extractJointOpenSpace(masterCSVRaw, blockLabels) {
-    const centroids = _blockGCCentroids(masterCSVRaw, blockLabels);
-    const result = {};
-    if (!masterCSVRaw) return result;
-    parseCSV(masterCSVRaw).forEach(r => {
-      if (r.name !== 'Line' || r.layer !== 'Joint Open Space' ||
-          r.linetype !== 'ByLayer') return;
+      const centroids = _blockGCCentroids(masterCSVRaw, blockLabels);
+      const osLayer   = _osLayer(blockLabels.length); // JOP lines share the Open Space layer
+      const result = {};
+      if (!masterCSVRaw) return result;
+      parseCSV(masterCSVRaw).forEach(r => {
+       if (r.name !== 'Line' || r.layer !== osLayer ||
+            r.linetype !== 'ByLayer') return;
       const dir = _JOP_COLOUR_DIR[parseInt(r.colour, 10)];
       if (!dir) return;
       if (isNaN(r.midX) || isNaN(r.midY)) return;
