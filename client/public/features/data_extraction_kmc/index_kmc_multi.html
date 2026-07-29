@@ -765,6 +765,13 @@
       if(e.type==='LINE'&&e.x1!==null)e.length=dd(e.x1,e.y1,e.x2,e.y2);
       if(e.type==='LWPOLYLINE'){if(e.curX!==null&&e.curY!==null)e.vertices.push([e.curX,e.curY,e.curBulge||0]);if(e.vertices.length>=2){e.length=per(e.vertices,e.closed);if(e.closed&&e.vertices.length>=3)e.area=sho(e.vertices);}}
     });
+    raw.forEach(function(e){
+      if(e.type==='LINE'&&e.x1!==null){e.midX=(e.x1+e.x2)/2;e.midY=(e.y1+e.y2)/2;}
+      if((e.type==='LWPOLYLINE'||e.type==='POLYLINE')&&e.vertices&&e.vertices.length){
+        var sx=0,sy=0;for(var k=0;k<e.vertices.length;k++){sx+=e.vertices[k][0];sy+=e.vertices[k][1];}
+        e.centerX=sx/e.vertices.length;e.centerY=sy/e.vertices.length;
+      }
+    });
     var rows=[];
     raw.forEach(function(e){
       if(!TS.has(e.layer))return;
@@ -772,12 +779,14 @@
       var isP=(e.type==='LWPOLYLINE'||e.type==='POLYLINE'),isL=(e.type==='LINE'),isCl=e.closed||false;
       var sL=(isL||isP)&&(e.length||0)>0,sA=isP&&isCl&&(e.area||0)>0;
       var lw=e.lineweight,lwL=(lw==null||lw===-3)?'ByLayer':lw===-1?'ByLayer':lw===-2?'ByBlock':lw>=0?(lw/100).toFixed(2)+' mm':'ByLayer';
-      rows.push({count:1,name:nm,colorRaw:String(e.color||7),layer:e.layer,length:sL?(e.length*M2M).toFixed(3):'',area:sA?(e.area*M2M2).toFixed(3):'',linetype:e.linetype||'ByLayer',lineweight:lwL,closed:isCl?-1:0,printable:e.printable});
+      rows.push({count:1,name:nm,colorRaw:String(e.color||7),layer:e.layer,length:sL?(e.length*M2M).toFixed(3):'',area:sA?(e.area*M2M2).toFixed(3):'',linetype:e.linetype||'ByLayer',lineweight:lwL,closed:isCl?-1:0,printable:e.printable,
+        midX:(e.midX!=null)?(e.midX*M2M).toFixed(3):'', midY:(e.midY!=null)?(e.midY*M2M).toFixed(3):'',
+        centerX:(e.centerX!=null)?(e.centerX*M2M).toFixed(3):'', centerY:(e.centerY!=null)?(e.centerY*M2M).toFixed(3):''});
     });
     return rows;
   }
   function finE(e,layerDefs){var l=layerDefs[e.layer]||{};if(e.color===null)e.color=l.color||7;e.printable=l.plot!==undefined?l.plot:true;return e;}
-  function mkCSV(rows){return'Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed\n'+rows.map(function(r){return[r.count,r.name,r.colorRaw,r.layer,r.length,r.linetype,r.lineweight,r.area,r.closed].join(',');}).join('\n');}
+  function mkCSV(rows){return'Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed,MidX,MidY,CenterX,CenterY\n'+rows.map(function(r){return[r.count,r.name,r.colorRaw,r.layer,r.length,r.linetype,r.lineweight,r.area,r.closed,r.midX,r.midY,r.centerX,r.centerY].join(',');}).join('\n');}
 
   /* ═══════════════════════════════════════════════
      9. HOME DATA TABLE — full validation identical to index_kmc.js / displayData()
