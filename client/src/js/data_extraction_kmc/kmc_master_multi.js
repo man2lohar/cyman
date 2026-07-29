@@ -336,7 +336,6 @@
     return pairs;
   }
 
-  /* Each block's Ground Coverage centroid, from colour 53+i (A=53,B=54,C=55...) */
 /* Each block's Ground Coverage polygon(s), as raw vertex lists */
   function _blockGCPolygons(masterCSVRaw, blockLabels) {
     const polys = {};
@@ -384,17 +383,6 @@
       .filter(lbl => blockPolys[lbl].length > 0)
       .map(lbl => ({ lbl, d: _minDistToPolygons(midX, midY, blockPolys[lbl]) }))
       .sort((a, b) => a.d - b.d);
-    if (dists.length < 2) return null;
-    return [dists[0].lbl, dists[1].lbl].sort();
-  }
-
-  /* Nearest 2 block centroids to a Joint Open Space line's midpoint
-     = the 2 blocks that line sits between */
-  function _nearestBlockPair(midX, midY, centroids) {
-    const dists = Object.keys(centroids).map(lbl => {
-      const c = centroids[lbl];
-      return { lbl, d: Math.hypot(c.x - midX, c.y - midY) };
-    }).sort((a, b) => a.d - b.d);
     if (dists.length < 2) return null;
     return [dists[0].lbl, dists[1].lbl].sort();
   }
@@ -475,7 +463,7 @@
         const mandatory = parseFloat(higherOS?.[_JOP_DIR_TO_OS_SIDE[dir]]) || 0;
         const calc      = _getJOPPermissible(hA, hB, mandatory);
         const prop      = proposed[dir] || 0;
-        if (!calc.applicable && prop === 0) return;
+        if (prop === 0) return;
 
         anyRow = true;
         const permTxt = calc.applicable ? calc.required.toFixed(3) + ' M.' : 'N/A';
