@@ -136,6 +136,9 @@
     calculateProposedFAR();
     _injectHeightTable(blockHeights, blockLabels);
     _injectOpenSpacesTable(blockOS, blockLabels, blockHeights);
+  const _jopUseGroup = (document.getElementById('usegroup')?.textContent || '').toLowerCase();
+    const _jopLandArea = parseFloat(document.getElementById('land-area')?.textContent.replace(/[^\d.]/g, '')) || 0;
+    _injectJointOpenSpaceTable(masterCSVRaw, blockHeights, blockLabels, _jopUseGroup, _jopLandArea);
 
     return { blockHeights, maxHeight };
   }
@@ -297,6 +300,139 @@
     return { front: entry.front, side1: s1, side2: s2, rear: entry.rear };
   }
 
+/* ══════════════════════════════════════
+     JOINT OPEN SPACE  (KMC Rule 66)
+     Layer "Joint Open Space" on the MASTER sheet.
+     Colour    → direction: North=13  South=23  East=33  West=43
+     Lineweight→ JOP pair#: 0.15=1 0.20=2 0.25=3 0.30=4 0.35=5
+                            0.40=6 0.50=7 0.60=8 0.70=9 0.90=10
+     Pair convention: JOP1=A&B, JOP2=A&C, JOP3=A&D ... (lexicographic
+     block order), capped at 10 pairs — only 10 lineweights available.
+  ══════════════════════════════════════ */
+  const _JOP_LW_LIST = [
+    '0.15 mm','0.20 mm','0.25 mm','0.30 mm','0.35 mm',
+    '0.40 mm','0.50 mm','0.60 mm','0.70 mm','0.90 mm',
+  ]; // index 0 = JOP1 ... index 9 = JOP10 (note: skips 0.80mm on purpose)
+
+  const _JOP_COLOUR_DIR = { 13:'North', 23:'South', 33:'East', 43:'West' };
+
+  /* Default assumption: which compass direction = which relative side of
+     a block, used to fetch the taller block's own mandatory open space
+     for Rule 66's "OR mandatory open space of higher block" clause.
+     Change this mapping if your standard plot orientation differs. */
+  const _JOP_DIR_TO_OS_SIDE = { North:'front', South:'rear', East:'side1', West:'side2' };
+
+  function _jopPairs(blockLabels) {
+    const pairs = [];
+    for (let i = 0; i < blockLabels.length; i++) {
+      for (let j = i + 1; j < blockLabels.length; j++) {
+        pairs.push([blockLabels[i], blockLabels[j]]);
+        if (pairs.length >= 10) return pairs;
+      }
+    }
+    return pairs;
+  }
+
+  /* Returns { 1:{North,South,East,West}, 2:{...}, ... } keyed by JOP number */
+  function _extractJointOpenSpace(masterCSVRaw) {
+    const result = {};
+    if (!masterCSVRaw) return result;
+    parseCSV(masterCSVRaw).forEach(r => {
+      if (r.name !== 'Line' || r.layer !== 'Joint Open Space' ||
+          r.linetype !== 'ByLayer') return;
+      const jopIdx = _JOP_LW_LIST.indexOf(r.lineweight);
+      if (jopIdx === -1) return;
+      const dir = _JOP_COLOUR_DIR[parseInt(r.colour, 10)];
+      if (!dir) return;
+      const key = jopIdx + 1;
+      if (!result[key]) result[key] = { North:0, South:0, East:0, West:0 };
+      result[key][dir] += r.length;
+    });
+    return result;
+  }
+
+  /* Rule 66 calculator. heightA/heightB = the pair's block heights.
+     mandatoryOSofHigher = taller block's own mandatory OS (M.) for that side. */
+  function _getJOPPermissible(heightA, heightB, mandatoryOSofHigher) {
+    const heightLow  = Math.min(heightA, heightB);
+    const heightHigh = Math.max(heightA, heightB);
+
+    if (heightLow <= 5.0) return { applicable:false };            // Clause (3)
+
+    if (heightLow > 15.5 && heightHigh > 15.5) {                  // Clause (1)
+      const req = Math.max(0.15 * heightLow, mandatoryOSofHigher, 7.0);
+      return { applicable:true, required: Math.min(req, 15.0) };
+    }
+
+    if (heightHigh > 15.5) {                                      // Clause (2)
+      let floor;
+      if      (heightLow > 12.5) floor = 5.0;
+      else if (heightLow > 10.0) floor = 4.0;
+      else if (heightLow > 7.0)  floor = 3.5;
+      else                       floor = 3.0;
+      const req = Math.max(0.15 * heightLow, mandatoryOSofHigher, floor);
+      return { applicable:true, required: Math.min(req, 15.0) };
+    }
+
+    return { applicable:false };  // neither block exceeds 15.50 M.
+  }
+
+  function _injectJointOpenSpaceTable(masterCSVRaw, blockHeights, blockLabels, useGroup, landArea) {
+       const tbody = document.getElementById('mb-jop-tbody');
+       if (!tbody) return;
+       tbody.innerHTML = '';
+   
+       const pairs = _jopPairs(blockLabels);
+       if (!pairs.length) {
+         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);">Only one block — Joint Open Space not applicable.</td></tr>';
+         return;
+       }
+   
+       const jopData = _extractJointOpenSpace(masterCSVRaw);
+       let anyRow = false;
+   
+       pairs.forEach((pair, idx) => {
+         const jopNum = idx + 1;
+         const [lblA, lblB] = pair;
+         const hA = blockHeights[lblA] || 0;
+         const hB = blockHeights[lblB] || 0;
+         const higherHt = Math.max(hA, hB);
+         const higherOS = _getPermissibleOS(useGroup, higherHt, landArea);
+         const proposed = jopData[jopNum] || { North:0, South:0, East:0, West:0 };
+   
+         ['North','South','East','West'].forEach(dir => {
+           const mandatory = parseFloat(higherOS?.[_JOP_DIR_TO_OS_SIDE[dir]]) || 0;
+           const calc      = _getJOPPermissible(hA, hB, mandatory);
+           const prop      = proposed[dir] || 0;
+           if (!calc.applicable && prop === 0) return; // skip N/A rows with nothing drawn
+   
+           anyRow = true;
+           const permTxt = calc.applicable ? calc.required.toFixed(3) + ' M.' : 'N/A';
+           const status  = !calc.applicable
+             ? '<span style="color:var(--muted);">—</span>'
+             : prop === 0
+               ? '<span class="text-red" style="font-weight:700;">⚠ No data</span>'
+               : prop < calc.required
+                 ? '<span class="text-red" style="font-weight:700;">✗ Short</span>'
+                 : '<span class="text-green" style="font-weight:700;">✔ OK</span>';
+   
+           const tr = document.createElement('tr');
+           tr.innerHTML = `
+             <td class="head">JOP ${jopNum}</td>
+             <td>Block ${lblA} ↔ Block ${lblB}</td>
+             <td>${dir}</td>
+             <td>${permTxt}</td>
+             <td>${prop > 0 ? prop.toFixed(3) + ' M.' : '0.000 M.'}</td>
+             <td>${status}</td>`;
+           tbody.appendChild(tr);
+         });
+       });
+   
+       if (!anyRow) {
+         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);">Rule 66 not triggered — no block pair exceeds 15.50 M.</td></tr>';
+       }
+     }
+   
   /* ══════════════════════════════════════
      All the same helpers as kmc_master.js
   ══════════════════════════════════════ */
