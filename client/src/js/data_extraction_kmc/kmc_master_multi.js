@@ -46,8 +46,7 @@
         closed:     (c[8] || '').trim(),
         midX:       parseFloat(c[9]),
         midY:       parseFloat(c[10]),
-        centerX:    parseFloat(c[11]),
-        centerY:    parseFloat(c[12]),
+        verts:      (c[11] || '').trim(),
       };
     });
   }
@@ -338,23 +337,55 @@
   }
 
   /* Each block's Ground Coverage centroid, from colour 53+i (A=53,B=54,C=55...) */
-  function _blockGCCentroids(masterCSVRaw, blockLabels) {
-    const centroids = {};
-    blockLabels.forEach((lbl, i) => {
-      const colour = 53 + i;
-      let sx = 0, sy = 0, n = 0;
-      if (masterCSVRaw) {
-        parseCSV(masterCSVRaw).forEach(r => {
-          if (r.name === 'Polyline' && r.layer === 'Ground Coverage' &&
-              parseInt(r.colour, 10) === colour && r.closed === '-1' &&
-              !isNaN(r.centerX) && !isNaN(r.centerY)) {
-            sx += r.centerX; sy += r.centerY; n++;
-          }
-        });
-      }
-      if (n > 0) centroids[lbl] = { x: sx / n, y: sy / n };
+/* Each block's Ground Coverage polygon(s), as raw vertex lists */
+  function _blockGCPolygons(masterCSVRaw, blockLabels) {
+    const polys = {};
+    blockLabels.forEach(lbl => { polys[lbl] = []; });
+    if (!masterCSVRaw) return polys;
+    const colourToBlock = {};
+    blockLabels.forEach((lbl, i) => { colourToBlock[53 + i] = lbl; });
+    parseCSV(masterCSVRaw).forEach(r => {
+      if (r.name !== 'Polyline' || r.layer !== 'Ground Coverage' ||
+          r.closed !== '-1' || !r.verts) return;
+      const lbl = colourToBlock[parseInt(r.colour, 10)];
+      if (!lbl) return;
+      const pts = r.verts.split(';').map(p => p.split(':').map(Number))
+        .filter(p => !isNaN(p[0]) && !isNaN(p[1]));
+      if (pts.length >= 3) polys[lbl].push(pts);
     });
-    return centroids;
+    return polys;
+  }
+
+  /* Shortest distance from a point to a line segment */
+  function _ptSegDist(px, py, x1, y1, x2, y2) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const len2 = dx * dx + dy * dy;
+    let t = len2 === 0 ? 0 : ((px - x1) * dx + (py - y1) * dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+  }
+
+  /* Shortest distance from a point to ANY edge of a block's GC polygon(s) */
+  function _minDistToPolygons(px, py, polygons) {
+    let min = Infinity;
+    polygons.forEach(pts => {
+      for (let i = 0; i < pts.length; i++) {
+        const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length];
+        const d = _ptSegDist(px, py, x1, y1, x2, y2);
+        if (d < min) min = d;
+      }
+    });
+    return min;
+  }
+
+  /* The 2 blocks whose GC boundary is closest to this JOS line's midpoint */
+  function _nearestBlockPair(midX, midY, blockPolys) {
+    const dists = Object.keys(blockPolys)
+      .filter(lbl => blockPolys[lbl].length > 0)
+      .map(lbl => ({ lbl, d: _minDistToPolygons(midX, midY, blockPolys[lbl]) }))
+      .sort((a, b) => a.d - b.d);
+    if (dists.length < 2) return null;
+    return [dists[0].lbl, dists[1].lbl].sort();
   }
 
   /* Nearest 2 block centroids to a Joint Open Space line's midpoint
@@ -372,7 +403,7 @@
      that actually have a drawn line get an entry (B|C simply never appears
      if you never drew a line near both B and C's ground coverage) */
   function _extractJointOpenSpace(masterCSVRaw, blockLabels) {
-      const centroids = _blockGCCentroids(masterCSVRaw, blockLabels);
+      const blockPolys = _blockGCPolygons(masterCSVRaw, blockLabels);
       const osLayer   = _osLayer(blockLabels.length); // JOP lines share the Open Space layer
       const result = {};
       if (!masterCSVRaw) return result;
@@ -382,7 +413,7 @@
       const dir = _JOP_COLOUR_DIR[parseInt(r.colour, 10)];
       if (!dir) return;
       if (isNaN(r.midX) || isNaN(r.midY)) return;
-      const pair = _nearestBlockPair(r.midX, r.midY, centroids);
+      const pair = _nearestBlockPair(r.midX, r.midY, blockPolys);
       if (!pair) return;
       const key = pair.join('|');
       if (!result[key]) result[key] = { North:0, South:0, East:0, West:0 };
