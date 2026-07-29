@@ -44,6 +44,10 @@
         lineweight: (c[6] || '').trim(),
         area:       parseFloat(c[7]) || 0,
         closed:     (c[8] || '').trim(),
+        midX:       parseFloat(c[9]),
+        midY:       parseFloat(c[10]),
+        centerX:    parseFloat(c[11]),
+        centerY:    parseFloat(c[12]),
       };
     });
   }
@@ -333,18 +337,53 @@
     return pairs;
   }
 
-  /* Returns { 1:{North,South,East,West}, 2:{...}, ... } keyed by JOP number */
-  function _extractJointOpenSpace(masterCSVRaw) {
+  /* Each block's Ground Coverage centroid, from colour 53+i (A=53,B=54,C=55...) */
+  function _blockGCCentroids(masterCSVRaw, blockLabels) {
+    const centroids = {};
+    blockLabels.forEach((lbl, i) => {
+      const colour = 53 + i;
+      let sx = 0, sy = 0, n = 0;
+      if (masterCSVRaw) {
+        parseCSV(masterCSVRaw).forEach(r => {
+          if (r.name === 'Polyline' && r.layer === 'Ground Coverage' &&
+              parseInt(r.colour, 10) === colour && r.closed === '-1' &&
+              !isNaN(r.centerX) && !isNaN(r.centerY)) {
+            sx += r.centerX; sy += r.centerY; n++;
+          }
+        });
+      }
+      if (n > 0) centroids[lbl] = { x: sx / n, y: sy / n };
+    });
+    return centroids;
+  }
+
+  /* Nearest 2 block centroids to a Joint Open Space line's midpoint
+     = the 2 blocks that line sits between */
+  function _nearestBlockPair(midX, midY, centroids) {
+    const dists = Object.keys(centroids).map(lbl => {
+      const c = centroids[lbl];
+      return { lbl, d: Math.hypot(c.x - midX, c.y - midY) };
+    }).sort((a, b) => a.d - b.d);
+    if (dists.length < 2) return null;
+    return [dists[0].lbl, dists[1].lbl].sort();
+  }
+
+  /* Returns { "A|B": {North,South,East,West}, "A|C": {...} } — only pairs
+     that actually have a drawn line get an entry (B|C simply never appears
+     if you never drew a line near both B and C's ground coverage) */
+  function _extractJointOpenSpace(masterCSVRaw, blockLabels) {
+    const centroids = _blockGCCentroids(masterCSVRaw, blockLabels);
     const result = {};
     if (!masterCSVRaw) return result;
     parseCSV(masterCSVRaw).forEach(r => {
       if (r.name !== 'Line' || r.layer !== 'Joint Open Space' ||
           r.linetype !== 'ByLayer') return;
-      const jopIdx = _JOP_LW_LIST.indexOf(r.lineweight);
-      if (jopIdx === -1) return;
       const dir = _JOP_COLOUR_DIR[parseInt(r.colour, 10)];
       if (!dir) return;
-      const key = jopIdx + 1;
+      if (isNaN(r.midX) || isNaN(r.midY)) return;
+      const pair = _nearestBlockPair(r.midX, r.midY, centroids);
+      if (!pair) return;
+      const key = pair.join('|');
       if (!result[key]) result[key] = { North:0, South:0, East:0, West:0 };
       result[key][dir] += r.length;
     });
@@ -378,60 +417,60 @@
   }
 
   function _injectJointOpenSpaceTable(masterCSVRaw, blockHeights, blockLabels, useGroup, landArea) {
-       const tbody = document.getElementById('mb-jop-tbody');
-       if (!tbody) return;
-       tbody.innerHTML = '';
-   
-       const pairs = _jopPairs(blockLabels);
-       if (!pairs.length) {
-         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);">Only one block — Joint Open Space not applicable.</td></tr>';
-         return;
-       }
-   
-       const jopData = _extractJointOpenSpace(masterCSVRaw);
-       let anyRow = false;
-   
-       pairs.forEach((pair, idx) => {
-         const jopNum = idx + 1;
-         const [lblA, lblB] = pair;
-         const hA = blockHeights[lblA] || 0;
-         const hB = blockHeights[lblB] || 0;
-         const higherHt = Math.max(hA, hB);
-         const higherOS = _getPermissibleOS(useGroup, higherHt, landArea);
-         const proposed = jopData[jopNum] || { North:0, South:0, East:0, West:0 };
-   
-         ['North','South','East','West'].forEach(dir => {
-           const mandatory = parseFloat(higherOS?.[_JOP_DIR_TO_OS_SIDE[dir]]) || 0;
-           const calc      = _getJOPPermissible(hA, hB, mandatory);
-           const prop      = proposed[dir] || 0;
-           if (!calc.applicable && prop === 0) return; // skip N/A rows with nothing drawn
-   
-           anyRow = true;
-           const permTxt = calc.applicable ? calc.required.toFixed(3) + ' M.' : 'N/A';
-           const status  = !calc.applicable
-             ? '<span style="color:var(--muted);">—</span>'
-             : prop === 0
-               ? '<span class="text-red" style="font-weight:700;">⚠ No data</span>'
-               : prop < calc.required
-                 ? '<span class="text-red" style="font-weight:700;">✗ Short</span>'
-                 : '<span class="text-green" style="font-weight:700;">✔ OK</span>';
-   
-           const tr = document.createElement('tr');
-           tr.innerHTML = `
-             <td class="head">JOP ${jopNum}</td>
-             <td>Block ${lblA} ↔ Block ${lblB}</td>
-             <td>${dir}</td>
-             <td>${permTxt}</td>
-             <td>${prop > 0 ? prop.toFixed(3) + ' M.' : '0.000 M.'}</td>
-             <td>${status}</td>`;
-           tbody.appendChild(tr);
-         });
-       });
-   
-       if (!anyRow) {
-         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);">Rule 66 not triggered — no block pair exceeds 15.50 M.</td></tr>';
-       }
-     }
+    const tbody = document.getElementById('mb-jop-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const jopData   = _extractJointOpenSpace(masterCSVRaw, blockLabels); // "A|B" -> {N,S,E,W}
+    const pairKeys  = Object.keys(jopData).sort();
+
+    if (!pairKeys.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);">No "Joint Open Space" lines found on the Master sheet.</td></tr>';
+      return;
+    }
+
+    let anyRow = false, jopCounter = 0;
+
+    pairKeys.forEach(key => {
+      jopCounter++;
+      const [lblA, lblB] = key.split('|');
+      const hA = blockHeights[lblA] || 0;
+      const hB = blockHeights[lblB] || 0;
+      const higherOS = _getPermissibleOS(useGroup, Math.max(hA, hB), landArea);
+      const proposed = jopData[key];
+
+      ['North','South','East','West'].forEach(dir => {
+        const mandatory = parseFloat(higherOS?.[_JOP_DIR_TO_OS_SIDE[dir]]) || 0;
+        const calc      = _getJOPPermissible(hA, hB, mandatory);
+        const prop      = proposed[dir] || 0;
+        if (!calc.applicable && prop === 0) return;
+
+        anyRow = true;
+        const permTxt = calc.applicable ? calc.required.toFixed(3) + ' M.' : 'N/A';
+        const status  = !calc.applicable
+          ? '<span style="color:var(--muted);">—</span>'
+          : prop === 0
+            ? '<span class="text-red" style="font-weight:700;">⚠ No data</span>'
+            : prop < calc.required
+              ? '<span class="text-red" style="font-weight:700;">✗ Short</span>'
+              : '<span class="text-green" style="font-weight:700;">✔ OK</span>';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="head">JOP ${jopCounter}</td>
+          <td>Block ${lblA} ↔ Block ${lblB}</td>
+          <td>${dir}</td>
+          <td>${permTxt}</td>
+          <td>${prop > 0 ? prop.toFixed(3) + ' M.' : '0.000 M.'}</td>
+          <td>${status}</td>`;
+        tbody.appendChild(tr);
+      });
+    });
+
+    if (!anyRow) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);">Rule 66 not triggered — no block pair exceeds 15.50 M.</td></tr>';
+    }
+  }
    
   /* ══════════════════════════════════════
      All the same helpers as kmc_master.js
