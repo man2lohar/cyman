@@ -254,7 +254,7 @@ function _mfBuildOtherTables(csv, parsedData, osLayer, htLayer, fhLayer) {
     'Residential','Mercantile_wholesale','Mercantile_retail','Business',
     'Institutional','Storage','Assembly','Hazardous','Industrial','Educational',
   ];
-  const SPECIAL_LAYERS = [fhLayer, htLayer, osLayer, 'Road', 'Corridor'];
+  const SPECIAL_LAYERS = [fhLayer, htLayer, osLayer, 'Road', 'Corridor', 'Joint Open Space'];
   const HIDDEN_LAYERS  = [
     'Plot','Parking','Tenement','Tenement_Ext_1','Tenement_Single','Tenement_Single_Ext_1',
   ];
