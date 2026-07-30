@@ -792,13 +792,23 @@
   ═══════════════════════════════════════════════ */
 
   /* Layer sets used by validation */
-  var VALID_LAYERS_SET=new Set(["Column","Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
-    "Open Space_Ext_1","Residential","Mercantile_wholesale","Mercantile_retail","Business","Institutional","Storage",
-    "Assembly","Hazardous","Industrial","Educational","Internal Road","Alignment","Stair","Lift","Lift_Ext_1",
-    "Loft","Cupboard","Tenement","Tenement_Ext_1","Tenement_Single","Tenement_Single_Ext_1","Height","Floor Height",
-    "Roof_Structure","Terrace","Parking","Parking_Area","Waterbody","Heritage","Existing","Service_floor",
-    "Common Area","Wall","Text","Dimension","Section","Print","Mis1","Block_Text","Fire Refuge","Triple_Balcony",
-    "Goomty","Court Yard","Shaft","Corridor","STP","RWH","Pavement","EVCP","Solar","Baby Care Room"]);
+  /* Layers expected on the MASTER SHEET (site/plot-level) */
+  var MASTER_VALID_LAYERS_SET = new Set([
+    "Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
+    "Open Space_Ext_1","Internal Road","Alignment","Waterbody","Heritage",
+    "Existing","EVCP","Solar","STP","RWH","Pavement","Parking"
+  ]);
+  
+  /* Layers expected on individual BLOCK / tower drawings */
+  var BLOCK_VALID_LAYERS_SET = new Set([
+    "Column","Residential","Mercantile_wholesale","Mercantile_retail","Business",
+    "Institutional","Storage","Assembly","Hazardous","Industrial","Educational",
+    "Stair","Lift","Lift_Ext_1","Loft","Cupboard","Tenement","Tenement_Ext_1",
+    "Tenement_Single","Tenement_Single_Ext_1","Height","Floor Height",
+    "Roof_Structure","Terrace","Parking","Parking_Area","Service_floor",
+    "Common Area","Wall","Fire Refuge","Triple_Balcony","Goomty","Court Yard",
+    "Shaft","Corridor","Baby Care Room"
+  ]);
   var OCC_LAYERS_SET=new Set(['Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional',
     'Storage','Assembly','Hazardous','Industrial','Educational']);
   var BYLAYER_LW_SET=new Set(['Common Area','Cupboard','Ground Coverage','Open Space','Roof_Structure','Terrace',
@@ -1007,7 +1017,8 @@
     });
 
     /* Missing & invalid layers (modal-only, no row highlight) */
-    var missingLayers=Array.from(VALID_LAYERS_SET).filter(function(l){return!foundLayers.has(l);});
+    var expectedSet = (viewKey === 'master') ? MASTER_VALID_LAYERS_SET : BLOCK_VALID_LAYERS_SET;
+    var missingLayers = Array.from(expectedSet).filter(function(l){ return !foundLayers.has(l); });
 
     _allErrors[errStoreKey]={rowErrors:allErrors,invalidLayers:invalidLayers,missingLayers:missingLayers};
   }
