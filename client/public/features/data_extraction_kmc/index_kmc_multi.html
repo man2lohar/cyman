@@ -824,6 +824,7 @@
   var _allErrors={};
 
   function renderHomeTable(csv,title,viewKey){
+    var expectedSet = (viewKey === 'master') ? MASTER_VALID_LAYERS_SET : BLOCK_VALID_LAYERS_SET;
     var hdr=document.getElementById('mb-table-header');
     var body=document.getElementById('mb-table-body');
     var titleEl=document.getElementById('mb-data-title');
@@ -936,13 +937,13 @@
       var isMasterRow=masterRowSet&&masterRowSet.has(row.trim());
 
       if(lyr)foundLayers.add(lyr);
-      if(lyr&&!VALID_LAYERS_SET.has(lyr))invalidLayers.add(lyr);
+      if(lyr && !expectedSet.has(lyr))invalidLayers.add(lyr);
 
       var rowErrors=[];
 
       if(!isMasterRow){
       /* Condition checks — same order as index_kmc.js */
-      if(!VALID_LAYERS_SET.has(lyr))rowErrors.push('In '+lyr+' Layer: Invalid Layer Name');
+      if(!expectedSet.has(lyr))rowErrors.push('In '+lyr+' Layer: Invalid Layer Name');
       else if(count!=='1')rowErrors.push('In '+lyr+' Layer: Count must be 1');
       else if(clr==='ByLayer')rowErrors.push('In '+lyr+' Layer: Color should not be ByLayer');
       else if(['ByLayer','DASHED','PHANTOM2'].indexOf(lt)<0)rowErrors.push('In '+lyr+' Layer: Invalid Linetype');
