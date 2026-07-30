@@ -959,7 +959,7 @@
         rowErrors.push('In '+lyr+' Layer: Invalid color for Plot or Ground Coverage');
 
       /* Lineweight tracker for Strip/Splay/Plot/Tree Cover/Lift/Existing */
-      if (['Strip', 'Splay', 'Plot', 'Tree Cover', 'Lift'].indexOf(lyr) >= 0) {
+      if (['Strip', 'Splay', 'Plot', 'Tree Cover', 'Lift', 'Existing'].indexOf(lyr) >= 0) {
         if (!(lyr === 'Tree Cover' && nm === 'Point')) {
           var lwKey = lw + ':' + nm; 
           if (lyr === 'Lift') {
@@ -967,8 +967,15 @@
             var clrLwKey = clr + ':' + lw;
             lwTracker[lyr][clrLwKey] = (lwTracker[lyr][clrLwKey] || 0) + 1;
             if (lwTracker[lyr][clrLwKey] > 2) {
-              rowErrors.push('Lift duplicate Lineweight found (Color ' + clr + ', Lineweight ' + lw + ')');
+              rowErrors.push('duplicate Lineweight found for Lift (Color ' + clr + ', Lineweight ' + lw + ')');
             }
+          } else if (lyr === 'Existing') {
+            // Error as soon as the same Color+Lineweight combo repeats
+            var exClrLwKey = clr + ':' + lw;
+            if (lwTracker[lyr].has(exClrLwKey))
+              rowErrors.push('Duplicate Lineweight found for Existing (Color ' + clr + ', Lineweight ' + lw + ')');
+            else
+              lwTracker[lyr].add(exClrLwKey);
           } else {
             // Original behaviour
             if (lwTracker[lyr].has(lwKey))
