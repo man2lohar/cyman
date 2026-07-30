@@ -1137,7 +1137,7 @@
       bp.textContent=b;bp.dataset.view=b;
       bp.onclick=function(){
         KMCMulti.setActiveBlock(b);
-        renderHomeTable(KMCMulti.getBlockCombined(b),b+'.dxf (with Master)',b);
+        renderHomeTable(KMCMulti.getBlockCSV(b),b+'.dxf',b);
         setHomePillActive(b);
       };
       bar.appendChild(bp);
@@ -1158,7 +1158,7 @@
     var active=KMCMulti.getActiveBlock();
     renderHomeBlockBar();
     if(active){
-      renderHomeTable(KMCMulti.getBlockCombined(active),active+'.dxf (with Master)',active);
+      renderHomeTable(KMCMulti.getBlockCSV(active),active+'.dxf',active);
       setHomePillActive(active);
     }else{
       renderHomeTable(KMCMulti.getMasterCSV(),'Master Sheet.dxf','master');
@@ -1211,7 +1211,7 @@
         var fs=document.getElementById('feature-strip');if(fs)fs.style.display='none';
         /* Render home data table for first block */
         renderHomeBlockBar();
-        renderHomeTable(KMCMulti.getBlockCombined(lbls[0]),lbls[0]+'.dxf (with Master)',lbls[0]);
+        renderHomeTable(KMCMulti.getBlockCSV(lbls[0]),lbls[0]+'.dxf',lbls[0]);
         setHomePillActive(lbls[0]);
       }
 
@@ -1670,7 +1670,7 @@
       document.getElementById('home-hero').style.display='none';
       var fs=document.getElementById('feature-strip');if(fs)fs.style.display='none';
       renderHomeBlockBar();
-      if(active){renderHomeTable(KMCMulti.getBlockCombined(active),active+'.dxf (with Master)',active);setHomePillActive(active);}
+      if(active){renderHomeTable(KMCMulti.getBlockCSV(active),active+'.dxf',active);setHomePillActive(active);}
       else{renderHomeTable(KMCMulti.getMasterCSV(),'Master Sheet.dxf','master');setHomePillActive('master');}
     }
   });
@@ -1742,7 +1742,7 @@
 
       /* Render home table */
       window._mbRenderHomeBlockBar();
-      window._mbRenderHomeTable(KMCMulti.getBlockCombined(blockLabels[0]),blockLabels[0]+'.dxf (with Master)',blockLabels[0]);
+      window._mbRenderHomeTable(KMCMulti.getBlockCSV(blockLabels[0]),blockLabels[0]+'.dxf',blockLabels[0]);
       window._mbSetHomePillActive(blockLabels[0]);
 
       /* Info banner */
