@@ -880,6 +880,15 @@
       seenRows.add(row.trim());
     });
 
+    /* Rows that originate from the Master sheet (present in every block's
+       combined CSV) — their errors should only count under the Master view,
+       not bleed into every block's error list */
+    var masterRowSet=null;
+    if(viewKey!=='master'){
+      var _mc=(typeof KMCMulti!=='undefined')?KMCMulti.getMasterCSV():'';
+      if(_mc)masterRowSet=new Set(_mc.split('\n').slice(1).map(function(r){return r.trim();}).filter(Boolean));
+    }
+    
     /* Lineweight tracker for Strip/Splay/Plot/Tree Cover */
     var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set(),'Existing':new Set(),'Lift':{}};
 
@@ -914,12 +923,14 @@
       var closed=(cells[idx.closed]||'').trim();
       var colorNum=parseInt(clr,10);
       var isDup=dupRows.has(row.trim());
+      var isMasterRow=masterRowSet&&masterRowSet.has(row.trim());
 
       if(lyr)foundLayers.add(lyr);
       if(lyr&&!VALID_LAYERS_SET.has(lyr))invalidLayers.add(lyr);
 
       var rowErrors=[];
 
+      if(!isMasterRow){
       /* Condition checks — same order as index_kmc.js */
       if(!VALID_LAYERS_SET.has(lyr))rowErrors.push('In '+lyr+' Layer: Invalid Layer Name');
       else if(count!=='1')rowErrors.push('In '+lyr+' Layer: Count must be 1');
@@ -973,6 +984,7 @@
         var liftMsg='Line of width is missing for the Lift layer';
         if(!reportedErrors.has(liftMsg)){reportedErrors.add(liftMsg);rowErrors.push(liftMsg);}
       }
+      } /* end if(!isMasterRow) */
 
       /* Build table row */
       var tr=document.createElement('tr');
