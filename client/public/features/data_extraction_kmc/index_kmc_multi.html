@@ -848,6 +848,30 @@
       idx={count:0,name:1,color:2,layer:3,length:4,linetype:5,lineweight:6,area:7,closed:8};
     }
 
+    /* Sort: Layer A-Z, then Color low-high, then Lineweight low-high (ByLayer = lowest) */
+    function _sortLW(v){
+      if(!v)return 0;
+      if(v.trim()==='ByLayer')return 0;
+      var n=parseFloat(v);
+      return isNaN(n)?0:n;
+    }
+    function _sortColor(v){
+      var n=parseInt(v,10);
+      return isNaN(n)?0:n;
+    }
+    var headerLine=rows[0];
+    var dataLines=rows.slice(1).filter(function(r){return r.trim();});
+    dataLines.sort(function(a,b){
+      var ca=a.split(','),cb=b.split(',');
+      var la=(ca[idx.layer]||'').trim(),lb=(cb[idx.layer]||'').trim();
+      if(la!==lb)return la<lb?-1:1;
+      var cola=_sortColor(ca[idx.color]),colb=_sortColor(cb[idx.color]);
+      if(cola!==colb)return cola-colb;
+      var lwa=_sortLW(ca[idx.lineweight]),lwb=_sortLW(cb[idx.lineweight]);
+      return lwa-lwb;
+    });
+    rows=[headerLine].concat(dataLines);
+    
     /* First pass — duplicate detection */
     var seenRows=new Set(),dupRows=new Set();
     rows.forEach(function(row,i){
