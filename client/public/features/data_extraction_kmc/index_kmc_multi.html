@@ -857,7 +857,7 @@
     });
 
     /* Lineweight tracker for Strip/Splay/Plot/Tree Cover */
-    var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set(),'Existing':new Set(),'Lift':{},'Lift_ColorLW':new Set()};
+    var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set(),'Existing':new Set(),'Lift':{}};
 
     /* Stair/Lift missing-line checks (computed once before row loop) */
     var expectedLW=['0.15 mm','0.20 mm','0.25 mm','0.30 mm'];
@@ -917,17 +917,11 @@
         if (!(lyr === 'Tree Cover' && nm === 'Point')) {
           var lwKey = lw + ':' + nm; 
           if (lyr === 'Lift') {
-            // Allow up to 2 occurrences
-            lwTracker[lyr][lwKey] = (lwTracker[lyr][lwKey] || 0) + 1;
-            if (lwTracker[lyr][lwKey] > 2) {
-              rowErrors.push('duplicate lineweights found for Lift with ' + lw);
-            }
-            // Colour + Lineweight combination must be unique per Lift
+            // Allow up to 2 occurrences of the same Color+Lineweight combo; 3rd+ is an error
             var clrLwKey = clr + ':' + lw;
-            if (lwTracker['Lift_ColorLW'].has(clrLwKey)) {
-              rowErrors.push('In Lift Layer: duplicate Color and Lineweight combination found (Color ' + clr + ', Lineweight ' + lw + ')');
-            } else {
-              lwTracker['Lift_ColorLW'].add(clrLwKey);
+            lwTracker[lyr][clrLwKey] = (lwTracker[lyr][clrLwKey] || 0) + 1;
+            if (lwTracker[lyr][clrLwKey] > 2) {
+              rowErrors.push('Lift duplicate Lineweight found (Color ' + clr + ', Lineweight ' + lw + ')');
             }
           } else {
             // Original behaviour
