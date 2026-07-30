@@ -180,18 +180,21 @@
       const ht     = blockHeights[lbl] || 0;
       const lw     = LW_LIST[i] || '—';
       const permHt = _getPermissibleHeight(roadW);
-      const over   = permHt !== null && isFinite(permHt) && ht > permHt;
+      const noData = ht === 0;
+      const over   = !noData && permHt !== null && isFinite(permHt) && ht > permHt;
       const permTxt= permHt === null ? '—' : isFinite(permHt) ? permHt.toFixed(2) + ' M.' : 'No limit';
+
+      const statusHTML = noData
+        ? '<span class="text-red" style="font-weight:700;">⚠ No data</span>'
+        : `<span class="${over ? 'text-red' : 'text-green'}" style="font-weight:700;">${over ? '✗ Exceeds' : '✔ OK'}</span>`;
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>Block ${lbl}</strong></td>
         <td style="font-family:var(--font-mono);font-size:.8rem;">${lw}</td>
-        <td>${fmt(ht)} M.</td>
+        <td class="${noData ? 'text-red' : ''}" style="${noData ? 'font-weight:700;' : ''}">${fmt(ht)} M.</td>
         <td>${permTxt}</td>
-        <td class="${over ? 'text-red' : 'text-green'}" style="font-weight:700;">
-          ${over ? '✗ Exceeds' : '✔ OK'}
-        </td>`;
+        <td>${statusHTML}</td>`;
       tbody.appendChild(tr);
     });
   }
