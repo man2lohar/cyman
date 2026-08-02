@@ -969,13 +969,13 @@
             if (lwTracker[lyr][clrLwKey] > 2) {
               rowErrors.push('duplicate Lineweight found for Lift (Color ' + clr + ', Lineweight ' + lw + ')');
             }
-          } else if (lyr === 'Existing') {
-            // Error as soon as the same Color+Lineweight combo repeats
-            var exClrLwKey = clr + ':' + lw;
-            if (lwTracker[lyr].has(exClrLwKey))
-              rowErrors.push('Duplicate Lineweight found for Existing (Color ' + clr + ', Lineweight ' + lw + ')');
+          } else if (lyr === 'Existing' || lyr === 'Tree Cover') {
+            // Error as soon as the same Color+Linetype+Lineweight combo repeats
+            var cltLwKey = clr + ':' + lt + ':' + lw;
+            if (lwTracker[lyr].has(cltLwKey))
+              rowErrors.push('Duplicate combination found for ' + lyr + ' (Color ' + clr + ', Linetype ' + lt + ', Lineweight ' + lw + ')');
             else
-              lwTracker[lyr].add(exClrLwKey);
+              lwTracker[lyr].add(cltLwKey);
           } else {
             // Original behaviour
             if (lwTracker[lyr].has(lwKey))
