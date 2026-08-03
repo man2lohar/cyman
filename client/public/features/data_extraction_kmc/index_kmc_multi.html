@@ -841,6 +841,8 @@
 
     /* Column index map */
     var idx={};
+    var hiddenCols=new Set();
+    var HIDDEN_HEADERS=new Set(['MidX','MidY','Verts']);
     var headerRow=rows[0]||'';
     headerRow.split(',').forEach(function(h,i){
       var k=h.trim();
@@ -853,6 +855,7 @@
       else if(k==='Lineweight')idx.lineweight=i;
       else if(k==='Area')idx.area=i;
       else if(k==='Closed')idx.closed=i;
+      if(HIDDEN_HEADERS.has(k)){hiddenCols.add(i);return;}
       var th=document.createElement('th');th.textContent=k;hdr.appendChild(th);
     });
     /* If no header columns parsed, use defaults */
@@ -1011,7 +1014,8 @@
       /* Build table row */
       var tr=document.createElement('tr');
       tr.setAttribute('data-row-idx',String(i));
-      cells.forEach(function(cell){
+      cells.forEach(function(cell,ci){
+        if(hiddenCols.has(ci))return;
         var td=document.createElement('td');td.textContent=cell||'';
         tr.appendChild(td);
       });
