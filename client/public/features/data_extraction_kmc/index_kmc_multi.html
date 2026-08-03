@@ -816,6 +816,8 @@
   var NEVER_BYLAYER_SET=new Set(['Existing','Floor Height','Height','Parking','Parking_Area','Stair',
     'Tenement','Tenement_Single','Tenement_Ext_1','Tenement_Single_Ext_1','Tree Cover','Shaft',
     'Court Yard','Heritage','Waterbody','Splay','Strip','Corridor','Lift']);
+  var NO_DASHED_SET=new Set(['Plot','Road','Splay','Strip','Tree Cover',"Open Space",
+    "Open Space_Ext_1","Internal Road","Loft","Cupboard","Height","Floor Height"]);
   var LAYERS_TO_BOLD=new Set(["Column","Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
     "Stair","Lift","Loft","Cupboard","Tenement","Tenement_Single","Height","Floor Height","Roof_Structure",
     "Terrace","Parking","Parking_Area","Existing","Common Area"]);
@@ -947,6 +949,7 @@
       else if(count!=='1')rowErrors.push('In '+lyr+' Layer: Count must be 1');
       else if(clr==='ByLayer')rowErrors.push('In '+lyr+' Layer: Color should not be ByLayer');
       else if(['ByLayer','DASHED','PHANTOM2'].indexOf(lt)<0)rowErrors.push('In '+lyr+' Layer: Invalid Linetype');
+      else if(NO_DASHED_SET.has(lyr)&&lt==='DASHED')rowErrors.push('In '+lyr+' Layer: Linetype should not be DASHED');
       else if(nm==='Polyline'&&closed==='0')rowErrors.push('In '+lyr+' Layer: Polyline must be closed');
       else if(['Polyline','Line','Point','Hatch'].indexOf(nm)<0)rowErrors.push('In '+lyr+' Layer: Invalid Object Name');
       else if(nm==='Polyline'&&area==='')rowErrors.push('In '+lyr+' Layer: Polyline area is missing');
@@ -970,12 +973,12 @@
               rowErrors.push('duplicate Lineweight found for Lift (Color ' + clr + ', Lineweight ' + lw + ')');
             }
           } else if (lyr === 'Existing' || lyr === 'Tree Cover') {
-            // Error as soon as the same Color+Linetype+Lineweight combo repeats
-            var cltLwKey = clr + ':' + lt + ':' + lw;
-            if (lwTracker[lyr].has(cltLwKey))
-              rowErrors.push('Duplicate combination found for ' + lyr + ' (Color ' + clr + ', Linetype ' + lt + ', Lineweight ' + lw + ')');
+            // Error as soon as the same Color+Lineweight combo repeats
+            var exClrLwKey = clr + ':' + lw;
+            if (lwTracker[lyr].has(exClrLwKey))
+              rowErrors.push('Duplicate Lineweight found for Existing (Color ' + clr + ', Lineweight ' + lw + ')');
             else
-              lwTracker[lyr].add(cltLwKey);
+              lwTracker[lyr].add(exClrLwKey);
           } else {
             // Original behaviour
             if (lwTracker[lyr].has(lwKey))
