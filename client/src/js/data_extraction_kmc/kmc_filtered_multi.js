@@ -156,7 +156,7 @@ function _generateMasterFiltered(container, csv) {
      comparison is meaningless at this level */
 
   container.appendChild(_mfBuildMainTable(csv, parsedData, 'Floor Height'));
-  container.appendChild(_mfBuildOtherTables(csv, parsedData, 'Open Space', 'Height', 'Floor Height'));
+  container.appendChild(_mfBuildOtherTables(csv, parsedData, 'Open Space', 'Height', 'Floor Height', 'Internal Road'));
   if (_mfErrors.length) _mfShowAlert(_mfErrors.join('<br>'));
 }
 
@@ -254,7 +254,7 @@ function _mfBuildOtherTables(csv, parsedData, osLayer, htLayer, fhLayer) {
     'Residential','Mercantile_wholesale','Mercantile_retail','Business',
     'Institutional','Storage','Assembly','Hazardous','Industrial','Educational',
   ];
-  const SPECIAL_LAYERS = [fhLayer, htLayer, osLayer, 'Road', 'Corridor', 'Joint Open Space'];
+  const SPECIAL_LAYERS = [fhLayer, htLayer, osLayer, 'Road', 'Corridor',];
   const HIDDEN_LAYERS  = [
     'Plot','Parking','Tenement','Tenement_Ext_1','Tenement_Single','Tenement_Single_Ext_1',
   ];
