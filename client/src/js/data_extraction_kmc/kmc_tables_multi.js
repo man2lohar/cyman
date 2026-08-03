@@ -20,6 +20,13 @@ const _MB_LW_LIST = [
   '0.60 mm','0.70 mm','0.80 mm','0.90 mm',
 ];
 
+const _MB_HIDDEN_HEADERS = ['MidX', 'MidY', 'Verts'];
+function _mbHiddenColIdx(headers) {
+  const s = new Set();
+  headers.forEach((h, i) => { if (_MB_HIDDEN_HEADERS.indexOf(h.trim()) >= 0) s.add(i); });
+  return s;
+}
+
 /* Which Open Space layer name to use based on block count */
 function _mbOpenSpaceLayer(blockCount) {
   if (blockCount >= 50) return 'Open Space_Ext_5';
@@ -156,8 +163,10 @@ function generateTablesMulti() {
     const thead = document.createElement('thead');
     const tbody = document.createElement('tbody');
 
+    const hiddenIdx = _mbHiddenColIdx(headers);
     const headerRow = document.createElement('tr');
-    headers.forEach(h => {
+    headers.forEach((h, hi) => {
+      if (hiddenIdx.has(hi)) return;
       const th = document.createElement('th');
       th.textContent = h.trim();
       headerRow.appendChild(th);
@@ -166,7 +175,8 @@ function generateTablesMulti() {
 
     categories[layer].forEach(cells => {
       const tr = document.createElement('tr');
-      cells.forEach(cell => {
+      cells.forEach((cell, ci) => {
+        if (hiddenIdx.has(ci)) return;
         const td = document.createElement('td');
         td.textContent = (cell || '').trim();
         tr.appendChild(td);
@@ -212,8 +222,10 @@ function _renderSimpleTables(container, headers, dataRows) {
     const thead = document.createElement('thead');
     const tbody = document.createElement('tbody');
 
+    const hiddenIdx = _mbHiddenColIdx(headers);
     const hRow = document.createElement('tr');
-    headers.forEach(h => {
+    headers.forEach((h, hi) => {
+      if (hiddenIdx.has(hi)) return;
       const th = document.createElement('th');
       th.textContent = h.trim();
       hRow.appendChild(th);
@@ -222,7 +234,8 @@ function _renderSimpleTables(container, headers, dataRows) {
 
     categories[category].forEach(cells => {
       const tr = document.createElement('tr');
-      cells.forEach(cell => {
+      cells.forEach((cell, ci) => {
+        if (hiddenIdx.has(ci)) return;
         const td = document.createElement('td');
         td.textContent = (cell || '').trim();
         tr.appendChild(td);
