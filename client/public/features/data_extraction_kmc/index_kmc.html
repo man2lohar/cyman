@@ -1337,7 +1337,7 @@ function _kmcCheckMissingLayers() {
                       : 'ByLayer';
         rows.push({count:1,name,colorRaw:String(e.color??7),layer:e.layer,length:showLen?(e.length*MM_TO_M).toFixed(3):'',area:showArea?(e.area*MM2_TO_M2).toFixed(3):'',linetype:e.linetype||'ByLayer',lineweight:lwLabel,closed:isClosed?-1:0,printable:e.printable,source:'',expectedIn:SHARED_SET.has(e.layer)?'both':MASTER_SET.has(e.layer)?'master':'a'});
       }
-      return{rows,allLayerNames:[...allLayerNames].sort(),entityCount:rawEnts.length};
+      return{rows,allLayerNames:[...allLayerNames].sort(),entityCount:rawEnts.length,layerDefs};
     }
 
     function finalise(ent,layerDefs){const ld=layerDefs[ent.layer]||{};if(ent.color===null)ent.color=ld.color??7;ent.printable=ld.plot!==undefined?ld.plot:true;return ent;}
@@ -1347,6 +1347,7 @@ function _kmcCheckMissingLayers() {
       btn.textContent='⏳ Parsing…';btn.disabled=true;
       Promise.all([readFile(DXF.master),readFile(DXF.a)]).then(([mt,at])=>{
         const mRes=parseDXF(mt),aRes=parseDXF(at);
+        const mLd=mRes.layerDefs,aLd=aRes.layerDefs;
         const masterRows=mRes.rows.map(r=>({...r,source:DXF.master.name.replace(/\.\w+$/,'')}));
         const aRows=aRes.rows.map(r=>({...r,source:DXF.a.name.replace(/\.\w+$/,'')}));
         DXF.rows=[...masterRows,...aRows];
@@ -1356,6 +1357,23 @@ function _kmcCheckMissingLayers() {
           ...aRes.rows.filter(r=>MASTER_SET.has(r.layer)&&!SHARED_SET.has(r.layer)).map(r=>({layer:r.layer,foundIn:DXF.a.name,shouldBeIn:'Master Sheet.dxf'}))
         ].filter(m=>{const k=m.layer+'|'+m.foundIn;if(seen1.has(k))return false;seen1.add(k);return true;});
         const printMismatches=DXF.rows.map(r=>{const exp=EXPECTED_PRINTABLE[r.layer],act=r.printable!==undefined?r.printable:exp;return{layer:r.layer,source:r.source,expected:exp,actual:act,mismatch:exp!==undefined&&act!==exp};}).filter(m=>{if(!m.mismatch)return false;const k=m.layer+'|'+m.source;if(seen2.has(k))return false;seen2.add(k);return true;});
+        const seen3=new Set();
+        function checkLayerProps(ld,source,allowedSet){
+          const out=[];
+          Object.keys(ld).forEach(lyr=>{
+            if(!allowedSet.has(lyr))return;
+            const d=ld[lyr]||{};
+            if(d.linetype!==undefined&&d.linetype!=='Continuous'){const k=lyr+'|LT|'+source;if(!seen3.has(k)){seen3.add(k);out.push({layer:lyr,source,prop:'Linetype',actual:d.linetype,expected:'Continuous'});}}
+            if(d.lineweight!==undefined&&d.lineweight!==-3){const k2=lyr+'|LW|'+source;if(!seen3.has(k2)){seen3.add(k2);out.push({layer:lyr,source,prop:'Lineweight',actual:d.lineweight,expected:'Default'});}}
+          });
+          return out;
+        }
+        const masterAllowed=new Set([...MASTER_SET,...SHARED_SET]);
+        const aAllowed=new Set([...A_SET,...SHARED_SET]);
+        const layerPropWarns=[
+          ...checkLayerProps(mLd,DXF.master.name,masterAllowed),
+          ...checkLayerProps(aLd,DXF.a.name,aAllowed)
+        ];
         btn.textContent='⚡ Extract Layers';btn.disabled=false;btn.style.opacity='1';btn.style.cursor='pointer';
         function buildCSV(rows){const header='Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed';const lines=rows.map(r=>[r.count,r.name,r.colorRaw,r.layer,r.length,r.linetype,r.lineweight,r.area,r.closed].join(','));return header+'\n'+lines.join('\n');}
         const doShow=()=>{
@@ -1379,10 +1397,11 @@ function _kmcCheckMissingLayers() {
           /* Track DXF drawing upload to Firebase */
           if(typeof window.kmcTrackDxfUpload==='function') window.kmcTrackDxfUpload(DXF.master,DXF.a,csv);
         };
-        if(layerMismatches.length>0||printMismatches.length>0){
+        if(layerMismatches.length>0||printMismatches.length>0||layerPropWarns.length>0){
           let html='';
           if(layerMismatches.length>0){html+='<p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Layer in wrong file</p>';html+=layerMismatches.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#dc2626;font-weight:700;flex:1">${m.layer}</span><span style="color:#94a3b8;font-size:11px">in <b style="color:#d97706">${m.foundIn}</b> → <b style="color:#16a34a">${m.shouldBeIn}</b></span></div>`).join('');}
           if(printMismatches.length>0){html+='<p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 6px">Printable flag mismatch</p>';html+=printMismatches.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#92400e;font-weight:700;flex:1">${m.layer}</span><span style="color:#94a3b8;font-size:11px">in <b>${m.source}</b> · actual: <b style="color:#dc2626">${m.actual?'Yes':'No'}</b> → expected: <b style="color:#16a34a">${m.expected?'Yes':'No'}</b></span></div>`).join('');}
+          if(layerPropWarns.length>0){html+='<p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 6px">Layer Linetype/Lineweight mismatch</p>';html+=layerPropWarns.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#92400e;font-weight:700;flex:1">${m.layer}</span><span style="color:#94a3b8;font-size:11px">in <b>${m.source}</b> · ${m.prop} actual: <b style="color:#dc2626">${m.actual}</b> → expected: <b style="color:#16a34a">${m.expected}</b></span></div>`).join('');}
           document.getElementById('dxf-popup-body').innerHTML=html;
           document.getElementById('dxf-popup').style.display='flex';
           _pendingShowAnyway=doShow;
