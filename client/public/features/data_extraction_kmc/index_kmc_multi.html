@@ -782,7 +782,7 @@
       midX:(e.midX!=null)?(e.midX*M2M).toFixed(3):'', midY:(e.midY!=null)?(e.midY*M2M).toFixed(3):'',
       verts:e.vertsStr||''});
     });
-    return rows;
+    return {rows:rows, ld:ld};
   }
   function finE(e,layerDefs){var l=layerDefs[e.layer]||{};if(e.color===null)e.color=l.color||7;e.printable=l.plot!==undefined?l.plot:true;return e;}
   function mkCSV(rows){return'Count,Name,Color,Layer,Length,Linetype,Lineweight,Area,Closed,MidX,MidY,Verts\n'+rows.map(function(r){return[r.count,r.name,r.colorRaw,r.layer,r.length,r.linetype,r.lineweight,r.area,r.closed,r.midX,r.midY,r.verts].join(',');}).join('\n');}
@@ -1195,18 +1195,27 @@
     var btn=document.getElementById('btn-extract');btn.textContent='⏳ Parsing…';btn.disabled=true;
     var lbls=Object.keys(DXF.blocks).sort();
     Promise.all([rf(DXF.master)].concat(lbls.map(function(l){return rf(DXF.blocks[l]);}))).then(function(txts){
-      var mr=parseDXF(txts[0]);KMCMulti.saveMaster(mkCSV(mr));
-      var warns=[],printWarns=[],seen=new Set(),seen2=new Set();
+      var mres=parseDXF(txts[0]);var mr=mres.rows,mLd=mres.ld;KMCMulti.saveMaster(mkCSV(mr));
+      var warns=[],printWarns=[],layerPropWarns=[],seen=new Set(),seen2=new Set(),seen3=new Set();
+      function checkLayerProps(ld,source){
+        Object.keys(ld).forEach(function(lyr){
+          var d=ld[lyr]||{};
+          if(d.linetype!==undefined&&d.linetype!=='Continuous'){var k=lyr+'|LT|'+source;if(!seen3.has(k)){seen3.add(k);layerPropWarns.push({layer:lyr,source:source,prop:'Linetype',actual:d.linetype,expected:'Continuous'});}}
+          if(d.lineweight!==undefined&&d.lineweight!==-3){var k2=lyr+'|LW|'+source;if(!seen3.has(k2)){seen3.add(k2);layerPropWarns.push({layer:lyr,source:source,prop:'Lineweight',actual:d.lineweight,expected:'Default'});}}
+        });
+      }
       /* Printable mismatches in master */
       var masterSrcName=DXF.master.name.replace(/\.\w+$/,'');
       mr.forEach(function(r){var exp=EXPECTED_PRINTABLE[r.layer],act=r.printable!==undefined?r.printable:exp;if(exp!==undefined&&act!==exp){var k=r.layer+'|'+masterSrcName;if(!seen2.has(k)){seen2.add(k);printWarns.push({layer:r.layer,source:masterSrcName,actual:act,expected:exp});}}});
+      checkLayerProps(mLd,masterSrcName);
       lbls.forEach(function(lbl,i){
-        var br=parseDXF(txts[i+1]);KMCMulti.saveBlock(lbl,mkCSV(br));
+        var bres=parseDXF(txts[i+1]);var br=bres.rows,bLd=bres.ld;KMCMulti.saveBlock(lbl,mkCSV(br));
         mr.forEach(function(r){if(BS.has(r.layer)&&!SS.has(r.layer)){var k=r.layer+'|m';if(!seen.has(k)){seen.add(k);warns.push({layer:r.layer,foundIn:DXF.master.name,shouldBeIn:lbl+'.dxf'});}}});
         br.forEach(function(r){if(MS.has(r.layer)&&!SS.has(r.layer)){var k=r.layer+'|'+lbl;if(!seen.has(k)){seen.add(k);warns.push({layer:r.layer,foundIn:DXF.blocks[lbl].name,shouldBeIn:'Master Sheet.dxf'});}}});
         /* Printable mismatches in this block */
         var blkSrcName=DXF.blocks[lbl].name.replace(/\.\w+$/,'');
         br.forEach(function(r){var exp=EXPECTED_PRINTABLE[r.layer],act=r.printable!==undefined?r.printable:exp;if(exp!==undefined&&act!==exp){var k=r.layer+'|'+blkSrcName;if(!seen2.has(k)){seen2.add(k);printWarns.push({layer:r.layer,source:blkSrcName,actual:act,expected:exp});}}});
+        checkLayerProps(bLd,blkSrcName);
       });
       btn.textContent='⚡ Extract All Layers';btn.disabled=false;btn.style.opacity='1';
 
@@ -1237,10 +1246,11 @@
         setHomePillActive(lbls[0]);
       }
 
-      if(warns.length>0||printWarns.length>0){
+      if(warns.length>0||printWarns.length>0||layerPropWarns.length>0){
         var html='';
         if(warns.length>0){html+='<p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Layer in wrong file</p>';html+=warns.map(function(w){return'<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#dc2626;font-weight:700;flex:1">'+w.layer+'</span><span style="color:#94a3b8;font-size:11px">in <b style="color:#d97706">'+w.foundIn+'</b> → <b style="color:#16a34a">'+w.shouldBeIn+'</b></span></div>';}).join('');}
         if(printWarns.length>0){html+='<p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 6px">Printable flag mismatch</p>';html+=printWarns.map(function(m){return'<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#92400e;font-weight:700;flex:1">'+m.layer+'</span><span style="color:#94a3b8;font-size:11px">in <b>'+m.source+'</b> · actual: <b style="color:#dc2626">'+(m.actual?'Yes':'No')+'</b> → expected: <b style="color:#16a34a">'+(m.expected?'Yes':'No')+'</b></span></div>';}).join('');}
+        if(layerPropWarns.length>0){html+='<p style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 6px">Layer Linetype/Lineweight mismatch</p>';html+=layerPropWarns.map(function(m){return'<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;flex-wrap:wrap;"><span style="font-family:monospace;color:#92400e;font-weight:700;flex:1">'+m.layer+'</span><span style="color:#94a3b8;font-size:11px">in <b>'+m.source+'</b> · '+m.prop+' actual: <b style="color:#dc2626">'+m.actual+'</b> → expected: <b style="color:#16a34a">'+m.expected+'</b></span></div>';}).join('');}
         document.getElementById('dxf-popup-body').innerHTML=html;
         document.getElementById('dxf-popup').style.display='flex';
         _pendingFn=doShow;
