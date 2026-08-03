@@ -688,7 +688,7 @@
     var g=document.getElementById('blk-grid');if(!g)return;g.innerHTML='';
     _slots.forEach(function(lbl){
       var w=document.createElement('div');w.className='blk-wrap';
-      if(_slots.length>1){var rb=document.createElement('button');rb.className='blk-remove';rb.title='Remove '+lbl;rb.innerHTML='&times;';rb.onclick=function(e){e.stopPropagation();removeSlot(lbl);};w.appendChild(rb);}
+      if(lbl!=='A'&&lbl!=='B'){var rb=document.createElement('button');rb.className='blk-remove';rb.title='Remove '+lbl;rb.innerHTML='&times;';rb.onclick=function(e){e.stopPropagation();removeSlot(lbl);};w.appendChild(rb);}
       var f=DXF.blocks[lbl],ok=!!f;
       var dz=document.createElement('div');dz.className='dxf-dropzone'+(ok?' ok':'');dz.style.cursor='pointer';
       dz.innerHTML='<input type="file" id="bi-'+lbl+'" accept=".dxf" style="display:none"/>'+
@@ -708,7 +708,7 @@
   }
   function chkBtn(){var btn=document.getElementById('btn-extract');if(!btn)return;var r=!!(DXF.master&&Object.keys(DXF.blocks).length>0);btn.disabled=!r;btn.style.opacity=r?'1':'0.45';btn.style.cursor=r?'pointer':'not-allowed';}
   window.addBlock=function(){var all='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),nxt=all.find(function(l){return!_slots.includes(l);});if(!nxt)return;_slots.push(nxt);_slots.sort();renderGrid();};
-  function removeSlot(l){_slots=_slots.filter(function(x){return x!==l;});delete DXF.blocks[l];renderGrid();}
+  function removeSlot(l){if(l==='A'||l==='B')return;_slots=_slots.filter(function(x){return x!==l;});delete DXF.blocks[l];renderGrid();}
   window.masterChosen=function(file){
     if(!file)return;var v=MASTER_RE.test(file.name);
     document.getElementById('dz-master').classList.remove('ok','err');document.getElementById('dz-master').classList.add(v?'ok':'err');
