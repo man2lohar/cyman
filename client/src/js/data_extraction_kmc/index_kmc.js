@@ -35,7 +35,7 @@ function displayData(csv) {
         "Assembly", "Hazardous", "Industrial", "Educational", "Internal Road", "Alignment", "Stair",
         "Lift", "Lift_Ext_1", "Loft", "Cupboard", "Tenement", "Tenement_Ext_1",
         "Tenement_Single", "Tenement_Single_Ext_1", "Height", "Floor Height",
-        "Roof_Structure", "Terrace", "Parking", "Parking_Area", "Waterbody", "Heritage",
+        "Roof_Structure", "Terrace", "Parking", "Parking_Area", "Water body", "Heritage",
         "Existing", "Service_floor", "Common Area", "Wall", "Text", "Dimension",
         "Section", "Print", "Mis1", "Block_Text", "Fire Refuge", "Triple_Balcony", "Goomty",
         "Court Yard", "Shaft", "Corridor", "STP", "RWH", "Pavement", "EVCP", "Solar",
@@ -51,7 +51,7 @@ function displayData(csv) {
 
     // Lineweight never ByLayer
     const NeverByLayers = ['Existing', 'Floor Height', 'Height', 'Parking', 'Parking_Area', 'Stair', 'Tenement', 'Tenement_Single',
-        'Tenement_Ext_1', 'Tenement_Single_Ext_1', 'Tree Cover', 'Shaft', 'Court Yard', 'Heritage', 'Waterbody', 'Splay', 'Strip', 'Corridor', 'Lift'
+        'Tenement_Ext_1', 'Tenement_Single_Ext_1', 'Tree Cover', 'Shaft', 'Court Yard', 'Heritage', 'Water body', 'Splay', 'Strip', 'Corridor', 'Lift'
     ];
 
     // Define condition styles with flexible conditions
