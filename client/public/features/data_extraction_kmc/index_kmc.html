@@ -199,7 +199,7 @@
         <!-- TWO COLUMN LAYOUT -->
         <div class="home-two-col">
 
-          <!-- ════ LEFT — KMC Excel Upload ════ -->
+          <!-- ════ LEFT — EXTRACTED Excel Upload ════ -->
           <div class="home-col home-col-left">
 
             <!-- NEW: decorative floating icon + badge (non-functional) -->
@@ -217,7 +217,7 @@
             <!-- NEW: card title area -->
             <div class="col-card-title">
               <h2>Upload <span class="c-blue">KMC Excel File</span></h2>
-              <p>Upload your KMC Excel file and run it in AutoCAD<br>to extract data with precision.</p>
+              <p>Upload your EXTRACTED Excel file and run it in AutoCAD<br>to extract data with precision.</p>
             </div>
 
             <!-- ORIGINAL content wrapped in col-inner -->
@@ -229,7 +229,7 @@
                   <div class="upload-label-bar">
                     <div class="upload-label-bar-title">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                      Upload KMC Excel File
+                      Upload EXTRACTED Excel File
                     </div>
                   </div>
                   <input type="file" id="file-input" accept=".xls,.xlsx,.csv"/>
@@ -244,7 +244,7 @@
                         </svg>
                       </div>
                       <div class="upload-text">
-                        <h3>Drop your KMC Excel file here</h3>
+                        <h3>Drop your EXTRACTED Excel file here</h3>
                         <p>or <span class="upload-browse">click to browse</span></p>
                         <div class="upload-formats">
                           <span>.xls</span><span>.xlsx</span><span>.csv</span>
@@ -454,7 +454,7 @@
     ══════════════════════════════════════════ -->
     <div id="kmc-guide-section" style="display:none;">
       <div class="kmc-nav-section">
-        <div class="kns-hero"><h2>📋 Full Instructions</h2><p>Step-by-step guide for KMC Excel Upload and DXF Layer Extractor.</p></div>
+        <div class="kns-hero"><h2>📋 Full Instructions</h2><p>Step-by-step guide for EXTRACTED Excel Upload and DXF Layer Extractor.</p></div>
 
         <div class="kns-block">
           <div class="kns-block-header">
@@ -1228,8 +1228,13 @@ function _kmcCheckMissingLayers() {
   (function(){
     'use strict';
     const MASTER_PATTERN = /^master\s+sheet\.dxf$/i;
-    const MASTER_LAYERS = ["Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space","Waterbody","Goomty","Alignment","Existing","Sanctioned Alignment","STP","RWH","Pavement"];
-    const A_LAYERS = ["Column","Open Space_Ext_1","Residential","Mercantile_wholesale","Mercantile_retail","Business","Institutional","Storage","Assembly","Hazardous","Industrial","Educational","Internal Road","Stair","Lift","Lift_Ext_1","Loft","Cupboard","Tenement","Tenement_Ext_1","Tenement_Single","Tenement_Single_Ext_1","Height","Floor Height","Roof_Structure","Terrace","Parking_Area","Heritage","Service_floor","Common Area","Fire Refuge","Triple_Balcony","Court Yard","Shaft","Corridor","EVCP","Solar","Baby Care Room"];
+    const MASTER_LAYERS = ["Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
+                           "Water body","Goomty","Alignment","Existing","STP","RWH","Pavement","Internal Road"];
+    const A_LAYERS = ["Column","Open Space_Ext_1","Residential","Mercantile_wholesale","Mercantile_retail","Business","Institutional",
+                      "Storage","Assembly","Hazardous","Industrial","Educational","Stair","Lift","Lift_Ext_1",
+                      "Loft","Cupboard","Tenement","Tenement_Ext_1","Tenement_Single","Tenement_Single_Ext_1",
+                      "Height","Floor Height","Roof_Structure","Terrace","Parking_Area","Heritage","Service_floor",
+                      "Common Area","Fire Refuge","Triple_Balcony","Court Yard","Shaft","Corridor","EVCP","Solar","Baby Care Room"];
     const SHARED_LAYERS = ["Parking"];
     const MASTER_SET = new Set(MASTER_LAYERS);
     const A_SET      = new Set(A_LAYERS);
@@ -1237,7 +1242,17 @@ function _kmcCheckMissingLayers() {
     const TARGET_SET = new Set([...MASTER_LAYERS,...A_LAYERS,...SHARED_LAYERS]);
     const MM_TO_M   = 0.001;
     const MM2_TO_M2 = MM_TO_M * MM_TO_M;
-    const EXPECTED_PRINTABLE = {"Plot":true,"Road":false,"Splay":true,"Strip":true,"Ground Coverage":false,"TreeCover":false,"OpenSpace":false,"Open Space_Ext_1":false,"Residential":false,"Mercantile_wholesale":false,"Mercantile_retail":false,"Business":false,"Institutional":false,"Storage":false,"Assembly":false,"Hazardous":false,"Industrial":false,"Educational":false,"Internal Road":false,"Alignment":false,"Stair":false,"Lift":false,"Lift_Ext_1":false,"Loft":false,"Cupboard":false,"Tenement":false,"Tenement_Ext_1":false,"Tenement_Single":false,"Tenement_Single_Ext_1":false,"Height":false,"Floor Height":false,"Roof_Structure":false,"Terrace":false,"Parking":true,"Parking_Area":false,"Waterbody":true,"Heritage":false,"Existing":false,"Service_floor":false,"Common Area":false,"Fire Refuge":false,"Triple_Balcony":false,"Goomty":false,"Court Yard":false,"Shaft":false,"Corridor":false,"STP":false,"RWH":false,"Pavement":false,"EVCP":false,"Solar":false,"Baby Care Room":false,"Column":true,"GFPlanExistingStructure":false,"Sanctioned Alignment":false};
+    const EXPECTED_PRINTABLE = {"Plot":true,"Road":false,"Splay":true,"Strip":true,"Ground Coverage":false,"TreeCover":false,
+                                "OpenSpace":false,"Open Space_Ext_1":false,"Residential":false,"Mercantile_wholesale":false,
+                                "Mercantile_retail":false,"Business":false,"Institutional":false,"Storage":false,"Assembly":false,
+                                "Hazardous":false,"Industrial":false,"Educational":false,"Internal Road":false,"Alignment":false,
+                                "Stair":false,"Lift":false,"Lift_Ext_1":false,"Loft":false,"Cupboard":false,"Tenement":false,
+                                "Tenement_Ext_1":false,"Tenement_Single":false,"Tenement_Single_Ext_1":false,"Height":false,
+                                "Floor Height":false,"Roof_Structure":false,"Terrace":false,"Parking":true,"Parking_Area":false,
+                                "Water body":true,"Heritage":false,"Existing":false,"Service_floor":false,"Common Area":false,
+                                "Fire Refuge":false,"Triple_Balcony":false,"Goomty":false,"Court Yard":false,"Shaft":false,
+                                "Corridor":false,"STP":false,"RWH":false,"Pavement":false,"EVCP":false,"Solar":false,
+                                "Baby Care Room":false,"Column":true,"Alignment":false};
     const DXF = { master:null, a:null, rows:[], filtered:[] };
     let _pendingShowAnyway = null;
 
