@@ -1,6 +1,44 @@
 // Function to display data in the table
 function displayData(csv) {
     const rows = csv.split('\n');
+    // ── Sort rows: Layer A→Z, then Color low→high, then Lineweight low→high (ByLayer = lowest) ──
+    (function sortRows() {
+        if (rows.length < 2) return;
+        const headerCells = rows[0].split(',');
+        let layerIdx = -1, colorIdx = -1, lwIdx = -1;
+        headerCells.forEach((h, i) => {
+            const k = h.trim();
+            if (k === 'Layer') layerIdx = i;
+            if (k === 'Color') colorIdx = i;
+            if (k === 'Lineweight') lwIdx = i;
+        });
+        if (layerIdx === -1) return;
+
+        function sortLW(v) {
+            if (!v) return 0;
+            if (v.trim() === 'ByLayer') return 0;
+            const n = parseFloat(v);
+            return isNaN(n) ? 0 : n;
+        }
+        function sortColor(v) {
+            const n = parseInt(v, 10);
+            return isNaN(n) ? 0 : n;
+        }
+
+        const headerLine = rows[0];
+        const dataLines = rows.slice(1).filter(r => r.trim() !== '');
+        dataLines.sort((a, b) => {
+            const ca = a.split(','), cb = b.split(',');
+            const la = (ca[layerIdx] || '').trim(), lb = (cb[layerIdx] || '').trim();
+            if (la !== lb) return la < lb ? -1 : 1;
+            const cola = sortColor(ca[colorIdx]), colb = sortColor(cb[colorIdx]);
+            if (cola !== colb) return cola - colb;
+            const lwa = sortLW(ca[lwIdx]), lwb = sortLW(cb[lwIdx]);
+            return lwa - lwb;
+        });
+        rows.length = 0;
+        rows.push(headerLine, ...dataLines);
+    })();
     const tableHeader = document.getElementById('table-header');
     const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
 
@@ -53,6 +91,12 @@ function displayData(csv) {
     const NeverByLayers = ['Existing', 'Floor Height', 'Height', 'Parking', 'Parking_Area', 'Stair', 'Tenement', 'Tenement_Single',
         'Tenement_Ext_1', 'Tenement_Single_Ext_1', 'Tree Cover', 'Shaft', 'Court Yard', 'Heritage', 'Water body', 'Splay', 'Strip', 'Corridor', 'Lift'
     ];
+    // Layers where Linetype should NOT be DASHED
+    const NoDashedLayers = ['Plot', 'Road', 'Splay', 'Strip', 'Tree Cover', 'Open Space',
+        'Open Space_Ext_1', 'Internal Road', 'Loft', 'Cupboard', 'Height', 'Floor Height',
+        'Alignment', 'Water body', 'Heritage', 'Existing', 'STP', 'RWH', 'Pavement',
+        'Roof_Structure', 'Court Yard'
+    ];
 
     // Define condition styles with flexible conditions
     const conditions = [
@@ -60,6 +104,7 @@ function displayData(csv) {
     { check: (cells, indices) => cells[indices.count] !== '1', errorMessage: "Count must be 1" },
     { check: (cells, indices) => cells[indices.color] === 'ByLayer', errorMessage: "Color should not be ByLayer" },
     { check: (cells, indices) => !['ByLayer', 'DASHED', 'PHANTOM2'].includes(cells[indices.linetype]), errorMessage: "Invalid Linetype" },
+    { check: (cells, indices) => NoDashedLayers.includes(cells[indices.layer]) && cells[indices.linetype] === 'DASHED', errorMessage: "Linetype should not be DASHED" },
     { check: (cells, indices) => cells[indices.name] === 'Polyline' && cells[indices.closed] == 0, errorMessage: "Polyline must be closed" },
     { check: (cells, indices) => !['Polyline', 'Line', 'Point'].includes(cells[indices.name]), errorMessage: "Invalid Object Name" },
     { check: (cells, indices) => cells[indices.name] === 'Polyline' && cells[indices.area].trim() === '', errorMessage: "Polyline area is missing" },
@@ -165,13 +210,17 @@ function displayData(csv) {
             const rowStyles = applyStyles(cells, columnIndices);
             if (rowStyles.className) {
                 newRow.classList.add(rowStyles.className);
-                if (rowStyles.message) errorMessages.push(rowStyles.message);
+                if (rowStyles.message) {
+                    const layerForMsg = cells[columnIndices.layer]?.trim();
+                    errorMessages.push(`In ${layerForMsg} Layer: ${rowStyles.message}`);
+                }
             }
 
             // Ensure cells and columns are properly indexed
             const layer = cells[columnIndices.layer]?.trim();
             const name = cells[columnIndices.name]?.trim();
             const lineweight = cells[columnIndices.lineweight]?.trim();
+            const color = cells[columnIndices.color]?.trim();   // ← NEW: needed for the key change below
 
             // Track the layers present in the data
             if (layer) {
@@ -180,36 +229,38 @@ function displayData(csv) {
 
             // Check for invalid layers
             if (layer && !validLayerNames.has(layer)) {
-                invalidLayers.add(layer); // Add invalid layer to the set
+                invalidLayers.add(layer);
             }
 
             // Check for duplicate lineweights for below layers
             if (['Strip', 'Splay', 'Plot', 'Tree Cover', 'Existing', 'Lift'].includes(layer)) {
-                // Skip Tree Cover Point
                 if (layer === 'Tree Cover' && name === 'Point') {
-                    // Skip
-                } else {
-                    const key = `${lineweight}:${name}`;
-                    if (layer === 'Lift') {
-                        // Count occurrences for Lift
-                        lineweightTracker.Lift[key] = (lineweightTracker.Lift[key] || 0) + 1;
-                        // Show error only from the 3rd occurrence onwards
-                        if (lineweightTracker.Lift[key] > 2) {
-                            newRow.classList.add('text-red');
-                            errorMessages.push(
-                                `Duplicate Lift Layer found with lineweight ${lineweight}`
-                            );
-                        }
+                    // Skip Tree Cover points
+                } else if (layer === 'Lift') {
+                    // Lift: key = Color + Lineweight, allow up to 2 occurrences
+                    const key = `${color}:${lineweight}`;
+                    lineweightTracker.Lift[key] = (lineweightTracker.Lift[key] || 0) + 1;
+                    if (lineweightTracker.Lift[key] > 2) {
+                        newRow.classList.add('text-red');
+                        errorMessages.push(`Duplicate Lift Layer found with lineweight ${lineweight}`);
+                    }
+                } else if (layer === 'Existing' || layer === 'Tree Cover') {
+                    // Existing / Tree Cover: key = Color + Lineweight, error on first repeat
+                    const key = `${color}:${lineweight}`;
+                    if (lineweightTracker[layer].has(key)) {
+                        newRow.classList.add('text-red');
+                        errorMessages.push(`Duplicate lineweight found for ${layer} layer with lineweight ${lineweight}`);
                     } else {
-                        // Original duplicate logic
-                        if (lineweightTracker[layer].has(key)) {
-                            newRow.classList.add('text-red');
-                            errorMessages.push(
-                                `Duplicate lineweight found for ${layer} layer with lineweight ${lineweight}`
-                            );
-                        } else {
-                            lineweightTracker[layer].add(key);
-                        }
+                        lineweightTracker[layer].add(key);
+                    }
+                } else {
+                    // Strip / Splay / Plot: unchanged, key = Lineweight + Name
+                    const key = `${lineweight}:${name}`;
+                    if (lineweightTracker[layer].has(key)) {
+                        newRow.classList.add('text-red');
+                        errorMessages.push(`Duplicate lineweight found for ${layer} layer with lineweight ${lineweight}`);
+                    } else {
+                        lineweightTracker[layer].add(key);
                     }
                 }
             }
@@ -262,18 +313,6 @@ function displayData(csv) {
             if (duplicateRows.has(rowStr)) {
                 newRow.classList.add('duplicate');
             }
-
-            // Apply other conditions and styles
-            conditions.forEach(condition => {
-                if (condition.check(cells, columnIndices)) {
-                    newRow.classList.add(condition.style);
-                    const conditionErrorMessage = `In ${layer} Layer: ${condition.errorMessage}`;
-                    if (!reportedErrors.has(conditionErrorMessage)) {
-                        reportedErrors.add(conditionErrorMessage);
-                        errorMessages.push(conditionErrorMessage);
-                    }
-                }
-            });
 
             // Add error messages to allErrorMessages array
             if (errorMessages.length > 0) {
