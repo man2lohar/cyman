@@ -1198,8 +1198,9 @@
     Promise.all([rf(DXF.master)].concat(lbls.map(function(l){return rf(DXF.blocks[l]);}))).then(function(txts){
       var mres=parseDXF(txts[0]);var mr=mres.rows,mLd=mres.ld;KMCMulti.saveMaster(mkCSV(mr));
       var warns=[],printWarns=[],layerPropWarns=[],seen=new Set(),seen2=new Set(),seen3=new Set();
-      function checkLayerProps(ld,source){
+      function checkLayerProps(ld,source,allowedSet){
         Object.keys(ld).forEach(function(lyr){
+          if(!allowedSet.has(lyr))return;
           var d=ld[lyr]||{};
           if(d.linetype!==undefined&&d.linetype!=='Continuous'){var k=lyr+'|LT|'+source;if(!seen3.has(k)){seen3.add(k);layerPropWarns.push({layer:lyr,source:source,prop:'Linetype',actual:d.linetype,expected:'Continuous'});}}
           if(d.lineweight!==undefined&&d.lineweight!==-3){var k2=lyr+'|LW|'+source;if(!seen3.has(k2)){seen3.add(k2);layerPropWarns.push({layer:lyr,source:source,prop:'Lineweight',actual:d.lineweight,expected:'Default'});}}
@@ -1208,7 +1209,7 @@
       /* Printable mismatches in master */
       var masterSrcName=DXF.master.name.replace(/\.\w+$/,'');
       mr.forEach(function(r){var exp=EXPECTED_PRINTABLE[r.layer],act=r.printable!==undefined?r.printable:exp;if(exp!==undefined&&act!==exp){var k=r.layer+'|'+masterSrcName;if(!seen2.has(k)){seen2.add(k);printWarns.push({layer:r.layer,source:masterSrcName,actual:act,expected:exp});}}});
-      checkLayerProps(mLd,masterSrcName);
+      checkLayerProps(mLd,masterSrcName,MASTER_VALID_LAYERS_SET);
       lbls.forEach(function(lbl,i){
         var bres=parseDXF(txts[i+1]);var br=bres.rows,bLd=bres.ld;KMCMulti.saveBlock(lbl,mkCSV(br));
         mr.forEach(function(r){if(BS.has(r.layer)&&!SS.has(r.layer)){var k=r.layer+'|m';if(!seen.has(k)){seen.add(k);warns.push({layer:r.layer,foundIn:DXF.master.name,shouldBeIn:lbl+'.dxf'});}}});
@@ -1216,7 +1217,7 @@
         /* Printable mismatches in this block */
         var blkSrcName=DXF.blocks[lbl].name.replace(/\.\w+$/,'');
         br.forEach(function(r){var exp=EXPECTED_PRINTABLE[r.layer],act=r.printable!==undefined?r.printable:exp;if(exp!==undefined&&act!==exp){var k=r.layer+'|'+blkSrcName;if(!seen2.has(k)){seen2.add(k);printWarns.push({layer:r.layer,source:blkSrcName,actual:act,expected:exp});}}});
-        checkLayerProps(bLd,blkSrcName);
+        checkLayerProps(bLd,blkSrcName,BLOCK_VALID_LAYERS_SET);
       });
       btn.textContent='⚡ Extract All Layers';btn.disabled=false;btn.style.opacity='1';
 
