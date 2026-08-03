@@ -672,12 +672,12 @@
      6. DXF LAYER SETS
   ═══════════════════════════════════════════════ */
   var MASTER_RE=/^master\s+sheet\.dxf$/i;
-  var MLYR=['Plot','Road','Splay','Strip','Ground Coverage','Tree Cover','Open Space','Waterbody','Goomty','Alignment','Sanctioned Alignment','STP','RWH','Pavement','Existing','Internal Road'];
+  var MLYR=['Plot','Road','Splay','Strip','Ground Coverage','Tree Cover','Open Space','Water body','Goomty','Alignment','Sanctioned Alignment','STP','RWH','Pavement','Existing','Internal Road'];
   var BLYR=['Column','Open Space_Ext_1','Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional','Storage','Assembly','Hazardous','Industrial','Educational','Stair','Lift','Lift_Ext_1','Loft','Cupboard','Tenement','Tenement_Ext_1','Tenement_Single','Tenement_Single_Ext_1','Height','Floor Height','Roof_Structure','Terrace','Parking_Area','Heritage','Service_floor','Common Area','Fire Refuge','Triple_Balcony','Court Yard','Shaft','Corridor','EVCP','Solar','Baby Care Room'];
   var SLYR=['Parking'];
   var MS=new Set(MLYR),BS=new Set(BLYR),SS=new Set(SLYR),TS=new Set(MLYR.concat(BLYR).concat(SLYR));
   var M2M=0.001,M2M2=0.000001;
-  var EXPECTED_PRINTABLE={"Plot":true,"Road":false,"Splay":true,"Strip":true,"Ground Coverage":false,"TreeCover":false,"OpenSpace":false,"Open Space_Ext_1":false,"Residential":false,"Mercantile_wholesale":false,"Mercantile_retail":false,"Business":false,"Institutional":false,"Storage":false,"Assembly":false,"Hazardous":false,"Industrial":false,"Educational":false,"Internal Road":false,"Alignment":false,"Stair":false,"Lift":false,"Lift_Ext_1":false,"Loft":false,"Cupboard":false,"Tenement":false,"Tenement_Ext_1":false,"Tenement_Single":false,"Tenement_Single_Ext_1":false,"Height":false,"Floor Height":false,"Roof_Structure":false,"Terrace":false,"Parking":true,"Parking_Area":false,"Waterbody":true,"Heritage":false,"Existing":false,"Service_floor":false,"Common Area":false,"Fire Refuge":false,"Triple_Balcony":false,"Goomty":false,"Court Yard":false,"Shaft":false,"Corridor":false,"STP":false,"RWH":false,"Pavement":false,"EVCP":false,"Solar":false,"Baby Care Room":false,"Column":true,"GFPlanExistingStructure":false,"Sanctioned Alignment":false};
+  var EXPECTED_PRINTABLE={"Plot":true,"Road":false,"Splay":true,"Strip":true,"Ground Coverage":false,"TreeCover":false,"OpenSpace":false,"Open Space_Ext_1":false,"Residential":false,"Mercantile_wholesale":false,"Mercantile_retail":false,"Business":false,"Institutional":false,"Storage":false,"Assembly":false,"Hazardous":false,"Industrial":false,"Educational":false,"Internal Road":false,"Alignment":false,"Stair":false,"Lift":false,"Lift_Ext_1":false,"Loft":false,"Cupboard":false,"Tenement":false,"Tenement_Ext_1":false,"Tenement_Single":false,"Tenement_Single_Ext_1":false,"Height":false,"Floor Height":false,"Roof_Structure":false,"Terrace":false,"Parking":true,"Parking_Area":false,"Water body":true,"Heritage":false,"Existing":false,"Service_floor":false,"Common Area":false,"Fire Refuge":false,"Triple_Balcony":false,"Goomty":false,"Court Yard":false,"Shaft":false,"Corridor":false,"STP":false,"RWH":false,"Pavement":false,"EVCP":false,"Solar":false,"Baby Care Room":false,"Column":true,"GFPlanExistingStructure":false,"Sanctioned Alignment":false};
 
   /* ═══════════════════════════════════════════════
      7. UPLOAD UI
@@ -795,7 +795,7 @@
   /* Layers expected on the MASTER SHEET (site/plot-level) */
   var MASTER_VALID_LAYERS_SET = new Set([
     "Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
-    "Open Space_Ext_1","Internal Road","Alignment","Waterbody","Heritage",
+    "Open Space_Ext_1","Internal Road","Alignment","Water body","Heritage",
     "Existing","STP","RWH","Pavement","Parking","Goomty"
   ]);
   
@@ -815,10 +815,10 @@
     'Internal Road','Loft']);
   var NEVER_BYLAYER_SET=new Set(['Existing','Floor Height','Height','Parking','Parking_Area','Stair',
     'Tenement','Tenement_Single','Tenement_Ext_1','Tenement_Single_Ext_1','Tree Cover','Shaft',
-    'Court Yard','Heritage','Waterbody','Splay','Strip','Corridor','Lift']);
+    'Court Yard','Heritage','Water body','Splay','Strip','Corridor','Lift']);
   var NO_DASHED_SET=new Set(['Plot','Road','Splay','Strip','Tree Cover',"Open Space",
-    "Open Space_Ext_1","Internal Road","Loft","Cupboard","Height","Floor Height","Internal Road","Alignment","Waterbody","Heritage",
-    "Existing","STP","RWH","Pavement","Roof_Structure","Court Yard","Waterbody"]);
+    "Open Space_Ext_1","Internal Road","Loft","Cupboard","Height","Floor Height","Internal Road","Alignment","Water body","Heritage",
+    "Existing","STP","RWH","Pavement","Roof_Structure","Court Yard","Water body"]);
   var LAYERS_TO_BOLD=new Set(["Column","Plot","Road","Splay","Strip","Ground Coverage","Tree Cover","Open Space",
     "Stair","Lift","Loft","Cupboard","Tenement","Tenement_Single","Height","Floor Height","Roof_Structure",
     "Terrace","Parking","Parking_Area","Existing","Common Area"]);
