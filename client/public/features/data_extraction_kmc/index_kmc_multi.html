@@ -706,7 +706,7 @@
     var cl=document.getElementById('blk-count-lbl');if(cl)cl.textContent=_slots.length===1?'Block A ready':_slots.length+' blocks ('+_slots.join(', ')+')';
     chkBtn();
   }
-  function chkBtn(){var btn=document.getElementById('btn-extract');if(!btn)return;var r=!!(DXF.master&&Object.keys(DXF.blocks).length>0);btn.disabled=!r;btn.style.opacity=r?'1':'0.45';btn.style.cursor=r?'pointer':'not-allowed';}
+  function chkBtn(){var btn=document.getElementById('btn-extract');if(!btn)return;var r=!!(DXF.master&&DXF.blocks['A']&&DXF.blocks['B']);btn.disabled=!r;btn.style.opacity=r?'1':'0.45';btn.style.cursor=r?'pointer':'not-allowed';}
   window.addBlock=function(){var all='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),nxt=all.find(function(l){return!_slots.includes(l);});if(!nxt)return;_slots.push(nxt);_slots.sort();renderGrid();};
   function removeSlot(l){if(l==='A'||l==='B')return;_slots=_slots.filter(function(x){return x!==l;});delete DXF.blocks[l];renderGrid();}
   window.masterChosen=function(file){
