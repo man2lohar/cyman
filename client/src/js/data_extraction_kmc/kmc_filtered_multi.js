@@ -307,6 +307,8 @@ function _mfBuildOtherTables(csv, parsedData, osLayer, htLayer, fhLayer) {
     let headers;
     if (layer === 'Lift') {
       headers = ['Floor','Layer','Lift Well Area','Lift Lobby Area'];
+    } else if (layer === 'Tree Cover') {
+      headers = ['Floor','Layer','Total Area','Deducted Area','Net Area','Number of Trees'];
     } else if (SPECIAL_LAYERS.includes(layer)) {
       headers = ['Floor','Layer','Length','Linetype','Lineweight'];
     } else {
@@ -318,7 +320,7 @@ function _mfBuildOtherTables(csv, parsedData, osLayer, htLayer, fhLayer) {
     thead.appendChild(hRow);
     table.appendChild(thead);
 
-    const totals = { length:0, tfa:0, da:0, na:0 };
+    const totals = { length:0, tfa:0, da:0, na:0, trees:0 };
 
     layerData[layer].forEach(d => {
       const tr = tbody.insertRow();
@@ -342,6 +344,20 @@ function _mfBuildOtherTables(csv, parsedData, osLayer, htLayer, fhLayer) {
         });
         totals.tfa += parseFloat(d.totalFloorArea) || 0;
         totals.da  += parseFloat(d.deductedArea) || 0;
+      } else if (layer === 'Tree Cover') {
+        tr.insertCell().textContent = d.totalFloorArea;
+        tr.insertCell().textContent = d.deductedArea;
+        tr.insertCell().textContent = d.netArea;
+        const treeCount = parsedData.filter(p =>
+          (p.column4 || '').trim() === 'Tree Cover' &&
+          (p.column3 || '').trim() === (d.floor || '').trim() &&
+          (p.column2 || '').trim() === 'Point'
+        ).length;
+        tr.insertCell().textContent = treeCount;
+        totals.tfa   += parseFloat(d.totalFloorArea) || 0;
+        totals.da    += parseFloat(d.deductedArea)   || 0;
+        totals.na    += parseFloat(d.netArea)        || 0;
+        totals.trees += treeCount;
       } else if (SPECIAL_LAYERS.includes(layer)) {
         tr.insertCell().textContent = d.length;
         tr.insertCell().textContent = d.linetype;
@@ -363,6 +379,11 @@ function _mfBuildOtherTables(csv, parsedData, osLayer, htLayer, fhLayer) {
     if (layer === 'Lift') {
       totRow.insertCell().textContent = totals.tfa.toFixed(3);
       totRow.insertCell().textContent = totals.da.toFixed(3);
+    } else if (layer === 'Tree Cover') {
+      totRow.insertCell().textContent = totals.tfa.toFixed(3);
+      totRow.insertCell().textContent = totals.da.toFixed(3);
+      totRow.insertCell().textContent = totals.na.toFixed(3);
+      totRow.insertCell().textContent = totals.trees;
     } else if (SPECIAL_LAYERS.includes(layer)) {
       totRow.insertCell().textContent = totals.length.toFixed(3);
       totRow.insertCell().textContent = '';
