@@ -35,6 +35,7 @@
      AD — NEW: Theme toggle button
      AE — Responsive
      AF — FAR calculation steps Popup
+     AG — DXF SPLIT-VIEW TABS (Master Sheet / A.dxf)
 ════════════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
@@ -1293,3 +1294,22 @@ body.dark-mode .home-col:hover { border-color: rgba(255,255,255,.16); }
   display: inline-block;
 }
 .far-info-icon:hover { opacity: 0.7; }
+/* ════════════════════════════════════════════════════════════
+   SECTION AG — DXF SPLIT-VIEW TABS (Master Sheet / A.dxf)
+════════════════════════════════════════════════════════════ */
+.dxf-split-tabs { display:flex; gap:8px; margin-bottom:10px; }
+.dxf-split-tab {
+  flex:1; padding:8px 12px; border-radius:8px;
+  border:1px solid var(--border2); background:var(--bg);
+  color:var(--ink2); font-family:var(--font-mono); font-size:.78rem; font-weight:700;
+  cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.dxf-split-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.dxf-split-tab.has-issues:not(.active) { border-color:#e74c3c; color:#e74c3c; }
+.dxf-split-badge { font-size:.7rem; opacity:.75; }
+
+.dxf-issues-box { display:none; margin-bottom:10px; border:1px solid #fecaca; border-radius:8px; background:#fef2f2; overflow:hidden; }
+.dxf-issues-toggle { padding:8px 12px; font-size:.78rem; font-weight:700; color:#dc2626; cursor:pointer; }
+.dxf-issues-body { display:none; padding:0 12px 10px; max-height:220px; overflow-y:auto; }
+.dxf-issues-box.open .dxf-issues-body { display:block; }
+.dxf-issue-row { font-size:.76rem; padding:4px 0; border-top:1px solid #fecaca; color:#7f1d1d; }
