@@ -306,11 +306,42 @@
                   <span style="color:#d4501a;font-weight:700;">'Orange'</span> color text denotes duplicate data &nbsp;|&nbsp;
                   <span style="color:#e74c3c;font-weight:700;">'Red'</span> color text denotes wrong data
                 </div>
-                <div class="table-wrap">
+                <!-- Existing single-table view — used ONLY by Excel upload / Firebase load -->
+                <div class="table-wrap" id="single-table-wrap">
                   <table id="data-table">
                     <thead><tr id="table-header"></tr></thead>
                     <tbody></tbody>
                   </table>
+                </div>
+
+                <!-- NEW: Split view — used ONLY by DXF drawing upload -->
+                <div id="dxf-split-wrap" style="display:none">
+                  <div class="dxf-split-tabs">
+                    <button class="dxf-split-tab active" id="dxf-split-tab-master" onclick="dxfSplitSwitch('master')">
+                      Master Sheet.dxf <span class="dxf-split-badge" id="dxf-split-count-master"></span>
+                    </button>
+                    <button class="dxf-split-tab" id="dxf-split-tab-a" onclick="dxfSplitSwitch('a')">
+                      A.dxf <span class="dxf-split-badge" id="dxf-split-count-a"></span>
+                    </button>
+                  </div>
+                  <div style="text-align:center;font-size:.82rem;margin:8px 0 10px;color:var(--muted);">
+                    <span style="color:#d4501a;font-weight:700;">'Orange'</span> = duplicate data &nbsp;|&nbsp;
+                    <span style="color:#e74c3c;font-weight:700;">'Red'</span> = wrong data
+                  </div>
+                  <div class="dxf-issues-box" id="dxf-split-errors-master"></div>
+                  <div class="dxf-issues-box" id="dxf-split-errors-a" style="display:none"></div>
+                  <div class="table-wrap" id="dxf-split-panel-master">
+                    <table id="dxf-table-master">
+                      <thead><tr id="dxf-table-header-master"></tr></thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <div class="table-wrap" id="dxf-split-panel-a" style="display:none">
+                    <table id="dxf-table-a">
+                      <thead><tr id="dxf-table-header-a"></tr></thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div><!-- /col-inner -->
@@ -1360,6 +1391,187 @@ function _kmcCheckMissingLayers() {
 
     function finalise(ent,layerDefs){const ld=layerDefs[ent.layer]||{};if(ent.color===null)ent.color=ld.color??7;ent.printable=ld.plot!==undefined?ld.plot:true;return ent;}
 
+    /* ══════════════════════════════════════════════════════
+       SPLIT-VIEW CHECKER — mirrors index_kmc.js rule engine,
+       run separately per file. Read-only w.r.t. index_kmc.js.
+    ══════════════════════════════════════════════════════ */
+    const DXF_NO_DASHED_SET = new Set(['Plot','Road','Splay','Strip','Tree Cover','Open Space',
+      'Open Space_Ext_1','Internal Road','Loft','Cupboard','Height','Floor Height',
+      'Alignment','Water body','Heritage','Existing','STP','RWH','Pavement',
+      'Roof_Structure','Court Yard']);
+    const DXF_ACCEPTED_LAYERS = ['Residential','Mercantile_wholesale','Mercantile_retail','Business',
+      'Institutional','Storage','Assembly','Hazardous','Industrial','Educational'];
+    const DXF_BYLAYER_LW = ['Common Area','Cupboard','Ground Coverage','Open Space','Roof_Structure','Terrace','Internal Road','Loft'];
+    const DXF_NEVER_BYLAYER = ['Existing','Floor Height','Height','Parking','Parking_Area','Stair','Tenement','Tenement_Single',
+      'Tenement_Ext_1','Tenement_Single_Ext_1','Tree Cover','Shaft','Court Yard','Heritage','Water body','Splay','Strip','Corridor','Lift'];
+
+    function dxfConditions(validSet){
+      return [
+        { check:(c,i)=>!validSet.has(c[i.layer]), msg:'Invalid Layer Name' },
+        { check:(c,i)=>c[i.count]!=='1', msg:'Count must be 1' },
+        { check:(c,i)=>c[i.color]==='ByLayer', msg:'Color should not be ByLayer' },
+        { check:(c,i)=>!['ByLayer','DASHED','PHANTOM2'].includes(c[i.linetype]), msg:'Invalid Linetype' },
+        { check:(c,i)=>DXF_NO_DASHED_SET.has(c[i.layer]) && c[i.linetype]==='DASHED', msg:'Linetype should not be DASHED' },
+        { check:(c,i)=>c[i.name]==='Polyline' && c[i.closed]=='0', msg:'Polyline must be closed' },
+        { check:(c,i)=>!['Polyline','Line','Point','Hatch'].includes(c[i.name]), msg:'Invalid Object Name' },
+        { check:(c,i)=>c[i.name]==='Polyline' && c[i.area].trim()==='', msg:'Polyline area is missing' },
+        { check:(c,i)=>DXF_ACCEPTED_LAYERS.includes(c[i.layer]) && !['ByLayer','DASHED'].includes(c[i.linetype]), msg:'Linetype should be ByLayer or DASHED' },
+        { check:(c,i)=>DXF_BYLAYER_LW.includes(c[i.layer]) && c[i.lineweight]!=='ByLayer', msg:'Lineweight must be ByLayer' },
+        { check:(c,i)=>DXF_NEVER_BYLAYER.includes(c[i.layer]) && c[i.name]==='Polyline' && c[i.lineweight]==='ByLayer', msg:'Lineweight must not be ByLayer' },
+        { check:(c,i)=>{
+            const cv=parseInt(c[i.color],10);
+            return (c[i.name]==='Polyline' && c[i.layer]==='Plot' && (cv!==240 || c[i.lineweight]!=='0.50 mm')) ||
+                   (c[i.layer]==='Ground Coverage' && (cv<53||cv>152) && c[i.name]==='Polyline');
+          }, msg:'Invalid color for Plot or Ground Coverage' }
+      ];
+    }
+
+    function dxfCheckAndRenderTable(csvText, validSet, ui){
+      const rows = csvText.split('\n');
+      ui.thead.innerHTML=''; ui.tbody.innerHTML='';
+      const seenRows=new Set(), duplicateRows=new Set();
+      rows.forEach((row,idx)=>{ if(idx>0 && row.trim()!==''){ if(seenRows.has(row)) duplicateRows.add(row); seenRows.add(row); }});
+      const invalidLayers=new Set(), foundLayers=new Set();
+      let allErrorMessages=[];
+      const lwTracker={'Strip':new Set(),'Splay':new Set(),'Plot':new Set(),'Tree Cover':new Set(),'Existing':new Set(),'Lift':{}};
+      const expectedLW=['0.15 mm','0.20 mm','0.25 mm','0.30 mm'];
+      const reported=new Set();
+      const CONDS = dxfConditions(validSet);
+      let idxMap={};
+      rows.forEach((row,index)=>{
+        const cells=row.split(',');
+        if(index===0){
+          cells.forEach((cell,ci)=>{
+            const th=document.createElement('th'); th.textContent=cell; ui.thead.appendChild(th);
+            const k=cell.trim();
+            if(k==='Count')idxMap.count=ci; if(k==='Name')idxMap.name=ci; if(k==='Color')idxMap.color=ci;
+            if(k==='Layer')idxMap.layer=ci; if(k==='Length')idxMap.length=ci; if(k==='Linetype')idxMap.linetype=ci;
+            if(k==='Lineweight')idxMap.lineweight=ci; if(k==='Area')idxMap.area=ci; if(k==='Closed')idxMap.closed=ci;
+          });
+          return;
+        }
+        if(row.trim()==='') return;
+        const tr=ui.tbody.insertRow();
+        let msgs=[], firstErr=null;
+        for(const cond of CONDS){ if(cond.check(cells, idxMap)){ firstErr=cond.msg; break; } }
+        const layer=cells[idxMap.layer]?.trim(), name=cells[idxMap.name]?.trim(),
+              lineweight=cells[idxMap.lineweight]?.trim(), color=cells[idxMap.color]?.trim();
+        if(firstErr){ tr.classList.add('text-red'); msgs.push(`In ${layer} Layer: ${firstErr}`); }
+        if(layer) foundLayers.add(layer);
+        if(layer && !validSet.has(layer)) invalidLayers.add(layer);
+
+        if(['Strip','Splay','Plot','Tree Cover','Existing','Lift'].includes(layer)){
+          if(layer==='Tree Cover' && name==='Point'){ /* skip */ }
+          else if(layer==='Lift'){
+            const key=`${color}:${lineweight}`;
+            lwTracker.Lift[key]=(lwTracker.Lift[key]||0)+1;
+            if(lwTracker.Lift[key]>2){ tr.classList.add('text-red'); msgs.push(`Duplicate Lift Layer found with lineweight ${lineweight}`); }
+          } else if(layer==='Existing'||layer==='Tree Cover'){
+            const key=`${color}:${lineweight}`;
+            if(lwTracker[layer].has(key)){ tr.classList.add('text-red'); msgs.push(`Duplicate lineweight found for ${layer} layer with lineweight ${lineweight}`); }
+            else lwTracker[layer].add(key);
+          } else {
+            const key=`${lineweight}:${name}`;
+            if(lwTracker[layer].has(key)){ tr.classList.add('text-red'); msgs.push(`Duplicate lineweight found for ${layer} layer with lineweight ${lineweight}`); }
+            else lwTracker[layer].add(key);
+          }
+        }
+
+        if(layer==='Stair' && name==='Polyline'){
+          expectedLW.forEach(w=>{
+            if(lineweight===w){
+              const exists=rows.some(r=>{const rc=r.split(',');return rc[idxMap.layer]?.trim()==='Stair'&&rc[idxMap.name]?.trim()==='Line'&&rc[idxMap.lineweight]?.trim()===w;});
+              if(!exists){ const em=`Line of width is missing for the Stair with lineweight ${w}`; if(!reported.has(em)){reported.add(em); tr.classList.add('error'); msgs.push(em);} }
+            }
+          });
+        }
+        if(layer==='Lift' && name==='Polyline'){
+          const exists=rows.some(r=>{const rc=r.split(',');return rc[idxMap.layer]?.trim()==='Lift'&&rc[idxMap.name]?.trim()==='Line';});
+          if(!exists){ const em='Line of width is missing for the Lift layer'; if(!reported.has(em)){reported.add(em); tr.classList.add('error'); msgs.push(em);} }
+        }
+
+        if(duplicateRows.has(row)) tr.classList.add('duplicate');
+        if(msgs.length>0) allErrorMessages.push(`Row ${index}: ${msgs.join(', ')}`);
+        cells.forEach(cell=>{ const td=tr.insertCell(); td.textContent=cell; });
+      });
+      const missingLayers=Array.from(validSet).filter(l=>!foundLayers.has(l));
+      return { allErrorMessages, invalidLayers, missingLayers, rowCount: rows.length-1 };
+    }
+
+    function dxfRenderIssuesBox(box, result){
+      const total = result.allErrorMessages.length + result.invalidLayers.size + result.missingLayers.length;
+      box.classList.remove('open');
+      if(total===0){ box.style.display='none'; box.innerHTML=''; return; }
+      let html = `<div class="dxf-issues-toggle" onclick="this.parentElement.classList.toggle('open')">⚠ ${total} issue${total>1?'s':''} found — click to view</div><div class="dxf-issues-body">`;
+      if(result.allErrorMessages.length) html += result.allErrorMessages.map(m=>`<div class="dxf-issue-row">${m}</div>`).join('');
+      if(result.invalidLayers.size) html += `<div class="dxf-issue-row"><strong>Invalid/Misspelled Layers:</strong> ${Array.from(result.invalidLayers).join(', ')}</div>`;
+      if(result.missingLayers.length) html += `<div class="dxf-issue-row"><strong>Missing Layers:</strong> ${result.missingLayers.join(', ')}</div>`;
+      html += '</div>';
+      box.innerHTML = html;
+      box.style.display='block';
+    }
+
+    window.dxfSplitSwitch = function(which){
+      ['master','a'].forEach(s=>{
+        document.getElementById('dxf-split-tab-'+s).classList.toggle('active', s===which);
+        document.getElementById('dxf-split-panel-'+s).style.display = (s===which)?'':'none';
+        const box = document.getElementById('dxf-split-errors-'+s);
+        box.style.display = (s===which && box.dataset.hasIssues==='1') ? 'block' : 'none';
+      });
+    };
+
+    function dxfRenderSplitViews(masterCsv, aCsv, masterValidSet, aValidSet){
+      const singleWrap = document.getElementById('single-table-wrap');
+      const splitWrap  = document.getElementById('dxf-split-wrap');
+      if(singleWrap) singleWrap.style.display='none';
+      if(splitWrap)  splitWrap.style.display='';
+      const descC = document.getElementById('description-container'); if(descC) descC.style.display='none';
+      const ceBtn = document.getElementById('checkErrorsBtn'); if(ceBtn) ceBtn.style.display='none';
+
+      const rMaster = dxfCheckAndRenderTable(masterCsv, masterValidSet, {
+        thead: document.getElementById('dxf-table-header-master'),
+        tbody: document.querySelector('#dxf-table-master tbody')
+      });
+      const rA = dxfCheckAndRenderTable(aCsv, aValidSet, {
+        thead: document.getElementById('dxf-table-header-a'),
+        tbody: document.querySelector('#dxf-table-a tbody')
+      });
+
+      document.getElementById('dxf-split-count-master').textContent = '(' + rMaster.rowCount + ')';
+      document.getElementById('dxf-split-count-a').textContent = '(' + rA.rowCount + ')';
+
+      const eMaster = document.getElementById('dxf-split-errors-master');
+      const eA = document.getElementById('dxf-split-errors-a');
+      const masterIssues = (rMaster.allErrorMessages.length+rMaster.invalidLayers.size+rMaster.missingLayers.length)>0;
+      const aIssues = (rA.allErrorMessages.length+rA.invalidLayers.size+rA.missingLayers.length)>0;
+      eMaster.dataset.hasIssues = masterIssues ? '1':'0';
+      eA.dataset.hasIssues = aIssues ? '1':'0';
+      dxfRenderIssuesBox(eMaster, rMaster);
+      dxfRenderIssuesBox(eA, rA);
+      document.getElementById('dxf-split-tab-master').classList.toggle('has-issues', masterIssues);
+      document.getElementById('dxf-split-tab-a').classList.toggle('has-issues', aIssues);
+
+      dxfSplitSwitch('master');
+    }
+
+    /* Auto-revert to the single table whenever the Excel/Firebase path
+       repaints #table-header — guarantees the Excel upload flow is
+       never left showing a stale split view. Zero edits to index_kmc.js. */
+    (function watchSingleTableRepaint(){
+      const th = document.getElementById('table-header');
+      if(!th) return;
+      const obs = new MutationObserver(function(){
+        const splitWrap = document.getElementById('dxf-split-wrap');
+        if(splitWrap && splitWrap.style.display!=='none'){
+          splitWrap.style.display='none';
+          const singleWrap = document.getElementById('single-table-wrap'); if(singleWrap) singleWrap.style.display='';
+          const descC = document.getElementById('description-container'); if(descC) descC.style.display='';
+          const ceBtn = document.getElementById('checkErrorsBtn'); if(ceBtn) ceBtn.style.display='';
+        }
+      });
+      obs.observe(th, {childList:true});
+    })();
+    
     window.dxfHandleExtract=function(){
       const btn=document.getElementById('dxf-btn-extract');
       btn.textContent='⏳ Parsing…';btn.disabled=true;
@@ -1410,7 +1622,9 @@ function _kmcCheckMissingLayers() {
           document.getElementById('info-container').style.display='none';
           var fsEl=document.getElementById('feature-strip');if(fsEl)fsEl.style.display='none';
           document.getElementById('main-container').style.display='block';
-          if(typeof window.displayData==='function') window.displayData(csv);
+          const masterCsv = buildCSV(masterRows);
+          const aCsv = buildCSV(aRows);
+          dxfRenderSplitViews(masterCsv, aCsv, masterAllowed, aAllowed);
           if(typeof window._kmcTabRefresh==='function') window._kmcTabRefresh();
           /* Track DXF drawing upload to Firebase */
           if(typeof window.kmcTrackDxfUpload==='function') window.kmcTrackDxfUpload(DXF.master,DXF.a,csv);
@@ -1437,6 +1651,10 @@ function _kmcCheckMissingLayers() {
       const fnEl=document.getElementById('loaded-filename');if(fnEl)fnEl.textContent='';
       document.getElementById('main-container').style.display='none';
       document.getElementById('info-container').style.display='block';
+      const splitWrap=document.getElementById('dxf-split-wrap'); if(splitWrap) splitWrap.style.display='none';
+      const singleWrap=document.getElementById('single-table-wrap'); if(singleWrap) singleWrap.style.display='';
+      const descC=document.getElementById('description-container'); if(descC) descC.style.display='';
+      const ceBtn=document.getElementById('checkErrorsBtn'); if(ceBtn) ceBtn.style.display='';
       document.querySelector('.home-two-col').style.display='flex';
       var fsReset=document.getElementById('feature-strip');if(fsReset)fsReset.style.display='';
       const clearBtn=document.getElementById('clearStorageBtn');if(clearBtn)clearBtn.style.display='none';
