@@ -996,6 +996,30 @@ tr.blink-red td { background: transparent !important; }
 .home-col:hover { border-color: rgba(26,24,20,.28); }
 body.dark-mode .home-col:hover { border-color: rgba(255,255,255,.16); }
 
+/* OR divider between the two cards */
+.home-divider {
+  flex: 0 0 auto;
+  align-self: stretch;
+  position: relative;
+  width: 1px;
+  margin-top: 44px;           /* lines up with .home-col's top offset */
+  background: var(--border2);
+}
+.home-divider-badge {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: .72rem; font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--muted);
+  box-shadow: var(--shadow-lg);
+  z-index: 2;
+}
 /* Number badge */
 .col-badge {
   position: absolute; top: 14px; left: 16px;
@@ -1237,6 +1261,7 @@ body.dark-mode .home-col:hover { border-color: rgba(255,255,255,.16); }
 @media (max-width: 768px) {
   .sh-nav { display: none; }
   .home-two-col { flex-direction: column !important; padding: 0 14px 24px; gap: 52px; }
+   .home-divider { width: auto; height: 1px; margin: 0 20px; }
   .home-hero { padding: 36px 16px 36px; }
   .dxf-upload-row { grid-template-columns: 1fr; }
   .feature-strip { padding: 16px 14px 28px; gap: 10px; }
