@@ -1578,7 +1578,7 @@ function _kmcCheckMissingLayers() {
       }
       if(missingLayers.length){
         const hr2=document.createElement('hr'); hr2.style.cssText='border:none;border-top:1px solid rgba(231,76,60,.25);margin:10px 0;'; mbody.appendChild(hr2);
-        const h2=document.createElement('div'); h2.style.cssText='font-weight:700;color:#e74c3c;margin-bottom:6px;font-size:.8rem;'; h2.textContent='Below Layers Are Not In This Drawing:'; mbody.appendChild(h2);
+        const h2=document.createElement('div'); h2.style.cssText='font-weight:700;color:#e74c3c;margin-bottom:6px;font-size:.8rem;'; h2.textContent='Below Layers Are Not In This Drawing: (Just for your information)'; mbody.appendChild(h2);
         const d2=document.createElement('div'); d2.style.cssText='font-size:.8rem;line-height:1.8;';
         missingLayers.forEach((l,i)=>{
           const sp=document.createElement('span'); sp.style.color=i%2===0?'blue':'green';
