@@ -314,33 +314,40 @@
                   </table>
                 </div>
 
-                <!-- NEW: Split view — used ONLY by DXF drawing upload -->
-                <div id="dxf-split-wrap" style="display:none">
-                  <div class="dxf-split-tabs">
-                    <button class="dxf-split-tab active" id="dxf-split-tab-master" onclick="dxfSplitSwitch('master')">
-                      Master Sheet.dxf <span class="dxf-split-badge" id="dxf-split-count-master"></span>
-                    </button>
-                    <button class="dxf-split-tab" id="dxf-split-tab-a" onclick="dxfSplitSwitch('a')">
-                      A.dxf <span class="dxf-split-badge" id="dxf-split-count-a"></span>
+                <!-- Existing single-table view — used ONLY by Excel upload / Firebase load -->
+                <div class="table-wrap" id="single-table-wrap">
+                  <table id="data-table">
+                    <thead><tr id="table-header"></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+
+                <!-- NEW: DXF pill-switch view — used ONLY by DXF drawing upload -->
+                <div id="dxf-view-wrap" style="display:none">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+                    <span style="font-family:var(--font-mono);font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">View:</span>
+                    <div id="dxf-view-pills" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"></div>
+                    <button class="btn" onclick="dxfCheckErrors()" style="font-size:.75rem;padding:6px 14px;gap:5px;margin-left:auto;white-space:nowrap;">
+                      <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      Check Errors
                     </button>
                   </div>
-                  <div style="text-align:center;font-size:.82rem;margin:8px 0 10px;color:var(--muted);">
-                    <span style="color:#d4501a;font-weight:700;">'Orange'</span> = duplicate data &nbsp;|&nbsp;
-                    <span style="color:#e74c3c;font-weight:700;">'Red'</span> = wrong data
-                  </div>
-                  <div class="dxf-issues-box" id="dxf-split-errors-master"></div>
-                  <div class="dxf-issues-box" id="dxf-split-errors-a" style="display:none"></div>
-                  <div class="table-wrap" id="dxf-split-panel-master">
-                    <table id="dxf-table-master">
-                      <thead><tr id="dxf-table-header-master"></tr></thead>
-                      <tbody></tbody>
+                  <div class="table-wrap">
+                    <table id="dxf-view-table">
+                      <thead><tr id="dxf-view-header"></tr></thead>
+                      <tbody id="dxf-view-body"></tbody>
                     </table>
                   </div>
-                  <div class="table-wrap" id="dxf-split-panel-a" style="display:none">
-                    <table id="dxf-table-a">
-                      <thead><tr id="dxf-table-header-a"></tr></thead>
-                      <tbody></tbody>
-                    </table>
+                </div>
+
+                <!-- Error popup modal for the DXF pill view — separate from Excel's #errorModal -->
+                <div id="dxf-error-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;align-items:center;justify-content:center;">
+                  <div style="background:var(--paper);border-radius:14px;padding:24px 28px;max-width:540px;width:92%;max-height:70vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.2);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                      <h3 style="margin:0;font-size:15px;font-weight:700;">Data Errors &amp; Warnings</h3>
+                      <button onclick="document.getElementById('dxf-error-modal').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);">&times;</button>
+                    </div>
+                    <div id="dxf-error-body" style="overflow-y:auto;flex:1;font-size:.82rem;line-height:1.7;"></div>
                   </div>
                 </div>
               </div>
