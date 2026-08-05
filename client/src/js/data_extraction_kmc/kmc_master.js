@@ -536,6 +536,10 @@
    if (totalParkingNos) { const el = document.getElementById('pro-car'); if (el) el.textContent = totalParkingNos; }
    const reqParkingArea = localStorage.getItem('reqParkingArea');
    if (reqParkingArea)  { const el = document.getElementById('per-park-area'); if (el) el.textContent = parseFloat(reqParkingArea).toFixed(3) + ' Sq.m.'; }
+
+   // NEW — Bonus column: mirrors the Provided Parking table's own totals (Parking tab)
+   if (totalParkingNos)  { const el = document.getElementById('bonus-car'); if (el) el.textContent = totalParkingNos; }
+   if (totalParkingArea) { const el = document.getElementById('bonus-park-area'); if (el) el.textContent = parseFloat(totalParkingArea).toFixed(3) + ' Sq.m.'; }
   }
 
   /* ────────────────────────────────────────
