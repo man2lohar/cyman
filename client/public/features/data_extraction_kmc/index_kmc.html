@@ -313,15 +313,6 @@
                     <tbody></tbody>
                   </table>
                 </div>
-
-                <!-- Existing single-table view — used ONLY by Excel upload / Firebase load -->
-                <div class="table-wrap" id="single-table-wrap">
-                  <table id="data-table">
-                    <thead><tr id="table-header"></tr></thead>
-                    <tbody></tbody>
-                  </table>
-                </div>
-
                 <!-- NEW: DXF pill-switch view — used ONLY by DXF drawing upload -->
                 <div id="dxf-view-wrap" style="display:none">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
@@ -1683,19 +1674,18 @@ function _kmcCheckMissingLayers() {
           var fsEl=document.getElementById('feature-strip');if(fsEl)fsEl.style.display='none';
           document.getElementById('main-container').style.display='block';
           const singleWrap=document.getElementById('single-table-wrap'); if(singleWrap) singleWrap.style.display='none';
-const viewWrap=document.getElementById('dxf-view-wrap'); if(viewWrap) viewWrap.style.display='';
-const descC=document.getElementById('description-container'); if(descC) descC.style.display='none';
-const ceBtn=document.getElementById('checkErrorsBtn'); if(ceBtn) ceBtn.style.display='none';
+          const viewWrap=document.getElementById('dxf-view-wrap'); if(viewWrap) viewWrap.style.display='';
+          const descC=document.getElementById('description-container'); if(descC) descC.style.display='none';
+          const ceBtn=document.getElementById('checkErrorsBtn'); if(ceBtn) ceBtn.style.display='none';
+          
+          const masterCsvView = buildCSV(masterRows);
+          const aCsvView = buildCSV(aRows);
+          buildDxfViewPills();
+          renderDxfView(masterCsvView, DXF.master.name || 'Master Sheet.dxf', 'master', masterAllowed);
+          renderDxfView(aCsvView, DXF.a.name || 'A.dxf', 'a', aAllowed);
+          renderDxfView(masterCsvView, DXF.master.name || 'Master Sheet.dxf', 'master', masterAllowed); // repaint table to Master view
+          setDxfPillActive('master');
 
-const masterCsvView = buildCSV(masterRows);
-const aCsvView = buildCSV(aRows);
-buildDxfViewPills();
-renderDxfView(masterCsvView, DXF.master.name || 'Master Sheet.dxf', 'master', masterAllowed);
-renderDxfView(aCsvView, DXF.a.name || 'A.dxf', 'a', aAllowed);
-renderDxfView(masterCsvView, DXF.master.name || 'Master Sheet.dxf', 'master', masterAllowed); // repaint table to Master view
-setDxfPillActive('master');
-document.getElementById('dxf-view-header').innerHTML =
-  document.getElementById('dxf-view-header').innerHTML; // header already set by master render above
           if(typeof window._kmcTabRefresh==='function') window._kmcTabRefresh();
           /* Track DXF drawing upload to Firebase */
           if(typeof window.kmcTrackDxfUpload==='function') window.kmcTrackDxfUpload(DXF.master,DXF.a,csv);
