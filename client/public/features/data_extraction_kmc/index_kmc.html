@@ -695,7 +695,7 @@
             <tr><td class="head">Road Width</td><td id="roadwidth">0.00</td><td class="head">Building Use - Group</td><td id="usegroup">No data available</td></tr>
             <tr><td class="head">Land Area as per Boundary Declaration</td><td id="land-area">0.000</td><td class="head">Land Area as per Document (min.)</td><td id="land-area-doc">0.000</td></tr>
             <tr><td class="head">Permissible Ground Coverage</td><td id="per-ground-coverage">0.000</td><td class="head">Proposed Ground Coverage</td><td id="pro-ground-coverage">0.000</td></tr>
-            <tr><td class="head">Permissible F.A.R.</td><td id="per-far">0.000</td><td class="head">Proposed F.A.R</td><td id="pro-far">0.000</td></tr>
+            <tr><td class="head">Permissible F.A.R.</td><td id="per-far">0.000</td><td class="head">Proposed F.A.R <svg class="far-info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onclick="showFarCalcPopup()" title="View calculation steps"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"></circle></svg></td><td id="pro-far">0.000</td></tr>
             <tr><td class="head">Permissible Height</td><td id="per-height">0.000</td><td class="head">Proposed Height</td><td id="pro-height">0.000</td></tr>
             <tr><td class="head">Required Tree Cover Area</td><td id="per-tree">0.000</td><td class="head">Proposed Tree Cover Area</td><td id="pro-tree">0.000</td></tr>
             <tr><td class="head">Permissible C.B./Loft/Ledge Area</td><td id="per-cb">0.000</td><td class="head">Proposed C.B./Loft/Ledge Area</td><td id="pro-cb">0.000</td></tr>
@@ -744,6 +744,8 @@
       </div>
     </div>
 
+    <div id="far-calc-popup"><div class="master-popup-box"><div class="master-popup-header"><div><div class="master-popup-title">Proposed F.A.R. — Calculation</div><div class="master-popup-sub">Step-by-step breakdown</div></div><button class="master-popup-close" onclick="document.getElementById('far-calc-popup').style.display='none'" aria-label="Close">&times;</button></div><div class="master-popup-body"><table style="width:100%;border-collapse:collapse;font-size:.82rem;"><tbody id="far-calc-steps"></tbody></table></div><div class="master-popup-footer"><button class="btn btn-danger" onclick="document.getElementById('far-calc-popup').style.display='none'">Close</button></div></div></div>
+    
     <!-- ORIGINAL Instruction Overlay -->
     <div class="overlay" id="instrOverlay" onclick="handleOverlayClick(event)">
       <div class="instr-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
