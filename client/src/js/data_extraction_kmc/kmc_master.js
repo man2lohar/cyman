@@ -156,12 +156,12 @@
   function calculateProposedFAR() {
     const LandArea        = parseFloat(document.getElementById('land-area')?.textContent.replace(/,/g, '')) || 0;
     const minLandDoc      = parseFloat(document.getElementById('land-area-doc')?.textContent.replace(/,/g, '')) || 0;
-    const totalParkingArea = parseFloat(localStorage.getItem('reqParkingArea')) || parseFloat(localStorage.getItem('totalParkingArea')) || 0;
+    const actualBonusParkingArea = parseFloat(localStorage.getItem('totalParkingArea')) || 0; // Actual Bonus Car Parking Area
     const netFloorAreaSum  = parseFloat(localStorage.getItem('netFloorAreaSum')) || 0;
 
     if (ParkingAreaSum >= 0) {
       const minLandArea    = Math.min(LandArea, minLandDoc);
-      const netParkingArea = Math.min(totalParkingArea, ParkingAreaSum);
+      const netParkingArea = Math.min(ParkingAreaSum, actualBonusParkingArea); // min of Proposed & Actual Bonus
       const proposedFAR    = (netFloorAreaSum - netParkingArea) / minLandArea;
       const proFAR         = document.getElementById('pro-far');
       if (proFAR) proFAR.textContent = proposedFAR.toFixed(3);
