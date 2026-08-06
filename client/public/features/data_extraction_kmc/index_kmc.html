@@ -1471,7 +1471,6 @@ function _kmcCheckMissingLayers() {
       const expectedLW = ['0.15 mm','0.20 mm','0.25 mm','0.30 mm'];
       const stairLinesFound = {}; let liftLineFound = false;
       const courtYardPlanFound = {}, courtYardSectionFound = {}, shaftPlanFound = {};
-      rows.forEach(r=>{ if(!r.trim())return; const c=r.split(','); const lyr=(c[idx.layer]||'').trim(), nm=(c[idx.name]||'').trim(), lw=(c[idx.lineweight]||'').trim();
       rows.forEach(r=>{ if(!r.trim())return; const c=r.split(','); const lyr=(c[idx.layer]||'').trim(), nm=(c[idx.name]||'').trim(), lw=(c[idx.lineweight]||'').trim(), clr=(c[idx.color]||'').trim();
         if(lyr==='Stair'&&nm==='Line')stairLinesFound[lw]=true; if(lyr==='Lift'&&nm==='Line')liftLineFound[lw]=true; });
         if(lyr==='Court Yard'&&nm==='Line'&&clr==='5')courtYardPlanFound[lw]=true;
