@@ -1468,7 +1468,6 @@ function _kmcCheckMissingLayers() {
       }
 
       const lwTracker = { Strip:new Set(), Splay:new Set(), Plot:new Set(), 'Tree Cover':new Set(), Existing:new Set(), Lift:{} };
-      const expectedLW = ['0.15 mm','0.20 mm','0.25 mm','0.30 mm'];
       const stairLinesFound = {}; const liftLineFound = {};
       const courtYardPlanFound = {}, courtYardSectionFound = {}, shaftPlanFound = {};
       rows.forEach(r=>{ if(!r.trim())return; const c=r.split(','); const lyr=(c[idx.layer]||'').trim(), nm=(c[idx.name]||'').trim(), lw=(c[idx.lineweight]||'').trim(), clr=(c[idx.color]||'').trim();
@@ -1531,12 +1530,10 @@ function _kmcCheckMissingLayers() {
           }
 
           if(lyr==='Stair'&&nm==='Polyline'){
-            expectedLW.forEach(ew=>{
-              if(lw===ew && !stairLinesFound[ew]){
-                const msg='Line of width is missing for the Stair with lineweight '+ew;
-                if(!reportedErrors.has(msg)){reportedErrors.add(msg); rowErrors.push(msg);}
-              }
-            });
+            if(!stairLinesFound[lw]){
+              const msg='Line of width is missing for the Stair with lineweight '+lw;
+              if(!reportedErrors.has(msg)){reportedErrors.add(msg); rowErrors.push(msg);}
+            }
           }
           if(lyr==='Lift'&&nm==='Polyline'&&!liftLineFound[lw]){
             const msg='Line of width is missing for the Lift with lineweight '+lw;
