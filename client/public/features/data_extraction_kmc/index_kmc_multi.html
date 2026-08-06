@@ -923,7 +923,6 @@
     var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set(),'Existing':new Set(),'Lift':{}};
 
     /* Stair/Lift missing-line checks (computed once before row loop) */
-    var expectedLW=['0.15 mm','0.20 mm','0.25 mm','0.30 mm','0.35 mm','0.40 mm','0.50 mm','0.60 mm','0.70 mm','0.90 mm'];
     var stairLinesFound={};   // lineweight → bool
     var liftLineFound={};     // lineweight → bool
     var courtYardPlanFound={}, courtYardSectionFound={}, shaftPlanFound={};
@@ -1013,15 +1012,10 @@
 
 
       /* Stair missing line */
-      if(lyr==='Stair'&&nm==='Polyline'){
-        expectedLW.forEach(function(ew){
-          if(lw===ew&&!stairLinesFound[ew]){
-            var msg='Line of width is missing for the Stair with lineweight '+ew;
-            if(!reportedErrors.has(msg)){reportedErrors.add(msg);rowErrors.push(msg);}
-          }
-        });
+      if(lyr==='Stair'&&nm==='Polyline'&&!stairLinesFound[lw]){
+        var msg='Line of width is missing for the Stair with lineweight '+lw;
+        if(!reportedErrors.has(msg)){reportedErrors.add(msg);rowErrors.push(msg);}
       }
-        
       /* Lift missing line */
       if(lyr==='Lift'&&nm==='Polyline'&&!liftLineFound[lw]){
         var liftMsg='Line of width is missing for the Lift with lineweight '+lw;
