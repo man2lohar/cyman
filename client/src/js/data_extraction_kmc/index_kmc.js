@@ -294,20 +294,21 @@ function displayData(csv) {
                 });
             }
 
-            // Check for missing Line for Lift layer
+            // Check for missing Line for Lift layer, per lineweight
             if (layer === 'Lift' && name === 'Polyline') {
                 const matchingLiftLineExists = rows.some((r) => {
                     const lineCells = r.split(',');
                     const lineLayer = lineCells[columnIndices.layer]?.trim();
                     const lineName = lineCells[columnIndices.name]?.trim();
-                    return lineLayer === 'Lift' && lineName === 'Line';
+                    const lineLW = lineCells[columnIndices.lineweight]?.trim();
+                    return lineLayer === 'Lift' && lineName === 'Line' && lineLW === lineweight;
                 });
 
                 if (!matchingLiftLineExists) {
-                    const errorMessage = `Line of width is missing for the Lift layer`;
+                    const errorMessage = `Line of width is missing for the Lift with lineweight ${lineweight}`;
                     if (!reportedErrors.has(errorMessage)) {
-                        reportedErrors.add(errorMessage); // Track reported error
-                        newRow.classList.add('error'); // Style the row with error
+                        reportedErrors.add(errorMessage);
+                        newRow.classList.add('error');
                         errorMessages.push(errorMessage);
                     }
                 }
