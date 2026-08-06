@@ -925,14 +925,14 @@
     /* Stair/Lift missing-line checks (computed once before row loop) */
     var expectedLW=['0.15 mm','0.20 mm','0.25 mm','0.30 mm','0.35 mm','0.40 mm','0.50 mm','0.60 mm','0.70 mm','0.90 mm'];
     var stairLinesFound={};   // lineweight → bool
-    var liftLineFound=false;
+    var liftLineFound={};     // lineweight → bool
     var courtYardPlanFound={}, courtYardSectionFound={}, shaftPlanFound={};
     rows.forEach(function(r){
       if(!r.trim())return;
       var c=r.split(',');
       var lyr=(c[idx.layer]||'').trim(),nm=(c[idx.name]||'').trim(),lw=(c[idx.lineweight]||'').trim(),clr=(c[idx.color]||'').trim();
       if(lyr==='Stair'&&nm==='Line')stairLinesFound[lw]=true;
-      if(lyr==='Lift'&&nm==='Line')liftLineFound=true;
+      if(lyr==='Lift'&&nm==='Line')liftLineFound[lw]=true;
       if(lyr==='Court Yard'&&nm==='Line'&&clr==='5')courtYardPlanFound[lw]=true;
       if(lyr==='Court Yard'&&nm==='Line'&&clr==='6')courtYardSectionFound[lw]=true;
       if(lyr==='Shaft'&&nm==='Line'&&clr==='5')shaftPlanFound[lw]=true;
@@ -1021,10 +1021,10 @@
           }
         });
       }
-
+        
       /* Lift missing line */
-      if(lyr==='Lift'&&nm==='Polyline'&&!liftLineFound){
-        var liftMsg='Line of width is missing for the Lift layer';
+      if(lyr==='Lift'&&nm==='Polyline'&&!liftLineFound[lw]){
+        var liftMsg='Line of width is missing for the Lift with lineweight '+lw;
         if(!reportedErrors.has(liftMsg)){reportedErrors.add(liftMsg);rowErrors.push(liftMsg);}
       }
 
