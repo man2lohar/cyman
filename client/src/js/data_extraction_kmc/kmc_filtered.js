@@ -383,7 +383,7 @@ function _calcTotalFloorArea(cells, parsedData) {
   ];
   const SPECIAL = [
     'Splay','Tree Cover','Road','Stair','Lift','Existing',
-    'Parking_Area','Plot','Shaft','Strip','Waterbody',
+    'Parking_Area','Plot','Shaft','Strip','Water body',
   ];
   const floorVal = cells[2];
   const layerVal = cells[3];
