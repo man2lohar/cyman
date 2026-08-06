@@ -1469,7 +1469,7 @@ function _kmcCheckMissingLayers() {
 
       const lwTracker = { Strip:new Set(), Splay:new Set(), Plot:new Set(), 'Tree Cover':new Set(), Existing:new Set(), Lift:{} };
       const expectedLW = ['0.15 mm','0.20 mm','0.25 mm','0.30 mm'];
-      const stairLinesFound = {}; let liftLineFound = false;
+      const stairLinesFound = {}; const liftLineFound = {};
       const courtYardPlanFound = {}, courtYardSectionFound = {}, shaftPlanFound = {};
       rows.forEach(r=>{ if(!r.trim())return; const c=r.split(','); const lyr=(c[idx.layer]||'').trim(), nm=(c[idx.name]||'').trim(), lw=(c[idx.lineweight]||'').trim(), clr=(c[idx.color]||'').trim();
         if(lyr==='Stair'&&nm==='Line')stairLinesFound[lw]=true; if(lyr==='Lift'&&nm==='Line')liftLineFound[lw]=true;
