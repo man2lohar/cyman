@@ -91,6 +91,20 @@ function displayData(csv) {
     const NeverByLayers = ['Existing', 'Floor Height', 'Height', 'Parking', 'Parking_Area', 'Stair', 'Tenement', 'Tenement_Single',
         'Tenement_Ext_1', 'Tenement_Single_Ext_1', 'Tree Cover', 'Shaft', 'Court Yard', 'Heritage', 'Water body', 'Splay', 'Strip', 'Corridor', 'Lift'
     ];
+
+    const LW_GROUP_A = new Set(['0.15 mm','0.20 mm','0.25 mm','0.30 mm','0.35 mm']);
+    const LW_GROUP_B = new Set(['0.00 mm','0.05 mm','0.09 mm','0.13 mm','0.15 mm','0.18 mm','0.20 mm','0.25 mm','0.30 mm','0.35 mm','0.40 mm','0.50 mm','0.53 mm','0.60 mm','0.70 mm','0.90 mm','1.00 mm','1.06 mm','1.20 mm','1.40 mm','1.58 mm','2.00 mm','2.11 mm']);
+    const LW_GROUP_C = new Set(['0.20 mm','0.25 mm','0.30 mm']);
+    const LW_GROUP_DEFAULT = new Set(['0.15 mm','0.18 mm','0.20 mm','0.25 mm','0.30 mm','0.35 mm','0.40 mm','0.50 mm','0.53 mm','0.60 mm','0.70 mm','0.90 mm']);
+    const LW_GROUP_A_LAYERS = new Set(['Splay','Strip']);
+    const LW_GROUP_B_LAYERS = new Set(['Lift','Lift_Ext_1','Open Space','Stair','Tenement','Tenement_Ext_1','Tenement_Single','Tenement_Single_Ext_1','Height','Floor Height']);
+    const LW_GROUP_C_LAYERS = new Set(['Parking']);
+    function getAllowedLW(layer){
+      if(LW_GROUP_A_LAYERS.has(layer)) return LW_GROUP_A;
+      if(LW_GROUP_B_LAYERS.has(layer)) return LW_GROUP_B;
+      if(LW_GROUP_C_LAYERS.has(layer)) return LW_GROUP_C;
+      return LW_GROUP_DEFAULT;
+    }
     // Layers where Linetype should NOT be DASHED
     const NoDashedLayers = ['Plot', 'Road', 'Splay', 'Strip', 'Tree Cover', 'Open Space',
         'Open Space_Ext_1', 'Internal Road', 'Loft', 'Cupboard', 'Height', 'Floor Height',
