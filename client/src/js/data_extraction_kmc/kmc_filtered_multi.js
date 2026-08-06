@@ -475,7 +475,7 @@ function _mfCalcTotalFloorArea(cells, parsedData) {
     '0.25 mm','0.30 mm','0.35 mm','0.40 mm','0.50 mm','0.60 mm','0.70 mm',
     '0.80 mm','0.90 mm','1.00 mm','1.06 mm','1.20 mm','1.40 mm','1.58 mm','2.11 mm',
   ];
-  const SPECIAL = ['Splay','Tree Cover','Road','Stair','Lift','Existing','Parking_Area','Plot','Shaft','Strip','Waterbody'];
+  const SPECIAL = ['Splay','Tree Cover','Road','Stair','Lift','Existing','Parking_Area','Plot','Shaft','Strip','Water body'];
   const floorVal = cells[2], layerVal = (cells[3] || '').trim();
   let sum = 0;
   parsedData.forEach(d => {
