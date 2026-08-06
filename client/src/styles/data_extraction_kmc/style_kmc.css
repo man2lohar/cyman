@@ -979,7 +979,7 @@ tr.blink-red td { background: transparent !important; }
    SECTION Z — TWO-COLUMN UPLOAD CARDS (new)
 ════════════════════════════════════════════════════════════ */
 .home-two-col {
-  display: flex !important;
+  display: flex;
   gap: 24px; max-width: 1100px; margin: 0 auto;
   padding: 0 28px 32px; align-items: flex-start;
 }
