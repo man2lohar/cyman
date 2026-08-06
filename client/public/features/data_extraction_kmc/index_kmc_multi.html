@@ -910,15 +910,19 @@
     var lwTracker={Strip:new Set(),Splay:new Set(),Plot:new Set(),'Tree Cover':new Set(),'Existing':new Set(),'Lift':{}};
 
     /* Stair/Lift missing-line checks (computed once before row loop) */
-    var expectedLW=['0.15 mm','0.20 mm','0.25 mm','0.30 mm'];
+    var expectedLW=['0.15 mm','0.20 mm','0.25 mm','0.30 mm','0.35 mm','0.40 mm','0.50 mm','0.60 mm','0.70 mm','0.90 mm'];
     var stairLinesFound={};   // lineweight → bool
     var liftLineFound=false;
+    var courtYardPlanFound={}, courtYardSectionFound={}, shaftPlanFound={};
     rows.forEach(function(r){
       if(!r.trim())return;
       var c=r.split(',');
-      var lyr=(c[idx.layer]||'').trim(),nm=(c[idx.name]||'').trim(),lw=(c[idx.lineweight]||'').trim();
+      var lyr=(c[idx.layer]||'').trim(),nm=(c[idx.name]||'').trim(),lw=(c[idx.lineweight]||'').trim(),clr=(c[idx.color]||'').trim();
       if(lyr==='Stair'&&nm==='Line')stairLinesFound[lw]=true;
       if(lyr==='Lift'&&nm==='Line')liftLineFound=true;
+      if(lyr==='Court Yard'&&nm==='Line'&&clr==='5')courtYardPlanFound[lw]=true;
+      if(lyr==='Court Yard'&&nm==='Line'&&clr==='6')courtYardSectionFound[lw]=true;
+      if(lyr==='Shaft'&&nm==='Line'&&clr==='5')shaftPlanFound[lw]=true;
     });
 
     var allErrors=[];
@@ -1009,7 +1013,25 @@
         var liftMsg='Line of width is missing for the Lift layer';
         if(!reportedErrors.has(liftMsg)){reportedErrors.add(liftMsg);rowErrors.push(liftMsg);}
       }
-      } /* end if(!isMasterRow) */
+
+      /* Court Yard missing lines */
+      if(lyr==='Court Yard'&&nm==='Polyline'){
+        if(!courtYardPlanFound[lw]){
+          var cyMsg1='Line for Minimum Dimension (Plan) is missing for Court Yard with lineweight '+lw;
+          if(!reportedErrors.has(cyMsg1)){reportedErrors.add(cyMsg1);rowErrors.push(cyMsg1);}
+        }
+        if(!courtYardSectionFound[lw]){
+          var cyMsg2='Line for Minimum Height (Section) is missing for Court Yard with lineweight '+lw;
+          if(!reportedErrors.has(cyMsg2)){reportedErrors.add(cyMsg2);rowErrors.push(cyMsg2);}
+        }
+      }
+
+      /* Shaft missing line */
+      if(lyr==='Shaft'&&nm==='Polyline'&&!shaftPlanFound[lw]){
+        var sMsg='Line for Minimum Dimension (Plan) is missing for Shaft with lineweight '+lw;
+        if(!reportedErrors.has(sMsg)){reportedErrors.add(sMsg);rowErrors.push(sMsg);}
+      }
+    } /* end if(!isMasterRow) */
 
       /* Build table row */
       var tr=document.createElement('tr');
