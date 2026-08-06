@@ -764,7 +764,7 @@ function calculateTotalFloorArea(filteredRow, mainTableData) {
   const column3Value = filteredRow[2];
   const column4Value = filteredRow[3];
   const specialLayers = ['Splay','Tree Cover','Road','Stair','Lift','Existing',
-    'Parking_Area','Plot','Shaft','Strip','Waterbody'];
+    'Parking_Area','Plot','Shaft','Strip','Water body'];
   let sum = 0;
   mainTableData.forEach(data => {
     if (data.column3 === column3Value && data.column4 === column4Value) {
