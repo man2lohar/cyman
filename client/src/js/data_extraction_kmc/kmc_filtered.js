@@ -217,6 +217,8 @@ function _buildOtherTables(csv, parsedData) {
     let headers;
     if (layer === 'Lift') {
       headers = ['Floor','Layer','Lift Well Area','Lift Lobby Area'];
+    } else if (layer === 'Tree Cover') {
+      headers = ['Floor','Layer','Total Area','Deducted Area','Net Area','Number of Trees'];
     } else if (SPECIAL_LAYERS.includes(layer)) {
       headers = ['Floor','Layer','Length','Linetype','Lineweight'];
     } else {
@@ -228,7 +230,7 @@ function _buildOtherTables(csv, parsedData) {
     thead.appendChild(hRow);
     table.appendChild(thead);
 
-    let totals = { length:0, totalFloorArea:0, deductedArea:0, netArea:0 };
+    let totals = { length:0, totalFloorArea:0, deductedArea:0, netArea:0, trees:0 };
 
     layerData[layer].forEach(d => {
       const tr = tbody.insertRow();
@@ -257,6 +259,20 @@ function _buildOtherTables(csv, parsedData) {
         tr.insertCell().textContent = d.linetype;
         tr.insertCell().textContent = d.lineweight;
         totals.length += d.length;
+      } else if (layer === 'Tree Cover') {
+        tr.insertCell().textContent = d.totalFloorArea;
+        tr.insertCell().textContent = d.deductedArea;
+        tr.insertCell().textContent = d.netArea;
+        const treeCount = parsedData.filter(p =>
+          (p.column4 || '').trim() === 'Tree Cover' &&
+          (p.column3 || '').trim() === (d.floor || '').trim() &&
+          (p.column2 || '').trim() === 'Point'
+        ).length;
+        tr.insertCell().textContent = treeCount;
+        totals.totalFloorArea += parseFloat(d.totalFloorArea) || 0;
+        totals.deductedArea   += parseFloat(d.deductedArea)   || 0;
+        totals.netArea        += parseFloat(d.netArea)        || 0;
+        totals.trees          += treeCount;
       } else {
         tr.insertCell().textContent = d.totalFloorArea;
         tr.insertCell().textContent = d.deductedArea;
@@ -274,6 +290,11 @@ function _buildOtherTables(csv, parsedData) {
     if (layer === 'Lift') {
       totRow.insertCell().textContent = totals.totalFloorArea.toFixed(3);
       totRow.insertCell().textContent = totals.deductedArea.toFixed(3);
+    } else if (layer === 'Tree Cover') {
+      totRow.insertCell().textContent = totals.totalFloorArea.toFixed(3);
+      totRow.insertCell().textContent = totals.deductedArea.toFixed(3);
+      totRow.insertCell().textContent = totals.netArea.toFixed(3);
+      totRow.insertCell().textContent = totals.trees;
     } else if (SPECIAL_LAYERS.includes(layer)) {
       totRow.insertCell().textContent = totals.length.toFixed(3);
       totRow.insertCell().textContent = '';
