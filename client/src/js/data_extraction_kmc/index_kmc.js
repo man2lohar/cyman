@@ -124,7 +124,7 @@ function displayData(csv) {
     { check: (cells, indices) => cells[indices.name] === 'Polyline' && cells[indices.area].trim() === '', errorMessage: "Polyline area is missing" },
     { check: (cells, indices) => acceptedLayers.includes(cells[indices.layer]) && !['ByLayer', 'DASHED'].includes(cells[indices.linetype]), errorMessage: "Linetype should be ByLayer or DASHED" },
     { check: (cells, indices) => ByLayers.includes(cells[indices.layer]) && cells[indices.lineweight] !== 'ByLayer', errorMessage: "Lineweight must be ByLayer" },
-    { check: (cells, indices) => NeverByLayers.includes(cells[indices.layer]) && cells[indices.name] === 'Polyline' && cells[indices.lineweight] === 'ByLayer', errorMessage: "Lineweight must not be ByLayer" },
+    { check: (cells, indices) => NeverByLayers.includes(cells[indices.layer]) && cells[indices.lineweight] === 'ByLayer', errorMessage: "Lineweight must not be ByLayer" },
     { check: (cells, indices) => {
         const lw = (cells[indices.lineweight] || '').trim();
         return lw !== '' && lw !== 'ByLayer' && !getAllowedLW(cells[indices.layer]).has(lw);
