@@ -760,7 +760,7 @@
     function aL(x1,y1,x2,y2,b){var ch=dd(x1,y1,x2,y2);if(!b||ch===0)return ch;var th=4*Math.atan(Math.abs(b));return(ch/(2*Math.sin(th/2)))*th;}
     function per(vv,cl){var l=0;for(var i=0;i<vv.length-1;i++)l+=aL(vv[i][0],vv[i][1],vv[i+1][0],vv[i+1][1],vv[i][2]||0);if(cl&&vv.length>1){var la=vv[vv.length-1];l+=aL(la[0],la[1],vv[0][0],vv[0][1],la[2]||0);}return l;}    
     function aS(x1,y1,x2,y2,b){if(!b)return 0;var ch=dd(x1,y1,x2,y2);if(ch===0)return 0;var th=4*Math.atan(Math.abs(b));var R=ch/(2*Math.sin(th/2));var sa=R*R/2*(th-Math.sin(th));return b>0?sa:-sa;}
-    function sho(vv){var a=0,m=vv.length;for(var i=0;i<m;i++){var j=(i+1)%m;a+=vv[i][0]*vv[j][1]-vv[j][0]*vv[i][1];}a/=2;for(var i=0;i<m-1;i++)a+=aS(vv[i][0],vv[i][1],vv[i+1][0],vv[i+1][1],vv[i][2]||0);var la=vv[m-1];a+=aS(la[0],la[1],vv[0][0],vv[0][1],la[2]||0);return Math.abs(a);}
+    function sho(vv){var ox=vv[0][0],oy=vv[0][1];var a=0,m=vv.length;for(var i=0;i<m;i++){var j=(i+1)%m;var xi=vv[i][0]-ox,yi=vv[i][1]-oy,xj=vv[j][0]-ox,yj=vv[j][1]-oy;a+=xi*yj-xj*yi;}a/=2;for(var i=0;i<m-1;i++)a+=aS(vv[i][0],vv[i][1],vv[i+1][0],vv[i+1][1],vv[i][2]||0);var la=vv[m-1];a+=aS(la[0],la[1],vv[0][0],vv[0][1],la[2]||0);return Math.abs(a);}
     raw.forEach(function(e){
       if(e.type==='LINE'&&e.x1!==null)e.length=dd(e.x1,e.y1,e.x2,e.y2);
       if(e.type==='LWPOLYLINE'){if(e.curX!==null&&e.curY!==null)e.vertices.push([e.curX,e.curY,e.curBulge||0]);if(e.vertices.length>=2){e.length=per(e.vertices,e.closed);if(e.closed&&e.vertices.length>=3)e.area=sho(e.vertices);}}
