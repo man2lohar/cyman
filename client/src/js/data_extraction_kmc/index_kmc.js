@@ -190,9 +190,6 @@ function displayData(csv) {
         return;  // Exit early if rows is not valid
     }
 
-    // Define the lineweights to check
-    const expectedLineweights = ['0.15 mm', '0.20 mm', '0.25 mm', '0.30 mm']; // Add other lineweights as needed
-
     // Create a set to track reported errors
     const reportedErrors = new Set();
 
@@ -286,27 +283,22 @@ function displayData(csv) {
 
             // Check for missing lines for each expected lineweight in the Stair layer
             if (layer === 'Stair' && name === 'Polyline') {
-                expectedLineweights.forEach(expectedWeight => {
-                    if (lineweight === expectedWeight) {
-                        // Check if a corresponding line exists
-                        const matchingLineExists = rows.some((r) => {
-                            const lineCells = r.split(',');
-                            const lineLayer = lineCells[columnIndices.layer]?.trim();
-                            const lineName = lineCells[columnIndices.name]?.trim();
-                            const lineLineweight = lineCells[columnIndices.lineweight]?.trim();
-                            return lineLayer === 'Stair' && lineName === 'Line' && lineLineweight === expectedWeight;
-                        });
-
-                        if (!matchingLineExists) {
-                            const errorMessage = `Line of width is missing for the Stair with lineweight ${expectedWeight}`;
-                            if (!reportedErrors.has(errorMessage)) {
-                                reportedErrors.add(errorMessage); // Track reported error
-                                newRow.classList.add('error'); // Style the row with error
-                                errorMessages.push(errorMessage);
-                            }
-                        }
-                    }
+                const matchingLineExists = rows.some((r) => {
+                    const lineCells = r.split(',');
+                    const lineLayer = lineCells[columnIndices.layer]?.trim();
+                    const lineName = lineCells[columnIndices.name]?.trim();
+                    const lineLineweight = lineCells[columnIndices.lineweight]?.trim();
+                    return lineLayer === 'Stair' && lineName === 'Line' && lineLineweight === lineweight;
                 });
+
+                if (!matchingLineExists) {
+                    const errorMessage = `Line of width is missing for the Stair with lineweight ${lineweight}`;
+                    if (!reportedErrors.has(errorMessage)) {
+                        reportedErrors.add(errorMessage);
+                        newRow.classList.add('error');
+                        errorMessages.push(errorMessage);
+                    }
+                }
             }
 
             // Check for missing Line for Lift layer, per lineweight
