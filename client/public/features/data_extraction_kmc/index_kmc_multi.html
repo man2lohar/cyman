@@ -977,7 +977,8 @@
       else if(BYLAYER_LW_SET.has(lyr)&&lw!=='ByLayer')rowErrors.push('In '+lyr+' Layer: Lineweight must be ByLayer');
       else if(NEVER_BYLAYER_SET.has(lyr)&&nm==='Polyline'&&lw==='ByLayer')rowErrors.push('In '+lyr+' Layer: Lineweight must not be ByLayer');
       else if(lyr==='Lift'&&lw==='ByLayer')rowErrors.push('In '+lyr+' Layer: Lineweight must not be ByLayer');
-
+      else if(lw&&lw!=='ByLayer'&&!getAllowedLW(lyr).has(lw))rowErrors.push('In '+lyr+' Layer: Invalid Lineweight '+lw);
+        
       if(!rowErrors.length&&((nm==='Polyline'&&lyr==='Plot'&&(colorNum!==240||lw!=='0.50 mm'))||
           (lyr==='Ground Coverage'&&(colorNum<53||colorNum>152)&&nm==='Polyline')))
         rowErrors.push('In '+lyr+' Layer: Invalid color for Plot or Ground Coverage');
