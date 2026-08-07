@@ -391,7 +391,7 @@ function _buildComparativeTable(csv) {
 
   /* ── Decide whether to show the comparative table ── */
   const validRowCount = sortedData.length;
-  const threshold     = validRowCount / 1000;
+  const threshold     = validRowCount / 200;
   const container     = document.getElementById('sanction-compare-container');
   const warnStrip     = document.getElementById('sanction-warn-strip');
 
