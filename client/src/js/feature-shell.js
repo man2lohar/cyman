@@ -239,6 +239,16 @@
         return;
       }
       window.cymUser = user;
+      firebase.database().ref(`users/${user.uid}/profile`).set({
+        email:       user.email || '',
+        displayName: user.displayName || '',
+        photoURL:    user.photoURL || '',
+        providerId:  user.providerData?.[0]?.providerId || 'password',
+        createdAt:   user.metadata.creationTime || '',
+        lastLogin:   user.metadata.lastSignInTime || '',
+        lastLoginMs: user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).getTime() : Date.now(),
+        uid:         user.uid,
+      }).catch(() => {});
       function inject() {
         if (!modeA(user)) modeB(user);
         document.dispatchEvent(new CustomEvent('cymAuthReady', { detail: { user } }));
