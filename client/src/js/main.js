@@ -11,7 +11,7 @@ import { getAuth, signInWithEmailAndPassword,
          sendEmailVerification, updateProfile,
          onAuthStateChanged, GoogleAuthProvider,
          signInWithPopup }                                        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, onValue }                              from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, set, onValue }                         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* ── Firebase init ───────────────────────────────────────────── */
 const firebaseConfig = {
@@ -163,6 +163,16 @@ onAuthStateChanged(auth, user => {
       window.onDashboardUserReady(user, db);
     }
     checkAdminStatus(user);
+    set(ref(db, `users/${user.uid}/profile`), {
+      email:       user.email || '',
+      displayName: user.displayName || '',
+      photoURL:    user.photoURL || '',
+      providerId:  user.providerData?.[0]?.providerId || 'password',
+      createdAt:   user.metadata.creationTime || '',
+      lastLogin:   user.metadata.lastSignInTime || '',
+      lastLoginMs: user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).getTime() : Date.now(),
+      uid:         user.uid,
+    }).catch(() => {});
   } else {
     ag.innerHTML = `<a class="auth-link" onclick="toggleModal()">Log In</a>`;
     const adminBtn = document.getElementById('adminNavBtn');
