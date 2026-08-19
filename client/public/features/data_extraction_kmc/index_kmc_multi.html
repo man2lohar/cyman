@@ -1237,7 +1237,7 @@
         Object.keys(ld).forEach(function(lyr){
           if(!allowedSet.has(lyr))return;
           var d=ld[lyr]||{};
-          if(d.linetype!==undefined&&d.linetype!=='Continuous'){var k=lyr+'|LT|'+source;if(!seen3.has(k)){seen3.add(k);layerPropWarns.push({layer:lyr,source:source,prop:'Linetype',actual:d.linetype,expected:'Continuous'});}}
+          if(d.linetype!==undefined&&d.linetype.toUpperCase()!=='CONTINUOUS'){var k=lyr+'|LT|'+source;if(!seen3.has(k)){seen3.add(k);layerPropWarns.push({layer:lyr,source:source,prop:'Linetype',actual:d.linetype,expected:'Continuous'});}}
           if(d.lineweight!==undefined&&d.lineweight!==-3){var k2=lyr+'|LW|'+source;if(!seen3.has(k2)){seen3.add(k2);layerPropWarns.push({layer:lyr,source:source,prop:'Lineweight',actual:d.lineweight,expected:'Default'});}}
         });
       }
