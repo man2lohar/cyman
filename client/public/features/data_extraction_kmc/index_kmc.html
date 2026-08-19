@@ -1676,7 +1676,7 @@ function _kmcCheckMissingLayers() {
           Object.keys(ld).forEach(lyr=>{
             if(!allowedSet.has(lyr))return;
             const d=ld[lyr]||{};
-            if(d.linetype!==undefined&&d.linetype!=='Continuous'){const k=lyr+'|LT|'+source;if(!seen3.has(k)){seen3.add(k);out.push({layer:lyr,source,prop:'Linetype',actual:d.linetype,expected:'Continuous'});}}
+            if(d.linetype!==undefined&&d.linetype.toUpperCase()!=='CONTINUOUS'){const k=lyr+'|LT|'+source;if(!seen3.has(k)){seen3.add(k);out.push({layer:lyr,source,prop:'Linetype',actual:d.linetype,expected:'Continuous'});}}
             if(d.lineweight!==undefined&&d.lineweight!==-3){const k2=lyr+'|LW|'+source;if(!seen3.has(k2)){seen3.add(k2);out.push({layer:lyr,source,prop:'Lineweight',actual:d.lineweight,expected:'Default'});}}
           });
           return out;
