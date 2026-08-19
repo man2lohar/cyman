@@ -1502,7 +1502,7 @@ function _kmcCheckMissingLayers() {
           else if(['Polyline','Line','Point','Hatch'].indexOf(nm)<0) rowErrors.push('In '+lyr+' Layer: Invalid Object Name');
           else if(nm==='Polyline'&&area==='') rowErrors.push('In '+lyr+' Layer: Polyline area is missing');
           else if(OCC_LAYERS_SET.has(lyr)&&['ByLayer','DASHED'].indexOf(lt)<0) rowErrors.push('In '+lyr+' Layer: Linetype should be ByLayer or DASHED');
-          else if(BYLAYER_LW_SET.has(lyr)&&lw!=='ByLayer') rowErrors.push('In '+lyr+' Layer: Lineweight must be ByLayer');
+          else if(BYLAYER_LW_SET.has(lyr)&&!(lyr==='Open Space'&&['13','23','33','43'].includes(clr))&&lw!=='ByLayer') rowErrors.push('In '+lyr+' Layer: Lineweight must be ByLayer');
           else if(NEVER_BYLAYER_SET.has(lyr)&&nm==='Polyline'&&lw==='ByLayer') rowErrors.push('In '+lyr+' Layer: Lineweight must not be ByLayer');
           else if(lyr==='Lift'&&lw==='ByLayer') rowErrors.push('In '+lyr+' Layer: Lineweight must not be ByLayer');
           else if(lw&&lw!=='ByLayer'&&!getAllowedLW(lyr).has(lw)) rowErrors.push('In '+lyr+' Layer: Invalid Lineweight '+lw);
