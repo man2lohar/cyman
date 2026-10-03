@@ -722,6 +722,12 @@ td.head::before {
   z-index: 3500; align-items: center; justify-content: center;
   animation: fadeIn .2s ease;
 }
+#park-stairlift-popup {
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,24,20,0.58); backdrop-filter: blur(6px);
+  z-index: 3500; align-items: center; justify-content: center;
+  animation: fadeIn .2s ease;
+}
 .master-popup-box {
   background: var(--paper); border: 1px solid var(--border2);
   border-radius: 16px; padding: 0; width: 100%; max-width: 440px;
