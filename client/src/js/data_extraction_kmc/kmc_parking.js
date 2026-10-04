@@ -384,8 +384,9 @@ function _buildAssemblyTables(rows, parsedData, container) {
     boarding: new Set(),
   };
 
-  const assignment       = _pkgGetStairLiftAssignment();
-  const assemblyDeducted = new Set(); // floors already had stair/lift/lobby subtracted once
+  const assignment            = _pkgGetStairLiftAssignment();
+  const assemblyStairDeducted = new Set(); // floors already had Stair Area subtracted once
+  const assemblyLiftDeducted  = new Set(); // floors already had Lift Area subtracted once
 
   rows.forEach((row, index) => {
     if (index === 0 || !row.trim()) return;
@@ -413,12 +414,18 @@ function _buildAssemblyTables(rows, parsedData, container) {
     const da  = _pkgCalcDeductedAreaByLinetype(floor, 'Assembly', linetype, parsedData);
     let net   = parseFloat(tfa) - parseFloat(da);
 
-    // Deduct shared Stair Well + Lift Well + Lift Lobby once per floor,
-    // only if Assembly is the assigned owner for this floor
-    if (assignment[floor] === 'Assembly' && !assemblyDeducted.has(floor)) {
-      const sl = _pkgCalcFloorStairLiftLobby(floor, parsedData);
-      net = Math.max(0, net - sl.total);
-      assemblyDeducted.add(floor);
+   // Deduct Stair Area and/or Lift Area once per floor (not once per
+    // sub-type row), only if Assembly is the assigned owner of that one
+    const owner = assignment[floor];
+    if (owner) {
+      if (owner.stair === 'Assembly' && !assemblyStairDeducted.has(floor)) {
+        net = Math.max(0, net - _pkgCalcFloorStairArea(floor, parsedData));
+        assemblyStairDeducted.add(floor);
+      }
+      if (owner.lift === 'Assembly' && !assemblyLiftDeducted.has(floor)) {
+        net = Math.max(0, net - _pkgCalcFloorLiftArea(floor, parsedData));
+        assemblyLiftDeducted.add(floor);
+      }
     }
 
     subGroups[group].push({
@@ -662,11 +669,12 @@ function _getLayerData(layer, rows, parsedData) {
     const da  = _pkgCalcDeductedArea(cells, parsedData);
     let net   = parseFloat(_pkgCalcNetArea(tfa, da));
 
-    // Deduct shared Stair Well + Lift Well + Lift Lobby — only if this
-    // layer is the assigned owner for this floor
-    if (assignment[floor] === layer) {
-      const sl = _pkgCalcFloorStairLiftLobby(floor, parsedData);
-      net = Math.max(0, net - sl.total);
+    // Deduct Stair Area and/or Lift Area — independently — only if this
+    // layer is the assigned owner of that one for this floor
+    const owner = assignment[floor];
+    if (owner) {
+      if (owner.stair === layer) net = Math.max(0, net - _pkgCalcFloorStairArea(floor, parsedData));
+      if (owner.lift  === layer) net = Math.max(0, net - _pkgCalcFloorLiftArea(floor, parsedData));
     }
 
     layerData.push({
