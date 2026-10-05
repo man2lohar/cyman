@@ -1060,7 +1060,6 @@ function _pkgCalcFloorStairArea(floor, parsedData) {
   let byLayer = 0, dashed = 0;
   parsedData.forEach(row => {
     if (row.column3 !== floor || row.column4 !== 'Stair') return;
-    if (row.column2 !== 'Polyline' || row.column9 !== '-1') return;
     if (row.column6 === 'ByLayer') byLayer += row.column8;
     else if (row.column6 === 'DASHED') dashed += row.column8;
   });
@@ -1072,7 +1071,6 @@ function _pkgCalcFloorLiftArea(floor, parsedData) {
   let byLayer = 0, dashed = 0;
   parsedData.forEach(row => {
     if (row.column3 !== floor || row.column4 !== 'Lift') return;
-    if (row.column2 !== 'Polyline' || row.column9 !== '-1') return;
     if (row.column6 === 'ByLayer') byLayer += row.column8;
     else if (row.column6 === 'DASHED') dashed += row.column8;
   });
@@ -1084,7 +1082,6 @@ function _pkgGetLineweights(floor, layer, parsedData) {
   const set = new Set();
   parsedData.forEach(row => {
     if (row.column3 !== floor || row.column4 !== layer) return;
-    if (row.column2 !== 'Polyline' || row.column9 !== '-1') return;
     if (row.column7) set.add(row.column7);
   });
   return Array.from(set);
@@ -1098,7 +1095,6 @@ function _pkgDetectFloorUseGroups(parsedData) {
     const floor = row.column3;
     const layer = row.column4;
     if (!_PKG_SL_LAYERS.includes(layer)) return;
-    if (row.column2 !== 'Polyline' || row.column9 !== '-1') return;
     const key = floor + '|' + layer;
     if (seen.has(key)) return;
     seen.add(key);
