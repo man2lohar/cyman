@@ -1068,13 +1068,12 @@ function _pkgCalcFloorStairArea(floor, parsedData) {
 
 // Lift Area for ONE floor = Lift Well (ByLayer) + Lift Lobby (DASHED), summed
 function _pkgCalcFloorLiftArea(floor, parsedData) {
-  let byLayer = 0, dashed = 0;
+  let dashed = 0;
   parsedData.forEach(row => {
     if (row.column3 !== floor || row.column4 !== 'Lift') return;
-    if (row.column6 === 'ByLayer') byLayer += row.column8;
-    else if (row.column6 === 'DASHED') dashed += row.column8;
+    if (row.column6 === 'DASHED') dashed += row.column8;
   });
-  return byLayer + dashed;
+  return dashed;
 }
 
 // Distinct lineweight value(s) actually present for a floor+layer — for display only
