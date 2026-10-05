@@ -1032,11 +1032,17 @@ function _buildBusTruckTable(btMap) {
 }
 
 /* ══════════════════════════════════════════
-   STAIR / LIFT / LOBBY — USE-GROUP ASSIGNMENT
+   STAIR / LIFT — USE-GROUP ASSIGNMENT
    When a floor has 2+ use-groups, the architect must
    confirm which use-group "owns" that floor's shared
-   Stair Well + Lift Well + Lift Lobby deduction.
+   Stair area and Lift area — assigned INDEPENDENTLY
+   (Stair can belong to one use-group, Lift to another).
    Assignment is per-block, re-asked on ANY CSV change.
+
+   Stair Area (floor) = Stair[Lineweight=ByLayer, linetype=ByLayer]
+                       − Stair[Lineweight=ByLayer, linetype=DASHED]
+   Lift  Area (floor) = Lift [Lineweight=ByLayer, linetype=ByLayer]
+                       + Lift [Lineweight=ByLayer, linetype=DASHED]
 ══════════════════════════════════════════ */
 
 // Layers that participate in net-area-based parking calc
@@ -1046,20 +1052,30 @@ const _PKG_SL_LAYERS = [
   'Institutional','Storage','Assembly','Hazardous','Industrial','Educational'
 ];
 
-// Stair Well / Lift Well / Lift Lobby for ONE floor — ported from kmc_sanction.js Pass 2
-function _pkgCalcFloorStairLiftLobby(floor, parsedData) {
-  let stairWell = 0, liftWell = 0, liftLobby = 0;
+// Net Stair Area for ONE floor = StairByLayer − StairDASHED (same lineweight=ByLayer)
+function _pkgCalcFloorStairArea(floor, parsedData) {
+  let byLayer = 0, dashed = 0;
   parsedData.forEach(row => {
-    if (row.column3 !== floor) return;
+    if (row.column3 !== floor || row.column4 !== 'Stair') return;
     if (row.column2 !== 'Polyline' || row.column9 !== '-1') return;
-    const layer    = row.column4;
-    const linetype = row.column6;
-    const area     = row.column8;
-    if (layer === 'Stair' && linetype === 'DASHED')  stairWell += area;
-    if (layer === 'Lift'  && linetype === 'ByLayer') liftWell  += area;
-    if (layer === 'Lift'  && linetype === 'DASHED')  liftLobby += area;
+    if (row.column7 !== 'ByLayer') return; // lineweight must match
+    if (row.column6 === 'ByLayer') byLayer += row.column8;
+    else if (row.column6 === 'DASHED') dashed += row.column8;
   });
-  return { stairWell, liftWell, liftLobby, total: stairWell + liftWell + liftLobby };
+  return byLayer - dashed;
+}
+
+// Lift Area for ONE floor = Lift Well (ByLayer) + Lift Lobby (DASHED), summed
+function _pkgCalcFloorLiftArea(floor, parsedData) {
+  let byLayer = 0, dashed = 0;
+  parsedData.forEach(row => {
+    if (row.column3 !== floor || row.column4 !== 'Lift') return;
+    if (row.column2 !== 'Polyline' || row.column9 !== '-1') return;
+    if (row.column7 !== 'ByLayer') return; // lineweight must match
+    if (row.column6 === 'ByLayer') byLayer += row.column8;
+    else if (row.column6 === 'DASHED') dashed += row.column8;
+  });
+  return byLayer + dashed;
 }
 
 // Which use-group layers are present (with real polyline data) on each floor
@@ -1090,7 +1106,7 @@ function _pkgHashCSV(str) {
   return hash.toString(36) + '_' + str.length;
 }
 
-// Read the current block's saved assignment: { [floor]: ownerLayer }
+// Read the current block's saved assignment: { [floor]: { stair: layer|null, lift: layer|null } }
 function _pkgGetStairLiftAssignment() {
   const block = (window.KMCMulti ? KMCMulti.getActiveBlock() : null) || 'single';
   const saved = JSON.parse(localStorage.getItem('parkStairLiftAssign_' + block) || 'null');
@@ -1098,8 +1114,9 @@ function _pkgGetStairLiftAssignment() {
 }
 
 // Resolve (or ask for) the assignment before building any tables.
-// Floors with exactly 1 use-group are auto-assigned, no popup needed.
-// Floors with 2+ use-groups trigger the confirmation popup.
+// A floor with exactly 1 use-group auto-assigns both Stair and Lift to it.
+// A floor with 2+ use-groups triggers a popup row for Stair and/or Lift
+// (only for the ones that actually have area > 0 on that floor).
 function _pkgResolveStairLiftAssignment(block, csv, parsedData, onReady) {
   const hash     = _pkgHashCSV(csv);
   const storeKey = 'parkStairLiftAssign_' + block;
@@ -1108,17 +1125,22 @@ function _pkgResolveStairLiftAssignment(block, csv, parsedData, onReady) {
   if (saved && saved.hash === hash) { onReady(); return; }
 
   const floorGroups = _pkgDetectFloorUseGroups(parsedData);
-  const assignment  = {};
-  const needsPopup  = [];
+  const assignment  = {}; // { floor: { stair, lift } }
+  const needsPopup  = []; // [{ floor, type:'stair'|'lift', layers, area }]
 
   Object.keys(floorGroups).forEach(floor => {
-    const layers = Array.from(floorGroups[floor]);
-    const sl = _pkgCalcFloorStairLiftLobby(floor, parsedData);
-    if (sl.total <= 0) return; // nothing shared to assign on this floor
-    if (layers.length === 1) {
-      assignment[floor] = layers[0];
-    } else {
-      needsPopup.push({ floor, layers, sl });
+    const layers    = Array.from(floorGroups[floor]);
+    const stairArea = _pkgCalcFloorStairArea(floor, parsedData);
+    const liftArea  = _pkgCalcFloorLiftArea(floor, parsedData);
+    assignment[floor] = { stair: null, lift: null };
+
+    if (stairArea > 0) {
+      if (layers.length === 1) assignment[floor].stair = layers[0];
+      else needsPopup.push({ floor, type: 'stair', layers, area: stairArea });
+    }
+    if (liftArea > 0) {
+      if (layers.length === 1) assignment[floor].lift = layers[0];
+      else needsPopup.push({ floor, type: 'lift', layers, area: liftArea });
     }
   });
 
@@ -1129,32 +1151,31 @@ function _pkgResolveStairLiftAssignment(block, csv, parsedData, onReady) {
   }
 
   _pkgShowStairLiftPopup(needsPopup, assignment, chosen => {
-    const finalAssignment = Object.assign({}, assignment, chosen);
-    localStorage.setItem(storeKey, JSON.stringify({ hash, assignment: finalAssignment }));
+    chosen.forEach(c => { assignment[c.floor][c.type] = c.value; });
+    localStorage.setItem(storeKey, JSON.stringify({ hash, assignment }));
     onReady();
   });
 }
 
-// Renders rows into #park-stairlift-rows and shows #park-stairlift-popup.
-// If that markup isn't present on the page, fails safe (no popup, no deduction
-// for ambiguous floors) rather than throwing.
+// Renders one row per Stair/Lift item into #park-stairlift-rows and shows
+// #park-stairlift-popup. If that markup isn't present on the page, fails
+// safe (no popup, no deduction for ambiguous floors) rather than throwing.
 function _pkgShowStairLiftPopup(needsPopup, baseAssignment, onConfirm) {
   const rowsContainer = document.getElementById('park-stairlift-rows');
-  const popup         = document.getElementById('park-stairlift-popup');
-  const confirmBtn     = document.getElementById('park-stairlift-confirm');
-  if (!rowsContainer || !popup || !confirmBtn) { onConfirm({}); return; }
+  const popup          = document.getElementById('park-stairlift-popup');
+  const confirmBtn      = document.getElementById('park-stairlift-confirm');
+  if (!rowsContainer || !popup || !confirmBtn) { onConfirm([]); return; }
 
-  rowsContainer.innerHTML = needsPopup.map((f, i) => {
-    const optsHtml = f.layers.map(l => {
-      const sel = (baseAssignment[f.floor] === l) ? ' selected' : '';
+  rowsContainer.innerHTML = needsPopup.map((item, i) => {
+    const label = item.type === 'stair' ? 'Stair' : 'Lift';
+    const prev  = baseAssignment[item.floor] ? baseAssignment[item.floor][item.type] : null;
+    const optsHtml = item.layers.map(l => {
+      const sel = (prev === l) ? ' selected' : '';
       return '<option value="' + l + '"' + sel + '>' + l + '</option>';
     }).join('');
-    return '<div style="margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);">'
-      + '<div style="font-weight:600;margin-bottom:4px;">Floor ' + f.floor + '</div>'
-      + '<div style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">'
-      + 'Stair Well ' + f.sl.stairWell.toFixed(3) + ' + Lift Well ' + f.sl.liftWell.toFixed(3)
-      + ' + Lift Lobby ' + f.sl.liftLobby.toFixed(3) + ' = ' + f.sl.total.toFixed(3) + ' Sq.m.'
-      + '</div>'
+    return '<div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">'
+      + '<div style="font-weight:600;margin-bottom:4px;">Floor ' + item.floor + ' — ' + label
+      + ' (' + item.area.toFixed(3) + ' Sq.m.)</div>'
       + '<select class="master-popup-input" id="park-sl-sel-' + i + '">' + optsHtml + '</select>'
       + '</div>';
   }).join('');
@@ -1162,10 +1183,9 @@ function _pkgShowStairLiftPopup(needsPopup, baseAssignment, onConfirm) {
   popup.style.display = 'flex';
 
   confirmBtn.onclick = function () {
-    const result = {};
-    needsPopup.forEach((f, i) => {
+    const result = needsPopup.map((item, i) => {
       const sel = document.getElementById('park-sl-sel-' + i);
-      result[f.floor] = sel ? sel.value : f.layers[0];
+      return { floor: item.floor, type: item.type, value: sel ? sel.value : item.layers[0] };
     });
     popup.style.display = 'none';
     onConfirm(result);
@@ -1189,26 +1209,34 @@ window.pkgOpenStairLiftUpdate = function () {
   const saved      = JSON.parse(localStorage.getItem(storeKey) || 'null');
   const prevAssignment = (saved && saved.assignment) || {};
 
-  const floorGroups = _pkgDetectFloorUseGroups(parsedData);
+  const floorGroups  = _pkgDetectFloorUseGroups(parsedData);
   const needsPopup   = [];
-  const singleAssign = {};
+  const autoAssign    = {}; // single-use-group floors, recomputed fresh
 
   Object.keys(floorGroups).forEach(floor => {
-    const layers = Array.from(floorGroups[floor]);
-    const sl = _pkgCalcFloorStairLiftLobby(floor, parsedData);
-    if (sl.total <= 0) return;
-    if (layers.length === 1) { singleAssign[floor] = layers[0]; return; }
-    needsPopup.push({ floor, layers, sl });
+    const layers    = Array.from(floorGroups[floor]);
+    const stairArea = _pkgCalcFloorStairArea(floor, parsedData);
+    const liftArea  = _pkgCalcFloorLiftArea(floor, parsedData);
+    autoAssign[floor] = { stair: null, lift: null };
+
+    if (stairArea > 0) {
+      if (layers.length === 1) autoAssign[floor].stair = layers[0];
+      else needsPopup.push({ floor, type: 'stair', layers, area: stairArea });
+    }
+    if (liftArea > 0) {
+      if (layers.length === 1) autoAssign[floor].lift = layers[0];
+      else needsPopup.push({ floor, type: 'lift', layers, area: liftArea });
+    }
   });
 
   if (needsPopup.length === 0) {
-    alert('No floors with multiple use-groups sharing a stair/lift were found for this block.');
+    alert('No floors with multiple use-groups sharing a Stair/Lift were found for this block.');
     return;
   }
 
   _pkgShowStairLiftPopup(needsPopup, prevAssignment, chosen => {
-    const finalAssignment = Object.assign({}, singleAssign, chosen);
-    localStorage.setItem(storeKey, JSON.stringify({ hash, assignment: finalAssignment }));
+    chosen.forEach(c => { autoAssign[c.floor][c.type] = c.value; });
+    localStorage.setItem(storeKey, JSON.stringify({ hash, assignment: autoAssign }));
     generateParkingTables(function () {
       if (typeof saveParkingKeys === 'function' && window.KMCMulti) {
         saveParkingKeys(KMCMulti.getActiveBlock());
@@ -1216,6 +1244,7 @@ window.pkgOpenStairLiftUpdate = function () {
     });
   });
 };
+
 
 /* ══════════════════════════════════════════
    SHARED CSV PARSER
