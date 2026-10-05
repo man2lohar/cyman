@@ -1039,10 +1039,11 @@ function _buildBusTruckTable(btMap) {
    (Stair can belong to one use-group, Lift to another).
    Assignment is per-block, re-asked on ANY CSV change.
 
-   Stair Area (floor) = Stair[Lineweight=ByLayer, linetype=ByLayer]
-                       − Stair[Lineweight=ByLayer, linetype=DASHED]
-   Lift  Area (floor) = Lift [Lineweight=ByLayer, linetype=ByLayer]
-                       + Lift [Lineweight=ByLayer, linetype=DASHED]
+   Stair Area (floor) = Stair[linetype=ByLayer] − Stair[linetype=DASHED]
+   Lift  Area (floor) = Lift [linetype=ByLayer] + Lift [linetype=DASHED]
+   Lineweight is NOT hardcoded (your drawings may use 0.15mm, ByLayer,
+   etc.) — whatever value is on the rows is summed, and shown in the
+   popup label for visibility.
 ══════════════════════════════════════════ */
 
 // Layers that participate in net-area-based parking calc
@@ -1052,13 +1053,14 @@ const _PKG_SL_LAYERS = [
   'Institutional','Storage','Assembly','Hazardous','Industrial','Educational'
 ];
 
-// Net Stair Area for ONE floor = StairByLayer − StairDASHED (same lineweight=ByLayer)
+// Net Stair Area for ONE floor = StairByLayer − StairDASHED
+// (no lineweight value is hardcoded — whatever lineweight the Stair rows
+// actually carry is accepted; see _pkgGetLineweights for display purposes)
 function _pkgCalcFloorStairArea(floor, parsedData) {
   let byLayer = 0, dashed = 0;
   parsedData.forEach(row => {
     if (row.column3 !== floor || row.column4 !== 'Stair') return;
     if (row.column2 !== 'Polyline' || row.column9 !== '-1') return;
-    if (row.column7 !== 'ByLayer') return; // lineweight must match
     if (row.column6 === 'ByLayer') byLayer += row.column8;
     else if (row.column6 === 'DASHED') dashed += row.column8;
   });
@@ -1071,11 +1073,21 @@ function _pkgCalcFloorLiftArea(floor, parsedData) {
   parsedData.forEach(row => {
     if (row.column3 !== floor || row.column4 !== 'Lift') return;
     if (row.column2 !== 'Polyline' || row.column9 !== '-1') return;
-    if (row.column7 !== 'ByLayer') return; // lineweight must match
     if (row.column6 === 'ByLayer') byLayer += row.column8;
     else if (row.column6 === 'DASHED') dashed += row.column8;
   });
   return byLayer + dashed;
+}
+
+// Distinct lineweight value(s) actually present for a floor+layer — for display only
+function _pkgGetLineweights(floor, layer, parsedData) {
+  const set = new Set();
+  parsedData.forEach(row => {
+    if (row.column3 !== floor || row.column4 !== layer) return;
+    if (row.column2 !== 'Polyline' || row.column9 !== '-1') return;
+    if (row.column7) set.add(row.column7);
+  });
+  return Array.from(set);
 }
 
 // Which use-group layers are present (with real polyline data) on each floor
@@ -1136,11 +1148,11 @@ function _pkgResolveStairLiftAssignment(block, csv, parsedData, onReady) {
 
     if (stairArea > 0) {
       if (layers.length === 1) assignment[floor].stair = layers[0];
-      else needsPopup.push({ floor, type: 'stair', layers, area: stairArea });
+      else needsPopup.push({ floor, type: 'stair', layers, area: stairArea, lineweight: _pkgGetLineweights(floor, 'Stair', parsedData).join(', ') });
     }
     if (liftArea > 0) {
       if (layers.length === 1) assignment[floor].lift = layers[0];
-      else needsPopup.push({ floor, type: 'lift', layers, area: liftArea });
+      else needsPopup.push({ floor, type: 'lift', layers, area: liftArea, lineweight: _pkgGetLineweights(floor, 'Lift', parsedData).join(', ') });
     }
   });
 
@@ -1173,9 +1185,11 @@ function _pkgShowStairLiftPopup(needsPopup, baseAssignment, onConfirm) {
       const sel = (prev === l) ? ' selected' : '';
       return '<option value="' + l + '"' + sel + '>' + l + '</option>';
     }).join('');
+    const lwLabel = item.lineweight ? ' (' + item.lineweight + ')' : '';
     return '<div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">'
-      + '<div style="font-weight:600;margin-bottom:4px;">Floor ' + item.floor + ' — ' + label
-      + ' (' + item.area.toFixed(3) + ' Sq.m.)</div>'
+      + '<div style="font-weight:600;margin-bottom:4px;">Floor ' + item.floor + ' — ' + label + lwLabel
+      + '</div>'
+      + '<div style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">' + item.area.toFixed(3) + ' Sq.m.</div>'
       + '<select class="master-popup-input" id="park-sl-sel-' + i + '">' + optsHtml + '</select>'
       + '</div>';
   }).join('');
@@ -1221,11 +1235,11 @@ window.pkgOpenStairLiftUpdate = function () {
 
     if (stairArea > 0) {
       if (layers.length === 1) autoAssign[floor].stair = layers[0];
-      else needsPopup.push({ floor, type: 'stair', layers, area: stairArea });
+      else needsPopup.push({ floor, type: 'stair', layers, area: stairArea, lineweight: _pkgGetLineweights(floor, 'Stair', parsedData).join(', ') });
     }
     if (liftArea > 0) {
       if (layers.length === 1) autoAssign[floor].lift = layers[0];
-      else needsPopup.push({ floor, type: 'lift', layers, area: liftArea });
+      else needsPopup.push({ floor, type: 'lift', layers, area: liftArea, lineweight: _pkgGetLineweights(floor, 'Lift', parsedData).join(', ') });
     }
   });
 
