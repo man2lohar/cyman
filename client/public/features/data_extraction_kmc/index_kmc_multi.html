@@ -378,7 +378,7 @@
         <div class="data-card" style="margin-bottom:20px;" id="master-jop-card"><div class="data-card-title">Joint Open Space</div><div class="table-wrap"><table id="master-jop"><thead><tr><th>JOP</th><th>Blocks</th><th>Direction</th><th>Required</th><th>Proposed</th><th>Status</th></tr></thead><tbody id="mb-jop-tbody"></tbody></table></div></div>
         <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Car Parking</div><div class="table-wrap"><table id="master-parking"><thead><tr><th>Particulars</th><th>Required</th><th>Proposed</th><th>Actual Bonus</th></tr></thead><tbody><tr><td class="head">Nos. of Car Parking</td><td id="per-car">0</td><td id="pro-car">0</td><td id="act-car">0</td></tr><tr><td class="head">Car Parking Area</td><td id="per-park-area">0.000</td><td id="pro-park-area">0.000</td><td id="act-park-area">0.000</td></tr></tbody></table></div></div>
         <div class="data-card"><div class="data-card-title">Feesable Floor Area</div><div class="table-wrap"><table id="master-fees"><thead><tr><th>Total Floor Area</th><th>Total Additional Floor Area <svg class="far-info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onclick="showAdditionalFloorPopup()" title="View breakdown"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"></circle></svg></th><th>Total Floor Area For Fees</th></tr></thead><tbody><tr><td id="total-floor">0.000</td><td id="additional-floor">0.000</td><td id="total-fees-area">0.000</td></tr></tbody></table></div></div>
-    <div id="additional-floor-popup"><div class="master-popup-box" style="max-width:640px;"><div class="master-popup-header"><div><div class="master-popup-title">Total Additional Floor Area — Breakdown</div><div class="master-popup-sub">Cupboard + Loft + Fire Refuge + Goomty + Triple Balcony + Roof Structure (by colour), per block</div></div><button class="master-popup-close" onclick="document.getElementById('additional-floor-popup').style.display='none'" aria-label="Close">&times;</button></div><div class="master-popup-body" style="max-height:60vh;overflow-y:auto;"><table style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:.82rem;"><thead><tr id="additional-floor-head"></tr></thead><tbody id="additional-floor-rows"></tbody></table></div><div class="master-popup-footer"><button class="btn btn-danger" onclick="document.getElementById('additional-floor-popup').style.display='none'">Close</button></div></div></div>
+    <div id="additional-floor-popup"><div class="master-popup-box" style="max-width:640px;"><div class="master-popup-header"><div><div class="master-popup-title">Total Additional Floor Area — Breakdown</div><div class="master-popup-sub">Cupboard + Loft + Fire Refuge + Goomty + Triple Balcony + Roof Structure (by colour), per block</div></div><button class="master-popup-close" onclick="document.getElementById('additional-floor-popup').style.display='none'" aria-label="Close">&times;</button></div><div class="master-popup-body" style="max-height:60vh;overflow-y:auto;"><table style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:.82rem;"><colgroup id="additional-floor-cols"></colgroup><thead><tr id="additional-floor-head"></tr></thead><tbody id="additional-floor-rows"></tbody></table></div><div class="master-popup-footer"><button class="btn btn-danger" onclick="document.getElementById('additional-floor-popup').style.display='none'">Close</button></div></div></div>
       </div>
     </div>
 
@@ -619,75 +619,78 @@
  window.showAdditionalFloorPopup=function(){
     var breakdown={};
     try{breakdown=JSON.parse(localStorage.getItem('layerSumBreakdown')||'{}');}catch(e){}
+    var colgroup=document.getElementById('additional-floor-cols');
     var thead=document.getElementById('additional-floor-head');
     var tbody=document.getElementById('additional-floor-rows');
     var popup=document.getElementById('additional-floor-popup');
-    if(!thead||!tbody||!popup)return;
+    if(!colgroup||!thead||!tbody||!popup)return;
 
     var blockKeys=Object.keys(breakdown);
     var hasMaster=blockKeys.indexOf('Master')>=0;
     var blocks=blockKeys.filter(function(k){return k!=='Master';}).sort();
     if(hasMaster) blocks=['Master'].concat(blocks);
     if(!blocks.length){
+      colgroup.innerHTML='';
       thead.innerHTML='';
       tbody.innerHTML='<tr><td style="padding:10px 8px;color:var(--muted);">No data yet — visit Final Summary first.</td></tr>';
       popup.style.display='flex';
       return;
     }
 
-    /* union of every roof colour seen across blocks, cyan pushed last */
+    /* union of every roof colour seen, EXCLUDING cyan entirely (not shown at all) */
     var roofColors=[];
     blocks.forEach(function(blk){
       var rc=(breakdown[blk]&&breakdown[blk].roofByColor)||{};
-      Object.keys(rc).forEach(function(c){ if(roofColors.indexOf(c)<0) roofColors.push(c); });
+      Object.keys(rc).forEach(function(c){
+        if(c.toLowerCase()==='cyan') return; // hidden entirely, not just excluded from totals
+        if(roofColors.indexOf(c)<0) roofColors.push(c);
+      });
     });
-    roofColors.sort(function(a,b){
-      var aCyan=a.toLowerCase()==='cyan', bCyan=b.toLowerCase()==='cyan';
-      if(aCyan===bCyan) return a.localeCompare(b);
-      return aCyan?1:-1;
-    });
+    roofColors.sort(function(a,b){ return a.localeCompare(b); });
 
-    /* header row — dynamic to however many blocks exist */
-    /* Area Type column is 1.5x the width of every other column */
+    /* Area Type column is 1.5x the width of every other column —
+       set via <colgroup>, the reliable way to force table-layout:fixed widths */
     var otherColCount=blocks.length+1; // block columns + Total column
     var totalWeight=1.5+otherColCount;
     var areaPct=(1.5/totalWeight*100).toFixed(2);
     var otherPct=(1/totalWeight*100).toFixed(2);
 
-    var headHtml='<th style="text-align:left;padding:7px 8px;width:'+areaPct+'%;">Area Type</th>';
-    blocks.forEach(function(blk){ headHtml+='<th style="text-align:right;padding:7px 8px;width:'+otherPct+'%;">'+(blk==='Master'?'Master Sheet':'Block '+blk)+'</th>'; });
-    headHtml+='<th style="text-align:right;padding:7px 8px;width:'+otherPct+'%;">Total</th>';
+    var colsHtml='<col style="width:'+areaPct+'%;">';
+    for(var i=0;i<otherColCount;i++){ colsHtml+='<col style="width:'+otherPct+'%;">'; }
+    colgroup.innerHTML=colsHtml;
+
+    var headHtml='<th style="text-align:left;padding:7px 8px;">Area Type</th>';
+    blocks.forEach(function(blk){ headHtml+='<th style="text-align:right;padding:7px 8px;">'+(blk==='Master'?'Master Sheet':'Block '+blk)+'</th>'; });
+    headHtml+='<th style="text-align:right;padding:7px 8px;">Total</th>';
     thead.innerHTML=headHtml;
 
-    function rowHtml(label, perBlockVals, excluded){
+    function rowHtml(label, perBlockVals){
       var rowTotal=perBlockVals.reduce(function(a,v){return a+v;},0);
-      var strike=excluded?'text-decoration:line-through;color:var(--muted);':'';
       var cells=perBlockVals.map(function(v){
-        return '<td style="padding:7px 8px;text-align:right;'+strike+'">'+v.toFixed(3)+'</td>';
+        return '<td style="padding:7px 8px;text-align:right;">'+v.toFixed(3)+'</td>';
       }).join('');
-      return '<tr style="border-bottom:1px solid var(--border);'+(excluded?'opacity:.65;':'')+'">'
-        +'<td style="padding:7px 8px;">'+label+(excluded?' <span style="font-size:.7rem;">(excluded)</span>':'')+'</td>'
+      return '<tr style="border-bottom:1px solid var(--border);">'
+        +'<td style="padding:7px 8px;">'+label+'</td>'
         +cells
-        +'<td style="padding:7px 8px;text-align:right;font-weight:600;'+strike+'">'+rowTotal.toFixed(3)+'</td></tr>';
+        +'<td style="padding:7px 8px;text-align:right;font-weight:600;">'+rowTotal.toFixed(3)+'</td></tr>';
     }
 
     var rowsHtml='';
     _AFP_SIMPLE_LAYERS.forEach(function(layer){
       var vals=blocks.map(function(blk){ return (breakdown[blk]&&breakdown[blk][layer])||0; });
-      rowsHtml+=rowHtml(layer, vals, false);
+      rowsHtml+=rowHtml(layer, vals);
     });
     roofColors.forEach(function(color){
-      var excluded=color.toLowerCase()==='cyan';
       var vals=blocks.map(function(blk){
         var rc=(breakdown[blk]&&breakdown[blk].roofByColor)||{};
         return rc[color]||0;
       });
       var name=_AFP_COLOR_NAMES[color];
       var label=name ? (name+' ('+color+')') : ('Roof Structure — '+color);
-      rowsHtml+=rowHtml(label, vals, excluded);
+      rowsHtml+=rowHtml(label, vals);
     });
 
-    /* Total row — excludes cyan Roof_Structure, matching the real sum formula */
+    /* Total row — matches the real sum formula (cyan was never included) */
     var blockTotals=blocks.map(function(blk){
       var b=breakdown[blk]||{};
       var t=0;
