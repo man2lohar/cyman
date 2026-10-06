@@ -503,9 +503,15 @@
       localStorage.setItem('treeCoverNetArea','0');
     }
 
-    /* Cupboard/Loft/Roof_Structure → each block sheet — sum across all blocks */
+    /* Cupboard/Loft/Roof_Structure/etc → each block sheet PLUS the Master
+       sheet itself (some of this data may be drawn on Master, not a block) */
     var cbTotal=0,lsTotal=0;
-    var lsBreakdown={}; // { [block]: {Cupboard, Loft, Roof_Structure} } — for the info popup
+    var lsBreakdown={}; // { [block|'Master']: {Cupboard, Loft, ..., roofByColor} } — for the info popup
+    if(masterCSV){
+      cbTotal+=parseFloat(_calcCBLoft(masterRows,['Cupboard','Loft']))||0;
+      lsTotal+=parseFloat(_calcLayerSum(masterRows,['Cupboard','Loft','Roof_Structure','Fire Refuge','Goomty','Triple_Balcony']))||0;
+      lsBreakdown['Master']=_calcLayerSumBreakdown(masterRows);
+    }
     blks.forEach(function(lbl){
       var bcsv=KMCMulti.getBlockCSV(lbl);
       if(!bcsv)return;
@@ -585,7 +591,12 @@
   }
   /* Same formula as _calcLayerSum, but returns each layer's own sub-total
      instead of one combined number — used by the breakdown popup. */
-    var _AFP_SIMPLE_LAYERS=['Cupboard','Loft','Fire Refuge','Goomty','Triple_Balcony'];
+  var _AFP_SIMPLE_LAYERS=['Cupboard','Loft','Fire Refuge','Goomty','Triple_Balcony'];
+    var _AFP_COLOR_NAMES={
+      '5':'Lift Machine Room','6':'Stair Head Room','7':'Service Toilet',
+      '8':'Pergola','9':'Roof Top Swimming Pool','10':'Lift Machine Room Stair',
+      '11':'Roof Garden','12':'Excess Roof / Projected Roof','13':'Canopy / Porch'
+  };
   /* Cupboard/Loft/Fire Refuge/Goomty/Triple_Balcony as flat sums, PLUS
      Roof_Structure broken out by colour (cyan included, shown but excluded
      from totals — matching the existing cyan-exclusion rule). */
@@ -613,7 +624,10 @@
     var popup=document.getElementById('additional-floor-popup');
     if(!thead||!tbody||!popup)return;
 
-    var blocks=Object.keys(breakdown).sort();
+    var blockKeys=Object.keys(breakdown);
+    var hasMaster=blockKeys.indexOf('Master')>=0;
+    var blocks=blockKeys.filter(function(k){return k!=='Master';}).sort();
+    if(hasMaster) blocks=['Master'].concat(blocks);
     if(!blocks.length){
       thead.innerHTML='';
       tbody.innerHTML='<tr><td style="padding:10px 8px;color:var(--muted);">No data yet — visit Final Summary first.</td></tr>';
@@ -635,8 +649,8 @@
 
     /* header row — dynamic to however many blocks exist */
     var headHtml='<th style="text-align:left;padding:7px 8px;">Area Type</th>';
-    blocks.forEach(function(blk){ headHtml+='<th style="text-align:right;padding:7px 8px;">Block '+blk+'</th>'; });
-    headHtml+='<th style="text-align:right;padding:7px 8px;">Block Total</th>';
+    blocks.forEach(function(blk){ headHtml+='<th style="text-align:right;padding:7px 8px;">'+(blk==='Master'?'Master Sheet':'Block '+blk)+'</th>'; });
+    headHtml+='<th style="text-align:right;padding:7px 8px;">Total</th>';
     thead.innerHTML=headHtml;
 
     function rowHtml(label, perBlockVals, excluded){
@@ -662,7 +676,9 @@
         var rc=(breakdown[blk]&&breakdown[blk].roofByColor)||{};
         return rc[color]||0;
       });
-      rowsHtml+=rowHtml('Roof Structure — '+color, vals, excluded);
+      var name=_AFP_COLOR_NAMES[color];
+      var label=name ? (name+' ('+color+')') : ('Roof Structure — '+color);
+      rowsHtml+=rowHtml(label, vals, excluded);
     });
 
     /* Total row — excludes cyan Roof_Structure, matching the real sum formula */
