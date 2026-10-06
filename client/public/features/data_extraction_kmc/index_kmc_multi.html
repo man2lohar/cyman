@@ -377,7 +377,8 @@
         <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Open Spaces</div><div class="table-wrap"><table id="master-open-spaces"><thead><tr><th>Open Spaces</th><th>Required</th><th>Proposed</th></tr></thead><tbody><tr><td class="head">Front</td><td id="per-front">0.000</td><td id="pro-front">0.000</td></tr><tr><td class="head">Side 1</td><td id="per-side1">0.000</td><td id="pro-side1">0.000</td></tr><tr><td class="head">Side 2</td><td id="per-side2">0.000</td><td id="pro-side2">0.000</td></tr><tr><td class="head">Rear</td><td id="per-rear">0.000</td><td id="pro-rear">0.000</td></tr></tbody></table></div></div>
         <div class="data-card" style="margin-bottom:20px;" id="master-jop-card"><div class="data-card-title">Joint Open Space</div><div class="table-wrap"><table id="master-jop"><thead><tr><th>JOP</th><th>Blocks</th><th>Direction</th><th>Required</th><th>Proposed</th><th>Status</th></tr></thead><tbody id="mb-jop-tbody"></tbody></table></div></div>
         <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Car Parking</div><div class="table-wrap"><table id="master-parking"><thead><tr><th>Particulars</th><th>Required</th><th>Proposed</th><th>Actual Bonus</th></tr></thead><tbody><tr><td class="head">Nos. of Car Parking</td><td id="per-car">0</td><td id="pro-car">0</td><td id="act-car">0</td></tr><tr><td class="head">Car Parking Area</td><td id="per-park-area">0.000</td><td id="pro-park-area">0.000</td><td id="act-park-area">0.000</td></tr></tbody></table></div></div>
-        <div class="data-card"><div class="data-card-title">Feesable Floor Area</div><div class="table-wrap"><table id="master-fees"><thead><tr><th>Total Floor Area</th><th>Total Additional Floor Area</th><th>Total Floor Area For Fees</th></tr></thead><tbody><tr><td id="total-floor">0.000</td><td id="additional-floor">0.000</td><td id="total-fees-area">0.000</td></tr></tbody></table></div></div>
+        <div class="data-card"><div class="data-card-title">Feesable Floor Area</div><div class="table-wrap"><table id="master-fees"><thead><tr><th>Total Floor Area</th><th>Total Additional Floor Area <svg class="far-info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onclick="showAdditionalFloorPopup()" title="View breakdown"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"></circle></svg></th><th>Total Floor Area For Fees</th></tr></thead><tbody><tr><td id="total-floor">0.000</td><td id="additional-floor">0.000</td><td id="total-fees-area">0.000</td></tr></tbody></table></div></div>
+    <div id="additional-floor-popup"><div class="master-popup-box" style="max-width:560px;"><div class="master-popup-header"><div><div class="master-popup-title">Total Additional Floor Area — Breakdown</div><div class="master-popup-sub">Cupboard + Loft + Roof Structure, per block</div></div><button class="master-popup-close" onclick="document.getElementById('additional-floor-popup').style.display='none'" aria-label="Close">&times;</button></div><div class="master-popup-body" style="max-height:60vh;overflow-y:auto;"><table style="width:100%;border-collapse:collapse;font-size:.82rem;"><thead><tr><th style="text-align:left;padding:7px 8px;">Block</th><th style="text-align:right;padding:7px 8px;">Cupboard</th><th style="text-align:right;padding:7px 8px;">Loft</th><th style="text-align:right;padding:7px 8px;">Roof Structure</th><th style="text-align:right;padding:7px 8px;">Block Total</th></tr></thead><tbody id="additional-floor-rows"></tbody></table></div><div class="master-popup-footer"><button class="btn btn-danger" onclick="document.getElementById('additional-floor-popup').style.display='none'">Close</button></div></div></div>
       </div>
     </div>
 
@@ -504,15 +505,18 @@
 
     /* Cupboard/Loft/Roof_Structure → each block sheet — sum across all blocks */
     var cbTotal=0,lsTotal=0;
+    var lsBreakdown={}; // { [block]: {Cupboard, Loft, Roof_Structure} } — for the info popup
     blks.forEach(function(lbl){
       var bcsv=KMCMulti.getBlockCSV(lbl);
       if(!bcsv)return;
       var brows=_parseBlockCSVRows(bcsv);
       cbTotal+=parseFloat(_calcCBLoft(brows,['Cupboard','Loft']))||0;
       lsTotal+=parseFloat(_calcLayerSum(brows,['Cupboard','Loft','Roof_Structure']))||0;
+      lsBreakdown[lbl]=_calcLayerSumBreakdown(brows);
     });
     localStorage.setItem('cbLoftNetArea',   cbTotal.toFixed(3));
     localStorage.setItem('layerSumTotal',   lsTotal.toFixed(3));
+    localStorage.setItem('layerSumBreakdown', JSON.stringify(lsBreakdown));
 
     /* EFA/NFA, Parking: per-block — sum across blocks */
     localStorage.setItem('effectiveFloorAreaSum', sumKey(MB.efa).toFixed(3));
@@ -579,6 +583,49 @@
     });
     return s.toFixed(3);
   }
+  /* Same formula as _calcLayerSum, but returns each layer's own sub-total
+     instead of one combined number — used by the breakdown popup. */
+  function _calcLayerSumBreakdown(rows){
+    var b={Cupboard:0,Loft:0,Roof_Structure:0};
+    rows.forEach(function(r){
+      if(!(r.col4 in b))return;
+      if(r.col4==='Roof_Structure'&&r.col3.toLowerCase()==='cyan')return;
+      if(!isNaN(r.col8))b[r.col4]+=r.col8;
+    });
+    return b;
+  }
+  window.showAdditionalFloorPopup=function(){
+    var breakdown={};
+    try{breakdown=JSON.parse(localStorage.getItem('layerSumBreakdown')||'{}');}catch(e){}
+    var tbody=document.getElementById('additional-floor-rows');
+    var popup=document.getElementById('additional-floor-popup');
+    if(!tbody||!popup)return;
+
+    var grand={Cupboard:0,Loft:0,Roof_Structure:0};
+    var rowsHtml=Object.keys(breakdown).sort().map(function(blk){
+      var b=breakdown[blk]||{};
+      var cup=b.Cupboard||0, loft=b.Loft||0, roof=b.Roof_Structure||0;
+      grand.Cupboard+=cup; grand.Loft+=loft; grand.Roof_Structure+=roof;
+      var blockTotal=cup+loft+roof;
+      return '<tr style="border-bottom:1px solid var(--border);">'
+        +'<td style="padding:7px 8px;">Block '+blk+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;">'+cup.toFixed(3)+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;">'+loft.toFixed(3)+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;">'+roof.toFixed(3)+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;font-weight:600;">'+blockTotal.toFixed(3)+'</td></tr>';
+    }).join('');
+
+    var grandTotal=grand.Cupboard+grand.Loft+grand.Roof_Structure;
+    rowsHtml+='<tr style="border-top:2px solid var(--accent);font-weight:700;">'
+      +'<td style="padding:7px 8px;">Total</td>'
+      +'<td style="padding:7px 8px;text-align:right;">'+grand.Cupboard.toFixed(3)+'</td>'
+      +'<td style="padding:7px 8px;text-align:right;">'+grand.Loft.toFixed(3)+'</td>'
+      +'<td style="padding:7px 8px;text-align:right;">'+grand.Roof_Structure.toFixed(3)+'</td>'
+      +'<td style="padding:7px 8px;text-align:right;">'+grandTotal.toFixed(3)+'</td></tr>';
+
+    tbody.innerHTML=rowsHtml || '<tr><td colspan="5" style="padding:10px 8px;color:var(--muted);">No data yet — visit Final Summary first.</td></tr>';
+    popup.style.display='flex';
+  };
   function _calcEfaNfa(rows){
     var totalAreas={},stairWell={},liftWell={},ductCutout={},stairway={},liftLobby={},colors=new Set();
     var VALID=['Residential','Mercantile_wholesale','Mercantile_retail','Business','Institutional','Storage','Assembly','Hazardous','Industrial','Educational'];
