@@ -378,7 +378,7 @@
         <div class="data-card" style="margin-bottom:20px;" id="master-jop-card"><div class="data-card-title">Joint Open Space</div><div class="table-wrap"><table id="master-jop"><thead><tr><th>JOP</th><th>Blocks</th><th>Direction</th><th>Required</th><th>Proposed</th><th>Status</th></tr></thead><tbody id="mb-jop-tbody"></tbody></table></div></div>
         <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Car Parking</div><div class="table-wrap"><table id="master-parking"><thead><tr><th>Particulars</th><th>Required</th><th>Proposed</th><th>Actual Bonus</th></tr></thead><tbody><tr><td class="head">Nos. of Car Parking</td><td id="per-car">0</td><td id="pro-car">0</td><td id="act-car">0</td></tr><tr><td class="head">Car Parking Area</td><td id="per-park-area">0.000</td><td id="pro-park-area">0.000</td><td id="act-park-area">0.000</td></tr></tbody></table></div></div>
         <div class="data-card"><div class="data-card-title">Feesable Floor Area</div><div class="table-wrap"><table id="master-fees"><thead><tr><th>Total Floor Area</th><th>Total Additional Floor Area <svg class="far-info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onclick="showAdditionalFloorPopup()" title="View breakdown"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"></circle></svg></th><th>Total Floor Area For Fees</th></tr></thead><tbody><tr><td id="total-floor">0.000</td><td id="additional-floor">0.000</td><td id="total-fees-area">0.000</td></tr></tbody></table></div></div>
-    <div id="additional-floor-popup"><div class="master-popup-box" style="max-width:560px;"><div class="master-popup-header"><div><div class="master-popup-title">Total Additional Floor Area — Breakdown</div><div class="master-popup-sub">Cupboard + Loft + Roof Structure, per block</div></div><button class="master-popup-close" onclick="document.getElementById('additional-floor-popup').style.display='none'" aria-label="Close">&times;</button></div><div class="master-popup-body" style="max-height:60vh;overflow-y:auto;"><table style="width:100%;border-collapse:collapse;font-size:.82rem;"><thead><tr><th style="text-align:left;padding:7px 8px;">Block</th><th style="text-align:right;padding:7px 8px;">Cupboard</th><th style="text-align:right;padding:7px 8px;">Loft</th><th style="text-align:right;padding:7px 8px;">Roof Structure</th><th style="text-align:right;padding:7px 8px;">Block Total</th></tr></thead><tbody id="additional-floor-rows"></tbody></table></div><div class="master-popup-footer"><button class="btn btn-danger" onclick="document.getElementById('additional-floor-popup').style.display='none'">Close</button></div></div></div>
+    <div id="additional-floor-popup"><div class="master-popup-box" style="max-width:640px;"><div class="master-popup-header"><div><div class="master-popup-title">Total Additional Floor Area — Breakdown</div><div class="master-popup-sub">Cupboard + Loft + Fire Refuge + Goomty + Triple Balcony + Roof Structure (by colour), per block</div></div><button class="master-popup-close" onclick="document.getElementById('additional-floor-popup').style.display='none'" aria-label="Close">&times;</button></div><div class="master-popup-body" style="max-height:60vh;overflow-y:auto;"><table style="width:100%;border-collapse:collapse;font-size:.82rem;"><thead><tr id="additional-floor-head"></tr></thead><tbody id="additional-floor-rows"></tbody></table></div><div class="master-popup-footer"><button class="btn btn-danger" onclick="document.getElementById('additional-floor-popup').style.display='none'">Close</button></div></div></div>
       </div>
     </div>
 
@@ -511,7 +511,7 @@
       if(!bcsv)return;
       var brows=_parseBlockCSVRows(bcsv);
       cbTotal+=parseFloat(_calcCBLoft(brows,['Cupboard','Loft']))||0;
-      lsTotal+=parseFloat(_calcLayerSum(brows,['Cupboard','Loft','Roof_Structure']))||0;
+      lsTotal+=parseFloat(_calcLayerSum(brows,['Cupboard','Loft','Roof_Structure','Fire Refuge','Goomty','Triple_Balcony']))||0;
       lsBreakdown[lbl]=_calcLayerSumBreakdown(brows);
     });
     localStorage.setItem('cbLoftNetArea',   cbTotal.toFixed(3));
@@ -585,45 +585,102 @@
   }
   /* Same formula as _calcLayerSum, but returns each layer's own sub-total
      instead of one combined number — used by the breakdown popup. */
+    var _AFP_SIMPLE_LAYERS=['Cupboard','Loft','Fire Refuge','Goomty','Triple_Balcony'];
+  /* Cupboard/Loft/Fire Refuge/Goomty/Triple_Balcony as flat sums, PLUS
+     Roof_Structure broken out by colour (cyan included, shown but excluded
+     from totals — matching the existing cyan-exclusion rule). */
   function _calcLayerSumBreakdown(rows){
-    var b={Cupboard:0,Loft:0,Roof_Structure:0};
+    var b={roofByColor:{}};
+    _AFP_SIMPLE_LAYERS.forEach(function(l){b[l]=0;});
     rows.forEach(function(r){
-      if(!(r.col4 in b))return;
-      if(r.col4==='Roof_Structure'&&r.col3.toLowerCase()==='cyan')return;
-      if(!isNaN(r.col8))b[r.col4]+=r.col8;
+      if(_AFP_SIMPLE_LAYERS.indexOf(r.col4)>=0){
+        if(!isNaN(r.col8))b[r.col4]+=r.col8;
+        return;
+      }
+      if(r.col4==='Roof_Structure'){
+        var c=(r.col3||'').trim()||'Unknown';
+        if(!b.roofByColor[c])b.roofByColor[c]=0;
+        if(!isNaN(r.col8))b.roofByColor[c]+=r.col8;
+      }
     });
     return b;
   }
-  window.showAdditionalFloorPopup=function(){
+ window.showAdditionalFloorPopup=function(){
     var breakdown={};
     try{breakdown=JSON.parse(localStorage.getItem('layerSumBreakdown')||'{}');}catch(e){}
+    var thead=document.getElementById('additional-floor-head');
     var tbody=document.getElementById('additional-floor-rows');
     var popup=document.getElementById('additional-floor-popup');
-    if(!tbody||!popup)return;
+    if(!thead||!tbody||!popup)return;
 
-    var grand={Cupboard:0,Loft:0,Roof_Structure:0};
-    var rowsHtml=Object.keys(breakdown).sort().map(function(blk){
+    var blocks=Object.keys(breakdown).sort();
+    if(!blocks.length){
+      thead.innerHTML='';
+      tbody.innerHTML='<tr><td style="padding:10px 8px;color:var(--muted);">No data yet — visit Final Summary first.</td></tr>';
+      popup.style.display='flex';
+      return;
+    }
+
+    /* union of every roof colour seen across blocks, cyan pushed last */
+    var roofColors=[];
+    blocks.forEach(function(blk){
+      var rc=(breakdown[blk]&&breakdown[blk].roofByColor)||{};
+      Object.keys(rc).forEach(function(c){ if(roofColors.indexOf(c)<0) roofColors.push(c); });
+    });
+    roofColors.sort(function(a,b){
+      var aCyan=a.toLowerCase()==='cyan', bCyan=b.toLowerCase()==='cyan';
+      if(aCyan===bCyan) return a.localeCompare(b);
+      return aCyan?1:-1;
+    });
+
+    /* header row — dynamic to however many blocks exist */
+    var headHtml='<th style="text-align:left;padding:7px 8px;">Area Type</th>';
+    blocks.forEach(function(blk){ headHtml+='<th style="text-align:right;padding:7px 8px;">Block '+blk+'</th>'; });
+    headHtml+='<th style="text-align:right;padding:7px 8px;">Block Total</th>';
+    thead.innerHTML=headHtml;
+
+    function rowHtml(label, perBlockVals, excluded){
+      var rowTotal=perBlockVals.reduce(function(a,v){return a+v;},0);
+      var strike=excluded?'text-decoration:line-through;color:var(--muted);':'';
+      var cells=perBlockVals.map(function(v){
+        return '<td style="padding:7px 8px;text-align:right;'+strike+'">'+v.toFixed(3)+'</td>';
+      }).join('');
+      return '<tr style="border-bottom:1px solid var(--border);'+(excluded?'opacity:.65;':'')+'">'
+        +'<td style="padding:7px 8px;">'+label+(excluded?' <span style="font-size:.7rem;">(excluded)</span>':'')+'</td>'
+        +cells
+        +'<td style="padding:7px 8px;text-align:right;font-weight:600;'+strike+'">'+rowTotal.toFixed(3)+'</td></tr>';
+    }
+
+    var rowsHtml='';
+    _AFP_SIMPLE_LAYERS.forEach(function(layer){
+      var vals=blocks.map(function(blk){ return (breakdown[blk]&&breakdown[blk][layer])||0; });
+      rowsHtml+=rowHtml(layer, vals, false);
+    });
+    roofColors.forEach(function(color){
+      var excluded=color.toLowerCase()==='cyan';
+      var vals=blocks.map(function(blk){
+        var rc=(breakdown[blk]&&breakdown[blk].roofByColor)||{};
+        return rc[color]||0;
+      });
+      rowsHtml+=rowHtml('Roof Structure — '+color, vals, excluded);
+    });
+
+    /* Total row — excludes cyan Roof_Structure, matching the real sum formula */
+    var blockTotals=blocks.map(function(blk){
       var b=breakdown[blk]||{};
-      var cup=b.Cupboard||0, loft=b.Loft||0, roof=b.Roof_Structure||0;
-      grand.Cupboard+=cup; grand.Loft+=loft; grand.Roof_Structure+=roof;
-      var blockTotal=cup+loft+roof;
-      return '<tr style="border-bottom:1px solid var(--border);">'
-        +'<td style="padding:7px 8px;">Block '+blk+'</td>'
-        +'<td style="padding:7px 8px;text-align:right;">'+cup.toFixed(3)+'</td>'
-        +'<td style="padding:7px 8px;text-align:right;">'+loft.toFixed(3)+'</td>'
-        +'<td style="padding:7px 8px;text-align:right;">'+roof.toFixed(3)+'</td>'
-        +'<td style="padding:7px 8px;text-align:right;font-weight:600;">'+blockTotal.toFixed(3)+'</td></tr>';
-    }).join('');
-
-    var grandTotal=grand.Cupboard+grand.Loft+grand.Roof_Structure;
+      var t=0;
+      _AFP_SIMPLE_LAYERS.forEach(function(l){ t+=b[l]||0; });
+      var rc=b.roofByColor||{};
+      Object.keys(rc).forEach(function(c){ if(c.toLowerCase()!=='cyan') t+=rc[c]; });
+      return t;
+    });
+    var grandTotal=blockTotals.reduce(function(a,b){return a+b;},0);
     rowsHtml+='<tr style="border-top:2px solid var(--accent);font-weight:700;">'
       +'<td style="padding:7px 8px;">Total</td>'
-      +'<td style="padding:7px 8px;text-align:right;">'+grand.Cupboard.toFixed(3)+'</td>'
-      +'<td style="padding:7px 8px;text-align:right;">'+grand.Loft.toFixed(3)+'</td>'
-      +'<td style="padding:7px 8px;text-align:right;">'+grand.Roof_Structure.toFixed(3)+'</td>'
+      +blockTotals.map(function(t){return '<td style="padding:7px 8px;text-align:right;">'+t.toFixed(3)+'</td>';}).join('')
       +'<td style="padding:7px 8px;text-align:right;">'+grandTotal.toFixed(3)+'</td></tr>';
 
-    tbody.innerHTML=rowsHtml || '<tr><td colspan="5" style="padding:10px 8px;color:var(--muted);">No data yet — visit Final Summary first.</td></tr>';
+    tbody.innerHTML=rowsHtml;
     popup.style.display='flex';
   };
   function _calcEfaNfa(rows){
