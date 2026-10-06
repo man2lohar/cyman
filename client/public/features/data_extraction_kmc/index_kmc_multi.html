@@ -378,7 +378,7 @@
         <div class="data-card" style="margin-bottom:20px;" id="master-jop-card"><div class="data-card-title">Joint Open Space</div><div class="table-wrap"><table id="master-jop"><thead><tr><th>JOP</th><th>Blocks</th><th>Direction</th><th>Required</th><th>Proposed</th><th>Status</th></tr></thead><tbody id="mb-jop-tbody"></tbody></table></div></div>
         <div class="data-card" style="margin-bottom:20px;"><div class="data-card-title">Car Parking</div><div class="table-wrap"><table id="master-parking"><thead><tr><th>Particulars</th><th>Required</th><th>Proposed</th><th>Actual Bonus</th></tr></thead><tbody><tr><td class="head">Nos. of Car Parking</td><td id="per-car">0</td><td id="pro-car">0</td><td id="act-car">0</td></tr><tr><td class="head">Car Parking Area</td><td id="per-park-area">0.000</td><td id="pro-park-area">0.000</td><td id="act-park-area">0.000</td></tr></tbody></table></div></div>
         <div class="data-card"><div class="data-card-title">Feesable Floor Area</div><div class="table-wrap"><table id="master-fees"><thead><tr><th>Total Floor Area</th><th>Total Additional Floor Area <svg class="far-info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onclick="showAdditionalFloorPopup()" title="View breakdown"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="none"></circle></svg></th><th>Total Floor Area For Fees</th></tr></thead><tbody><tr><td id="total-floor">0.000</td><td id="additional-floor">0.000</td><td id="total-fees-area">0.000</td></tr></tbody></table></div></div>
-    <div id="additional-floor-popup"><div class="master-popup-box" style="max-width:640px;"><div class="master-popup-header"><div><div class="master-popup-title">Total Additional Floor Area — Breakdown</div><div class="master-popup-sub">Cupboard + Loft + Fire Refuge + Goomty + Triple Balcony + Roof Structure (by colour), per block</div></div><button class="master-popup-close" onclick="document.getElementById('additional-floor-popup').style.display='none'" aria-label="Close">&times;</button></div><div class="master-popup-body" style="max-height:60vh;overflow-y:auto;"><table style="width:100%;border-collapse:collapse;font-size:.82rem;"><thead><tr id="additional-floor-head"></tr></thead><tbody id="additional-floor-rows"></tbody></table></div><div class="master-popup-footer"><button class="btn btn-danger" onclick="document.getElementById('additional-floor-popup').style.display='none'">Close</button></div></div></div>
+    <div id="additional-floor-popup"><div class="master-popup-box" style="max-width:640px;"><div class="master-popup-header"><div><div class="master-popup-title">Total Additional Floor Area — Breakdown</div><div class="master-popup-sub">Cupboard + Loft + Fire Refuge + Goomty + Triple Balcony + Roof Structure (by colour), per block</div></div><button class="master-popup-close" onclick="document.getElementById('additional-floor-popup').style.display='none'" aria-label="Close">&times;</button></div><div class="master-popup-body" style="max-height:60vh;overflow-y:auto;"><table style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:.82rem;"><thead><tr id="additional-floor-head"></tr></thead><tbody id="additional-floor-rows"></tbody></table></div><div class="master-popup-footer"><button class="btn btn-danger" onclick="document.getElementById('additional-floor-popup').style.display='none'">Close</button></div></div></div>
       </div>
     </div>
 
@@ -648,9 +648,15 @@
     });
 
     /* header row — dynamic to however many blocks exist */
-    var headHtml='<th style="text-align:left;padding:7px 8px;">Area Type</th>';
-    blocks.forEach(function(blk){ headHtml+='<th style="text-align:right;padding:7px 8px;">'+(blk==='Master'?'Master Sheet':'Block '+blk)+'</th>'; });
-    headHtml+='<th style="text-align:right;padding:7px 8px;">Total</th>';
+    /* Area Type column is 1.5x the width of every other column */
+    var otherColCount=blocks.length+1; // block columns + Total column
+    var totalWeight=1.5+otherColCount;
+    var areaPct=(1.5/totalWeight*100).toFixed(2);
+    var otherPct=(1/totalWeight*100).toFixed(2);
+
+    var headHtml='<th style="text-align:left;padding:7px 8px;width:'+areaPct+'%;">Area Type</th>';
+    blocks.forEach(function(blk){ headHtml+='<th style="text-align:right;padding:7px 8px;width:'+otherPct+'%;">'+(blk==='Master'?'Master Sheet':'Block '+blk)+'</th>'; });
+    headHtml+='<th style="text-align:right;padding:7px 8px;width:'+otherPct+'%;">Total</th>';
     thead.innerHTML=headHtml;
 
     function rowHtml(label, perBlockVals, excluded){
