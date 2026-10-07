@@ -580,11 +580,17 @@
     rows.forEach(function(r){if(layerNames.indexOf(r.col4)<0)return;t+=r.col8;if(r.col6==='DASHED')d+=r.col8;});
     return(t-d).toFixed(3);
   }
+  /* Matches "cyan" however it's stored in the CSV — as the literal word,
+     or as AutoCAD's standard colour index 4 (ACI 4 = Cyan). */
+  function _isCyanColor(c){
+    var v=(c||'').toString().trim().toLowerCase();
+    return v==='cyan' || v==='4';
+  }
   function _calcLayerSum(rows,layers){
     var s=0;
     rows.forEach(function(r){
       if(layers.indexOf(r.col4)<0)return;
-      if(r.col4==='Roof_Structure'&&r.col3.toLowerCase()==='cyan')return;
+      if(r.col4==='Roof_Structure'&&_isCyanColor(r.col3))return;
       if(!isNaN(r.col8))s+=r.col8;
     });
     return s.toFixed(3);
@@ -642,7 +648,7 @@
     blocks.forEach(function(blk){
       var rc=(breakdown[blk]&&breakdown[blk].roofByColor)||{};
       Object.keys(rc).forEach(function(c){
-        if(c.toLowerCase()==='cyan') return; // hidden entirely, not just excluded from totals
+        if(_isCyanColor(c)) return; // hidden entirely, not just excluded from totals
         if(roofColors.indexOf(c)<0) roofColors.push(c);
       });
     });
@@ -696,7 +702,7 @@
       var t=0;
       _AFP_SIMPLE_LAYERS.forEach(function(l){ t+=b[l]||0; });
       var rc=b.roofByColor||{};
-      Object.keys(rc).forEach(function(c){ if(c.toLowerCase()!=='cyan') t+=rc[c]; });
+      Object.keys(rc).forEach(function(c){ if(!_isCyanColor(c)) t+=rc[c]; });
       return t;
     });
     var grandTotal=blockTotals.reduce(function(a,b){return a+b;},0);
