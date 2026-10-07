@@ -582,15 +582,19 @@
   }
   /* Matches "cyan" however it's stored in the CSV — as the literal word,
      or as AutoCAD's standard colour index 4 (ACI 4 = Cyan). */
-  function _isCyanColor(c){
+  /* Roof_Structure colours fully excluded from Total Additional Floor Area —
+     "cyan" (also stored as AutoCAD colour index 4) and Roof Garden (11).
+     Add more codes/names here to exclude further colours the same way. */
+  var _AFP_EXCLUDED_ROOF_COLORS=['cyan','4','11'];
+  function _isExcludedRoofColor(c){
     var v=(c||'').toString().trim().toLowerCase();
-    return v==='cyan' || v==='4';
+    return _AFP_EXCLUDED_ROOF_COLORS.indexOf(v)>=0;
   }
   function _calcLayerSum(rows,layers){
     var s=0;
     rows.forEach(function(r){
       if(layers.indexOf(r.col4)<0)return;
-      if(r.col4==='Roof_Structure'&&_isCyanColor(r.col3))return;
+      if(r.col4==='Roof_Structure'&&_isExcludedRoofColor(r.col3))return;
       if(!isNaN(r.col8))s+=r.col8;
     });
     return s.toFixed(3);
@@ -648,7 +652,7 @@
     blocks.forEach(function(blk){
       var rc=(breakdown[blk]&&breakdown[blk].roofByColor)||{};
       Object.keys(rc).forEach(function(c){
-        if(_isCyanColor(c)) return; // hidden entirely, not just excluded from totals
+        if(_isExcludedRoofColor(c)) return; // hidden entirely, not just excluded from totals
         if(roofColors.indexOf(c)<0) roofColors.push(c);
       });
     });
@@ -702,7 +706,7 @@
       var t=0;
       _AFP_SIMPLE_LAYERS.forEach(function(l){ t+=b[l]||0; });
       var rc=b.roofByColor||{};
-      Object.keys(rc).forEach(function(c){ if(!_isCyanColor(c)) t+=rc[c]; });
+      Object.keys(rc).forEach(function(c){ if(!_isExcludedRoofColor(c)) t+=rc[c]; });
       return t;
     });
     var grandTotal=blockTotals.reduce(function(a,b){return a+b;},0);
