@@ -1302,7 +1302,7 @@ body.dark-mode .home-col:hover { border-color: rgba(255,255,255,.16); }
 #far-calc-popup .master-popup-box { max-width: 520px; }
 .far-info-icon {
   width: 16px; height: 16px; cursor: pointer; vertical-align: -3px;
-  margin-left: 6px; color: var(--accent); flex-shrink: 0;
+  margin-left: 6px; color: #ff9800; flex-shrink: 0;
   display: inline-block;
 }
 .far-info-icon:hover { opacity: 0.7; }
