@@ -205,6 +205,55 @@
      if (popup) popup.style.display = 'flex';
    };
 
+  /* Info-icon popup beside "Total Additional Floor Area" */
+  var _AFP_COLOR_NAMES = {
+    '5':'Lift Machine Room','6':'Stair Head Room','7':'Service Toilet',
+    '8':'Pergola','9':'Roof Top Swimming Pool','10':'Lift Machine Room Stair',
+    '11':'Roof Garden','12':'Excess Roof / Projected Roof','13':'Canopy / Porch'
+  };
+  var _AFP_EXCLUDED_ROOF_COLORS = ['cyan','4','11'];
+  function _isExcludedRoofColorDisplay(c) {
+    var v = (c || '').toString().trim().toLowerCase();
+    return _AFP_EXCLUDED_ROOF_COLORS.indexOf(v) >= 0;
+  }
+  window.showAdditionalFloorPopup = function () {
+    var breakdown = {};
+    try { breakdown = JSON.parse(localStorage.getItem('layerSumBreakdown') || '{}'); } catch (e) {}
+    var tbody = document.getElementById('additional-floor-rows');
+    var popup = document.getElementById('additional-floor-popup');
+    if (!tbody || !popup) return;
+
+    var simpleLayers = ['Cupboard','Loft','Fire Refuge','Goomty','Triple_Balcony'];
+    var rowsHtml = '';
+    var grandTotal = 0;
+
+    simpleLayers.forEach(function (layer) {
+      var v = breakdown[layer] || 0;
+      grandTotal += v;
+      rowsHtml += '<tr style="border-bottom:1px solid var(--border);">'
+        + '<td style="padding:7px 8px;">' + layer + '</td>'
+        + '<td style="padding:7px 8px;text-align:right;">' + v.toFixed(3) + '</td></tr>';
+    });
+
+    var rc = breakdown.roofByColor || {};
+    Object.keys(rc).sort().forEach(function (color) {
+      if (_isExcludedRoofColorDisplay(color)) return;
+      var v = rc[color] || 0;
+      grandTotal += v;
+      var name = _AFP_COLOR_NAMES[color];
+      var label = name ? (name + ' (' + color + ')') : ('Roof Structure — ' + color);
+      rowsHtml += '<tr style="border-bottom:1px solid var(--border);">'
+        + '<td style="padding:7px 8px;">' + label + '</td>'
+        + '<td style="padding:7px 8px;text-align:right;">' + v.toFixed(3) + '</td></tr>';
+    });
+
+    rowsHtml += '<tr style="border-top:2px solid var(--accent);font-weight:700;">'
+      + '<td style="padding:7px 8px;">Total</td>'
+      + '<td style="padding:7px 8px;text-align:right;">' + grandTotal.toFixed(3) + '</td></tr>';
+
+    tbody.innerHTML = rowsHtml;
+    popup.style.display = 'flex';
+  };
   /* ────────────────────────────────────────
      Ground Coverage
   ──────────────────────────────────────── */
