@@ -35,7 +35,8 @@ function generateFilteredTables() {
   /* ── Save computed values to localStorage (same as original filtered.html) ── */
   localStorage.setItem('treeCoverNetArea', _calcNetAreaForLayer(parsedData, 'Tree Cover'));
   localStorage.setItem('cbLoftNetArea',    _calcNetAreaForcbloft(parsedData, ['Cupboard', 'Loft']));
-  localStorage.setItem('layerSumTotal',    _calcLayerSum(['Cupboard', 'Loft', 'Roof_Structure'], parsedData));
+  localStorage.setItem('layerSumTotal',    _calcLayerSum(['Cupboard', 'Loft', 'Roof_Structure', 'Fire Refuge', 'Goomty', 'Triple_Balcony'], parsedData));
+  localStorage.setItem('layerSumBreakdown', JSON.stringify(_calcLayerSumBreakdown(parsedData)));
 
   /* ── Ground Coverage vs Terrace check ── */
   const gc = _calcTotalAreaForLayer(parsedData, 'Ground Coverage');
@@ -353,16 +354,45 @@ function _calcNetAreaForcbloft(parsedData, layerNames) {
   return (total - deducted).toFixed(3);
 }
 
+/* Roof_Structure colours fully excluded from Total Additional Floor Area —
+   "cyan" (also stored as AutoCAD colour index 4) and Roof Garden (11). */
+const _AFP_EXCLUDED_ROOF_COLORS = ['cyan', '4', '11'];
+function _isExcludedRoofColor(c) {
+  const v = (c || '').toString().trim().toLowerCase();
+  return _AFP_EXCLUDED_ROOF_COLORS.includes(v);
+}
+
 function _calcLayerSum(layers, parsedData) {
   let sum = 0;
   parsedData.forEach(row => {
-    const floor = (row.column3 || '').trim().toLowerCase();
+    const floor = (row.column3 || '').trim();
     const layer = (row.column4 || '').trim();
     if (!layers.includes(layer)) return;
-    if (layer === 'Roof_Structure' && floor === 'cyan') return;
+    if (layer === 'Roof_Structure' && _isExcludedRoofColor(floor)) return;
     if (!isNaN(row.column8)) sum += row.column8;
   });
   return sum.toFixed(3);
+}
+
+/* Flat sums per layer + Roof_Structure split by colour — feeds the
+   "Total Additional Floor Area" info popup on the Final Summary tab. */
+const _AFP_SIMPLE_LAYERS = ['Cupboard', 'Loft', 'Fire Refuge', 'Goomty', 'Triple_Balcony'];
+function _calcLayerSumBreakdown(parsedData) {
+  const b = { roofByColor: {} };
+  _AFP_SIMPLE_LAYERS.forEach(l => { b[l] = 0; });
+  parsedData.forEach(row => {
+    const layer = (row.column4 || '').trim();
+    if (_AFP_SIMPLE_LAYERS.includes(layer)) {
+      if (!isNaN(row.column8)) b[layer] += row.column8;
+      return;
+    }
+    if (layer === 'Roof_Structure') {
+      const c = (row.column3 || '').trim() || 'Unknown';
+      if (!b.roofByColor[c]) b.roofByColor[c] = 0;
+      if (!isNaN(row.column8)) b.roofByColor[c] += row.column8;
+    }
+  });
+  return b;
 }
 
 function _calcTotalAreaForLayer(parsedData, layerName) {
