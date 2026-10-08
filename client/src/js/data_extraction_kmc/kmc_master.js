@@ -89,7 +89,7 @@
       if (name === 'Polyline' && color === '240' && layer === 'Plot' && linetype === 'PHANTOM2' && lineweight === '0.50 mm' && closed === '-1')
         landAreaSum += area;
       if (name === 'Polyline' && layer === 'Parking_Area' && lineweight === '0.15 mm' && closed === '-1')
-        ParkingAreaSum += area;
+        linetype === 'DASHED' ? (ParkingAreaSum -= area) : (ParkingAreaSum += area);
       const colorNum = parseFloat(color);
       if (name === 'Polyline' && (colorNum <= 53 || colorNum >= 152) && layer === 'Ground Coverage' && closed === '-1') {
         linetype === 'DASHED' ? (GroundCoverageSum -= area) : (GroundCoverageSum += area);
