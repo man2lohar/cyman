@@ -254,6 +254,12 @@
 </head>
 <body>
 
+  <!-- Firebase (compat) — the shell writes the user profile to Realtime Database,
+       so database-compat must be loaded too (same as check.html / index_kmc.html) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
   <!-- Feature shell: auth check + site header/footer injection -->
   <script src="../../../src/js/feature-shell.js"
           data-feature="KMC Data Extraction"
