@@ -5,196 +5,539 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KMC Data Extraction | CyManSquare</title>
   <link rel="icon" href="../../assets/images/cymansquare_logo.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Akaya+Kanadaka&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Akaya+Kanadaka&display=swap" rel="stylesheet">
 
   <style>
+    /* ───────────── Theme tokens (light default, dark via [data-dark="1"]) ───────────── */
     :root {
-      --orange: #2d98fd; --orange2: #1a7edf;
-      --bg: #F9F7F2; --card: #ffffff; --brown: #1c1f2e;
-      --input: #f3f4f8; --border: rgba(0,0,0,0.07); --muted: #6b7499;
+      --accent:#2d98fd;
+      --bg:#f3f6fb; --text:#0f1b33; --muted:#53627f; --line:rgba(15,27,51,.12);
+      --hero-bg:linear-gradient(120deg,#eaf3ff 0%,#dcebff 55%,#cde2ff 100%);
+      --grid:rgba(45,152,253,.14); --hero-fade:#f3f6fb;
+      --panel:rgba(255,255,255,.72); --panel-line:rgba(45,152,253,.28);
+      --card:#ffffff; --card-solid:#ffffff;
+      --chip-bg:rgba(15,27,51,.05); --chip-text:#33425f; --chip-line:rgba(15,27,51,.12);
+      --step-bg:rgba(255,255,255,.7); --step-icon:rgba(45,152,253,.12);
+      --bld-fill:rgba(45,152,253,.10); --bld-stroke:rgba(45,152,253,.38);
+      --c-wall:#1a7edf; --wall-fill:rgba(45,152,253,.16); --glow:rgba(45,152,253,.30);
+      --c-door:#0284c7; --c-win:#0d9488; --c-stair:#ea580c; --c-col:#9333ea; --c-dim:#db2777; --c-text:#4f46e5;
     }
     [data-dark="1"] {
-      --bg:#0f1117; --card:#181b27; --brown:#e8eaf6; --input:#1e2130;
-      --border:rgba(255,255,255,0.06); --muted:#8892b0;
+      --bg:#070e1c; --text:#f2f6ff; --muted:#9db0d0; --line:rgba(120,160,255,.16);
+      --hero-bg:linear-gradient(120deg,#06101f 0%,#08214a 58%,#0a2f6b 100%);
+      --grid:rgba(60,140,255,.13); --hero-fade:#070e1c;
+      --panel:rgba(8,22,48,.72); --panel-line:rgba(60,140,255,.38);
+      --card:#0b1a36; --card-solid:#0b1a36;
+      --chip-bg:rgba(120,160,255,.08); --chip-text:#b8c8e6; --chip-line:rgba(120,160,255,.2);
+      --step-bg:rgba(10,24,52,.6); --step-icon:rgba(45,123,255,.14);
+      --bld-fill:rgba(37,99,235,.24); --bld-stroke:rgba(96,165,250,.45);
+      --c-wall:#22d3ee; --wall-fill:rgba(34,211,238,.14); --glow:rgba(34,211,238,.55);
+      --c-door:#38bdf8; --c-win:#2dd4bf; --c-stair:#fb923c; --c-col:#c084fc; --c-dim:#f472b6; --c-text:#a5b4fc;
     }
+
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; font-family:'Plus Jakarta Sans',sans-serif; }
-    body { background:var(--bg); color:var(--brown); min-height:100vh; transition:background .4s,color .4s; }
+    body { background:var(--bg); color:var(--text); min-height:100vh; transition:background .4s,color .4s; overflow-x:hidden; }
+    .wrap { width:100%; max-width:1360px; margin:0 auto; padding:0 32px; }
 
-    /* Hero section */
-    .kmc-hero {
-      display:flex; align-items:center; justify-content:center;
-      min-height:calc(100vh - 110px); padding:40px 24px;
+    /* ───────────── HERO ───────────── */
+    .hero {
+      position:relative; overflow:hidden; background:var(--hero-bg);
+      border-bottom:1px solid var(--line);
     }
-    .kmc-content {
-      max-width:720px; width:100%; text-align:center;
+    .hero::before { /* blueprint grid */
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size:44px 44px;
+      -webkit-mask-image:linear-gradient(90deg, transparent 8%, #000 55%);
+              mask-image:linear-gradient(90deg, transparent 8%, #000 55%);
     }
+    .hero::after { /* soft glow behind the plan */
+      content:''; position:absolute; right:12%; top:-20%; width:55%; height:140%; pointer-events:none;
+      background:radial-gradient(ellipse at center, var(--glow) 0%, transparent 62%); opacity:.35;
+    }
+    .hero-inner { position:relative; z-index:2; min-height:318px; padding-top:28px; padding-bottom:24px; }
+    .hero-text { max-width:600px; position:relative; z-index:3; }
+
     .kmc-badge {
-      display:inline-flex; align-items:center; gap:8px;
-      background:rgba(45,152,253,.1); color:var(--orange);
-      border:1px solid rgba(45,152,253,.2); padding:6px 16px;
-      border-radius:100px; font-size:.75rem; font-weight:700;
-      text-transform:uppercase; letter-spacing:1px; margin-bottom:24px;
+      display:inline-flex; align-items:center; gap:9px;
+      background:rgba(45,152,253,.10); color:var(--accent);
+      border:1px solid rgba(45,152,253,.32); padding:7px 18px;
+      border-radius:100px; font-size:.72rem; font-weight:700;
+      text-transform:uppercase; letter-spacing:1.2px; margin-bottom:16px;
     }
-    .kmc-content h1 {
-      font-size:clamp(2rem,5vw,3rem); font-weight:800; letter-spacing:-1.5px;
-      line-height:1.15; margin-bottom:16px; color:var(--brown);
+    .hero h1 {
+      font-size:clamp(2.1rem,3.6vw,3.3rem); font-weight:800; letter-spacing:-1.5px;
+      line-height:1.08; margin-bottom:14px; color:var(--text);
     }
-    .kmc-content h1 span { color:var(--orange); }
-    .kmc-content p { font-size:.95rem; color:var(--muted); max-width:480px; margin:0 auto 36px; line-height:1.7; }
+    .hero h1 span {
+      background:linear-gradient(90deg,#1b86ff,#45b0ff); -webkit-background-clip:text; background-clip:text;
+      -webkit-text-fill-color:transparent; color:#2d98fd;
+    }
+    .hero-lead { font-size:.98rem; color:var(--muted); line-height:1.65; max-width:540px; margin-bottom:20px; }
 
-    /* Type cards */
-    .type-grid {
-      display:grid; grid-template-columns:1fr 1fr; gap:20px;
-      max-width:600px; margin:0 auto;
-    }
-    .type-card {
-      background:var(--card); border:1.5px solid var(--border);
-      border-radius:18px; padding:28px 24px; cursor:pointer;
-      transition:all .25s; text-align:left; position:relative; overflow:hidden;
-    }
-    .type-card::before {
-      content:''; position:absolute; inset:0;
-      background:linear-gradient(135deg,rgba(45,152,253,.05) 0%,transparent 60%);
-      opacity:0; transition:opacity .25s;
-    }
-    .type-card:hover { border-color:var(--orange); transform:translateY(-4px); box-shadow:0 16px 40px rgba(45,152,253,.15); }
-    #sanctionCard:hover    { border-color:#2d98fd; box-shadow:0 16px 40px rgba(45,152,253,.15); }
-    #completionCard:hover  { border-color:#16a34a; box-shadow:0 16px 40px rgba(22,163,74,.15); }
-    .type-card.check-card:hover { border-color:#8b5cf6; box-shadow:0 16px 40px rgba(139,92,246,.15); }
-    .type-card:hover::before { opacity:1; }
-    .type-card .tc-icon { font-size:2rem; margin-bottom:12px; }
-    .type-card h3 { font-size:1rem; font-weight:800; letter-spacing:-.3px; margin-bottom:8px; color:var(--brown); }
-    .type-card p { font-size:.8rem; color:var(--muted); line-height:1.55; }
+    .hero-points { display:flex; flex-wrap:nowrap; width:max-content; max-width:100%; gap:14px 0; }
+    .hp { display:flex; align-items:center; gap:10px; padding:0 16px; border-left:1px solid var(--line); }
+    .hp:first-child { padding-left:0; border-left:0; }
+    .hp svg { flex-shrink:0; }
+    .hp b { display:block; font-size:.88rem; font-weight:700; color:var(--text); }
+    .hp small { display:block; font-size:.74rem; color:var(--muted); margin-top:1px; }
 
-    /* Sub-options (shown on hover/click) */
-    .sub-options {
-      display:none; position:absolute; inset:0; background:var(--card);
-      border-radius:18px; padding:20px; flex-direction:column; gap:10px;
-      animation:slideIn .25s ease;
+    /* Heritage building silhouette (left, behind text) */
+    .hero-bld { position:absolute; left:0; bottom:0; height:100%; width:300px; z-index:1; pointer-events:none;
+      -webkit-mask-image:linear-gradient(90deg,#000 25%,transparent 88%); mask-image:linear-gradient(90deg,#000 25%,transparent 88%); opacity:.8; }
+    .hero-bld svg { width:100%; height:100%; display:block; }
+    .bld { fill:var(--bld-fill); stroke:var(--bld-stroke); stroke-width:1.2; }
+    .bld-win { fill:none; stroke:var(--bld-stroke); stroke-width:1; opacity:.8; }
+
+    /* Blueprint floor plan (right) */
+    .plan-wrap {
+      position:absolute; z-index:2; left:628px; right:232px; top:26px; aspect-ratio:560/390;
+      transform:perspective(1500px) rotateY(-12deg) rotateX(7deg) rotateZ(-5deg);
+      transition:transform .8s cubic-bezier(.2,.7,.2,1); pointer-events:none;
     }
-    @keyframes slideIn { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:scale(1)} }
+    .hero:hover .plan-wrap { transform:perspective(1500px) rotateY(-5deg) rotateX(3deg) rotateZ(-2deg); }
+    .plan { width:100%; height:100%; display:block; overflow:visible; filter:drop-shadow(0 0 7px var(--glow)); }
+    .plan-wrap::after { /* scan line */
+      content:''; position:absolute; top:4%; bottom:4%; left:4%; width:14%;
+      background:linear-gradient(90deg,transparent,var(--glow),transparent); opacity:0;
+      animation:scan 7s ease-in-out infinite; mix-blend-mode:screen;
+    }
+    @keyframes scan { 0%{transform:translateX(0);opacity:0} 12%{opacity:.5} 88%{opacity:.5} 100%{transform:translateX(560%);opacity:0} }
+
+    .plan [data-layer] { transition:opacity .25s; }
+    .plan [data-layer].dim { opacity:.14; }
+    .plan .w { fill:var(--wall-fill); stroke:var(--c-wall); stroke-width:1.4; stroke-linejoin:miter; }
+    .plan .l-win line, .plan .l-win path { stroke:var(--c-win); stroke-width:5; fill:none; }
+    .plan .l-door path { stroke:var(--c-door); stroke-width:1.4; fill:none; }
+    .plan .l-stair rect { stroke:var(--c-stair); stroke-width:1.3; fill:none; }
+    .plan .l-stair .treads { fill:url(#treads); }
+    .plan .l-stair path { stroke:var(--c-stair); stroke-width:1.6; fill:none; }
+    .plan .tread-line { stroke:var(--c-stair); stroke-width:1; opacity:.8; }
+    .plan .l-col rect { fill:rgba(168,85,247,.32); stroke:var(--c-col); stroke-width:1.2; }
+    .plan .l-dim path { stroke:var(--c-dim); stroke-width:1; fill:none; }
+    .plan .l-dim text { fill:var(--c-dim); font-size:10px; font-weight:600; text-anchor:middle; }
+    .plan .l-text text { fill:var(--c-text); text-anchor:middle; }
+    .plan .l-text .rn { font-size:14px; font-weight:700; letter-spacing:1.4px; }
+    .plan .l-text .rd { font-size:11px; font-weight:500; opacity:.9; }
+    .plan .draw { stroke-dasharray:1; stroke-dashoffset:1; animation:draw 2.4s .2s ease forwards; }
+    @keyframes draw { to { stroke-dashoffset:0; } }
+
+    /* Compass + layers legend */
+    .compass { position:absolute; z-index:3; right:58px; top:12px; width:54px; height:54px; opacity:.9; }
+    .compass .cg { stroke:var(--text); fill:none; stroke-width:1.3; opacity:.75; }
+    .compass text { fill:var(--text); font-size:11px; font-weight:700; text-anchor:middle; opacity:.8; }
+    .layers-card {
+      position:absolute; z-index:3; right:28px; top:72px; width:184px; padding:12px 14px 10px;
+      background:var(--panel); border:1px solid var(--panel-line); border-radius:14px;
+      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
+    }
+    .layers-card h4 { display:flex; align-items:center; gap:8px; font-size:.7rem; font-weight:700; letter-spacing:1px;
+      text-transform:uppercase; color:var(--text); margin-bottom:8px; }
+    .layers-card ul { list-style:none; display:flex; flex-direction:column; gap:3px; }
+    .layers-card li { display:flex; align-items:center; gap:11px; font-size:.7rem; font-weight:600; letter-spacing:.9px;
+      text-transform:uppercase; color:var(--muted); padding:4px 6px; border-radius:7px; cursor:default; outline:none;
+      transition:background .2s,color .2s; }
+    .layers-card li:hover, .layers-card li:focus-visible, .layers-card li.on { background:rgba(45,152,253,.14); color:var(--text); }
+    .layers-card i { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .layers-hint { margin-top:8px; font-size:.62rem; color:var(--muted); opacity:.75; letter-spacing:.2px; }
+
+    /* ───────────── WORKFLOW ───────────── */
+    .workflow { padding-top:18px; }
+    .wf-head { display:flex; align-items:flex-end; gap:22px; margin-bottom:14px; }
+    .wf-head .eyebrow { display:flex; align-items:center; gap:8px; font-size:.68rem; font-weight:700; letter-spacing:1.4px;
+      text-transform:uppercase; color:var(--accent); margin-bottom:4px; }
+    .wf-head .eyebrow::before { content:''; width:10px; height:1.5px; background:var(--accent); }
+    .wf-head h2 { font-size:clamp(1.5rem,2.4vw,2rem); font-weight:800; letter-spacing:-.8px; }
+    .wf-head .rule { flex:1; height:1px; background:var(--line); margin-bottom:11px; }
+    .wf-head p { font-size:.85rem; color:var(--muted); margin-bottom:6px; white-space:nowrap; }
+
+    .wf-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .wf-card {
+      --c:#2d7bff; --c-rgb:45,123,255; --c-solid:#0b6bff; --c-solid2:#2f87ff;
+      position:relative; display:flex; flex-direction:column; border-radius:18px; padding:16px 22px 20px;
+      border:1px solid rgba(var(--c-rgb),.55); text-decoration:none; color:var(--text); overflow:hidden;
+      background:linear-gradient(160deg, rgba(var(--c-rgb),.16) 0%, var(--card) 62%);
+      transition:transform .25s, box-shadow .25s, border-color .25s; cursor:pointer;
+    }
+    .wf-card.green  { --c:#10b981; --c-rgb:16,185,129; --c-solid:#0c9a6a; --c-solid2:#13b782; }
+    .wf-card.purple { --c:#8b5cf6; --c-rgb:139,92,246; --c-solid:#6d3df0; --c-solid2:#8556f7; }
+    .wf-card:hover, .wf-card:focus-within { transform:translateY(-4px); border-color:var(--c); box-shadow:0 18px 44px rgba(var(--c-rgb),.22); }
+    .wf-top { display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; }
+    .wf-num { font-size:.8rem; font-weight:700; color:var(--c); letter-spacing:.5px; padding-top:2px; }
+    .wf-ico { width:52px; height:52px; border-radius:14px; background:rgba(var(--c-rgb),.20); border:1px solid rgba(var(--c-rgb),.35);
+      display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .wf-art { position:absolute; top:12px; right:14px; width:104px; height:84px; opacity:.28; pointer-events:none; }
+    .wf-art * { stroke:var(--c); fill:none; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round; }
+    .wf-soon { align-self:center; font-size:.64rem; font-weight:700; letter-spacing:.8px; text-transform:uppercase;
+      color:#d97706; background:rgba(245,158,11,.14); border:1px solid rgba(245,158,11,.4); padding:3px 10px; border-radius:100px; }
+    .wf-card h3 { font-size:1.45rem; font-weight:700; letter-spacing:-.5px; margin-bottom:8px; position:relative; }
+    .wf-card .desc { font-size:.94rem; color:var(--muted); line-height:1.5; margin-bottom:14px; max-width:360px; position:relative; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; margin-top:auto; }
+    .chip { font-size:.72rem; font-weight:500; color:var(--chip-text); background:var(--chip-bg);
+      border:1px solid var(--chip-line); padding:5px 13px; border-radius:100px; }
+    .wf-cta {
+      display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:12px 18px;
+      border:0; border-radius:10px; font-weight:700; font-size:1rem; color:#fff; cursor:pointer; font-family:inherit;
+      background:linear-gradient(90deg,var(--c-solid),var(--c-solid2)); transition:filter .2s, box-shadow .2s;
+    }
+    .wf-cta svg { transition:transform .2s; }
+    .wf-card:hover .wf-cta { filter:brightness(1.1); box-shadow:0 8px 22px rgba(var(--c-rgb),.35); }
+    .wf-card:hover .wf-cta svg { transform:translateX(4px); }
+
+    /* Sub-options overlay (Single / Multiple Buildings) */
+    .sub-options { display:none; position:absolute; inset:0; background:var(--card-solid); border-radius:18px;
+      padding:22px; flex-direction:column; gap:10px; z-index:5; animation:slideIn .25s ease; }
+    @keyframes slideIn { from{opacity:0;transform:scale(.97)} to{opacity:1;transform:scale(1)} }
     .sub-options.show { display:flex; }
-    .sub-options h4 { font-size:.82rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
-    .sub-btn {
-      display:flex; align-items:center; gap:10px; padding:12px 14px;
-      background:var(--input); border:1px solid var(--border); border-radius:11px;
-      cursor:pointer; transition:.2s; font-size:.85rem; font-weight:600; color:var(--brown);
-      text-decoration:none;
-    }
-    .sub-btn:hover { border-color:var(--orange); color:var(--orange); background:rgba(45,152,253,.06); }
+    .sub-options h4 { font-size:.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+    .sub-btn { display:flex; align-items:center; gap:12px; padding:15px 16px; background:var(--chip-bg); border:1px solid var(--line);
+      border-radius:12px; cursor:pointer; transition:.2s; font-size:.95rem; font-weight:600; color:var(--text); text-decoration:none; }
+    .sub-btn:hover { border-color:var(--c); color:var(--c); background:rgba(var(--c-rgb),.08); }
     .sub-btn svg { flex-shrink:0; }
-    .sub-btn .coming { font-size:.65rem; background:rgba(0,0,0,.06); color:var(--muted); padding:2px 7px; border-radius:100px; margin-left:auto; }
-    .back-btn { background:none; border:none; cursor:pointer; font-size:.75rem; color:var(--muted); font-weight:600; padding:4px 0; display:flex; align-items:center; gap:4px; font-family:inherit; }
-    /* Icon containers */
-    .tc-icon {
-      width:48px; height:48px; border-radius:14px;
-      display:flex; align-items:center; justify-content:center;
-      margin-bottom:16px; flex-shrink:0;
+    .sub-btn .tag { font-size:.66rem; background:rgba(128,128,128,.14); color:var(--muted); padding:2px 8px; border-radius:100px; margin-left:auto; }
+    .sub-btn .tag.new { background:rgba(22,163,74,.14); color:#16a34a; }
+    .back-btn { background:none; border:none; cursor:pointer; font-size:.78rem; color:var(--muted); font-weight:600; padding:2px 0;
+      display:flex; align-items:center; gap:4px; font-family:inherit; align-self:flex-start; }
+    .back-btn:hover { color:var(--text); }
+
+    /* ───────────── STEPS STRIP ───────────── */
+    .steps-wrap { padding-top:18px; padding-bottom:14px; }
+    .steps { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid var(--line); background:var(--step-bg);
+      border-radius:16px; padding:6px 8px; backdrop-filter:blur(6px); }
+    .step { display:flex; align-items:center; gap:14px; padding:10px 20px; border-left:1px solid var(--line); }
+    .step:first-child { border-left:0; }
+    .step-ico { width:48px; height:48px; border-radius:50%; background:var(--step-icon); border:1px solid rgba(45,123,255,.22);
+      display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .step b { display:block; font-size:.92rem; font-weight:700; }
+    .step small { display:block; font-size:.78rem; color:var(--muted); margin-top:2px; line-height:1.4; }
+
+    /* ───────────── RESPONSIVE ───────────── */
+    @media (max-width:1500px) {
+      .hero-inner { min-height:338px; }
+      .plan-wrap { left:650px; right:226px; top:18px; }
+      .hero-bld { opacity:.38; }
     }
-    .tc-icon-sanction  { background:rgba(45,152,253,.12); }
-    .tc-icon-completion{ background:rgba(22,163,74,.12); }
-    .tc-icon-check     { background:rgba(139,92,246,.12); }
+    @media (max-width:1280px) {
+      .layers-card, .compass { display:none; }
+      .plan-wrap { left:auto; right:-40px; width:46%; opacity:.6; }
+    }
+    @media (max-width:1020px) {
+      .plan-wrap { opacity:.28; right:-110px; top:30px; width:60%; }
+      .hero-bld { opacity:.45; }
+      .hero-text { max-width:100%; }
+      .hero-points { flex-wrap:wrap; width:auto; }
+      .wf-grid { grid-template-columns:1fr; }
+      .wf-head p, .wf-head .rule { display:none; }
+      .steps { grid-template-columns:1fr 1fr; }
+      .step:nth-child(3) { border-left:0; }
+      .step:nth-child(n+3) { border-top:1px solid var(--line); }
+    }
+    @media (max-width:620px) {
+      .wrap { padding-left:18px; padding-right:18px; }
+      .hero-inner { padding-top:32px; padding-bottom:28px; min-height:0; }
+      .plan-wrap, .hero-bld { display:none; }
+      .hero-points { flex-direction:column; gap:14px; }
+      .hp, .hp:first-child { padding:0; border-left:0; }
+      .steps { grid-template-columns:1fr; }
+      .step { border-left:0; border-top:1px solid var(--line); }
+      .step:first-child { border-top:0; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      .plan-wrap::after { animation:none; opacity:0; }
+      .plan .draw { animation:none; stroke-dashoffset:0; }
+      .plan-wrap, .wf-card, .wf-cta svg { transition:none; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Feature shell: auth check + site header injection -->
+  <!-- Feature shell: auth check + site header/footer injection -->
   <script src="../../../src/js/feature-shell.js"
           data-feature="KMC Data Extraction"
           data-login="login.html"
           data-home="../../../../index.html">
   </script>
 
-  <div class="kmc-hero">
-    <div class="kmc-content">
-      <div class="kmc-badge">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        KMC Data Extraction
-      </div>
-      <h1>Kolkata Municipal<br><span>Corporation Data</span></h1>
-      <p>Accurate area calculations for architectural drawings submitted to KMC. Choose your calculation type below to get started.</p>
+  <!-- ═════════════ HERO ═════════════ -->
+  <header class="hero">
+    <div class="hero-bld" aria-hidden="true">
+      <svg viewBox="0 0 340 392" preserveAspectRatio="xMinYMax slice">
+        <defs>
+          <pattern id="archWin" width="26" height="34" patternUnits="userSpaceOnUse">
+            <path class="bld-win" d="M5,32 V16 a8,8 0 0 1 16,0 V32 Z"/>
+          </pattern>
+        </defs>
+        <!-- main hall -->
+        <rect class="bld" x="0" y="238" width="300" height="154"/>
+        <rect x="0" y="238" width="300" height="154" fill="url(#archWin)"/>
+        <rect class="bld" x="0" y="230" width="300" height="9"/>
+        <!-- end pavilions with domes -->
+        <rect class="bld" x="14"  y="196" width="52" height="42"/>
+        <path class="bld" d="M14,196 a26,22 0 0 1 52,0 Z"/>
+        <rect class="bld" x="234" y="196" width="52" height="42"/>
+        <path class="bld" d="M234,196 a26,22 0 0 1 52,0 Z"/>
+        <!-- clock tower -->
+        <rect class="bld" x="116" y="86" width="64" height="152"/>
+        <rect class="bld" x="110" y="80" width="76" height="10"/>
+        <path class="bld" d="M114,80 L148,18 L182,80 Z"/>
+        <line class="bld" x1="148" y1="18" x2="148" y2="2"/>
+        <circle class="bld" cx="148" cy="124" r="19"/>
+        <path class="bld-win" d="M148,124 V111 M148,124 L158,130"/>
+        <path class="bld-win" d="M126,176 V160 a8,8 0 0 1 16,0 V176 Z M140,176 V160 a8,8 0 0 1 16,0 V176 Z M154,176 V160 a8,8 0 0 1 16,0 V176 Z"/>
+        <!-- entrance arch -->
+        <path class="bld" d="M128,392 V300 a20,20 0 0 1 40,0 V392 Z"/>
+      </svg>
+    </div>
 
-      <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr;max-width:860px;">
-        <!-- Sanction card -->
-        <div class="type-card" id="sanctionCard" onclick="showSub('sanction')">
-          <div class="tc-icon tc-icon-sanction">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2d98fd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
+    <div class="wrap hero-inner">
+      <div class="hero-text">
+        <div class="kmc-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          KMC Data Extraction
+        </div>
+        <h1>Architectural Drawing<br><span>Intelligence</span></h1>
+        <p class="hero-lead">Extract and validate area calculations from architectural drawings submitted to Kolkata Municipal Corporation (KMC). Upload your DXF drawing and get accurate, regulation-ready area analysis.</p>
+        <div class="hero-points">
+          <div class="hp">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2d98fd" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <div><b>Accurate</b><small>KMC-compliant calculations</small></div>
           </div>
-          <h3>Sanction</h3>
-          <p>Calculate areas for sanction-related architectural drawings.</p>
-
-          <div class="sub-options" id="sanction-sub">
-            <button class="back-btn" onclick="hideSub(event,'sanction')">← Back</button>
-            <h4>Sanction Type</h4>
-            <a class="sub-btn" href="index_kmc.html">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              Single Building
-            </a>
-            <a class="sub-btn" href="index_kmc_multi.html">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="8" height="14"/><rect x="14" y="7" width="8" height="14"/><rect x="7" y="3" width="10" height="18" rx="1"/></svg>
-              Multiple Buildings
-              <span class="coming" style="background:rgba(22,163,74,.12);color:#16a34a;">New</span>
-            </a>
+          <div class="hp">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <div><b>Fast</b><small>Instant analysis &amp; results</small></div>
+          </div>
+          <div class="hp">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <div><b>Trusted</b><small>Built for KMC workflows</small></div>
           </div>
         </div>
+      </div>
 
-        <!-- Completion card -->
-        <div class="type-card" id="completionCard" onclick="showSub('completion')">
-          <div class="tc-icon tc-icon-completion">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-              <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-          </div>
-          <h3>Completion</h3>
-          <p>Calculate areas for completion-related architectural drawings.</p>
+      <!-- Compass -->
+      <svg class="compass" viewBox="0 0 54 54" aria-hidden="true">
+        <text x="27" y="9">N</text>
+        <circle class="cg" cx="27" cy="31" r="15"/>
+        <path class="cg" d="M27,12 V50 M8,31 H46"/>
+        <path d="M27,16 L31,31 L27,29 L23,31 Z" fill="var(--text)" opacity=".8"/>
+      </svg>
 
-          <div class="sub-options" id="completion-sub">
-            <button class="back-btn" onclick="hideSub(event,'completion')">← Back</button>
-            <h4>Completion Type</h4>
-            <a class="sub-btn" href="#" onclick="alert('Coming soon!')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
-              Single Building
-              <span class="coming">Soon</span>
-            </a>
-            <a class="sub-btn" href="#" onclick="alert('Coming soon!')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="8" height="14"/><rect x="14" y="7" width="8" height="14"/></svg>
-              Multiple Buildings
-              <span class="coming">Soon</span>
-            </a>
+      <!-- Illustrative floor plan -->
+      <div class="plan-wrap" aria-hidden="true">
+        <svg class="plan" id="plan" viewBox="0 0 560 390">
+          <defs>
+            <pattern id="treads" width="84" height="9" patternUnits="userSpaceOnUse">
+              <line class="tread-line" x1="0" y1="4.5" x2="84" y2="4.5"/>
+            </pattern>
+          </defs>
+
+          <g data-layer="dimension" class="l-dim">
+            <path class="draw" pathLength="1" d="M30,22 H530 M30,16 V28 M236,16 V28 M348,16 V28 M530,16 V28"/>
+            <path class="draw" pathLength="1" d="M14,40 V360 M8,40 H20 M8,208 H20 M8,360 H20"/>
+            <text x="133" y="14">12'0"</text>
+            <text x="292" y="14">7'0"</text>
+            <text x="439" y="14">8'0"</text>
+            <text x="7" y="124" transform="rotate(-90 7 124)">10'6"</text>
+            <text x="7" y="284" transform="rotate(-90 7 284)">11'0"</text>
+          </g>
+
+          <g data-layer="wall">
+            <path class="w" d="M30,40 H530 V360 H440 V352 H522 V48 H38 V352 H400 V360 H30 Z"/>
+            <path class="w" d="M38,200 H70 V208 H38 Z"/>
+            <path class="w" d="M104,200 H236 V48 H244 V208 H104 Z"/>
+            <path class="w" d="M244,130 H270 V138 H244 Z"/>
+            <path class="w" d="M296,130 H340 V48 H348 V138 H296 Z"/>
+            <path class="w" d="M368,172 H440 V180 H368 Z"/>
+            <path class="w" d="M236,208 H244 V260 H236 Z"/>
+            <path class="w" d="M236,292 H244 V352 H236 Z"/>
+          </g>
+
+          <g data-layer="window" class="l-win">
+            <path d="M64,44 H196 M278,44 H322 M384,44 H500"/>
+            <path d="M34,92 V168 M34,250 V318"/>
+            <path d="M526,86 V150 M526,230 V330"/>
+            <path d="M450,356 H510 M120,356 H210"/>
+          </g>
+
+          <g data-layer="door" class="l-door">
+            <path d="M70,204 V238 M104,204 A34,34 0 0 1 70,238"/>
+            <path d="M270,134 V160 M296,134 A26,26 0 0 1 270,160"/>
+            <path d="M240,260 H272 M240,292 A32,32 0 0 0 272,260"/>
+            <path d="M400,356 V316 M440,356 A40,40 0 0 0 400,316"/>
+          </g>
+
+          <g data-layer="staircase" class="l-stair">
+            <rect class="treads" x="64" y="232" width="84" height="100"/>
+            <rect x="64" y="232" width="84" height="100"/>
+            <path d="M106,324 V246 M99,254 L106,246 L113,254"/>
+          </g>
+
+          <g data-layer="column" class="l-col">
+            <rect x="38"  y="48"  width="10" height="10"/>
+            <rect x="512" y="48"  width="10" height="10"/>
+            <rect x="38"  y="342" width="10" height="10"/>
+            <rect x="512" y="342" width="10" height="10"/>
+            <rect x="300" y="248" width="10" height="10"/>
+            <rect x="380" y="248" width="10" height="10"/>
+          </g>
+
+          <g data-layer="text" class="l-text">
+            <text class="rn" x="137" y="118">BED ROOM</text>
+            <text class="rd" x="137" y="136">12'0" X 10'6"</text>
+            <text class="rn" x="292" y="86" style="font-size:12px">TOILET</text>
+            <text class="rd" x="292" y="102" style="font-size:10px">7'0" X 4'6"</text>
+            <text class="rn" x="435" y="106">KITCHEN</text>
+            <text class="rd" x="435" y="124">8'0" X 7'0"</text>
+            <text class="rn" x="395" y="292">LIVING / DINING</text>
+            <text class="rd" x="395" y="310">16'0" X 11'0"</text>
+            <text class="rd" x="106" y="224" style="font-size:10px;letter-spacing:1px">UP</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- KMC layers legend (hover a layer to highlight it on the plan) -->
+      <aside class="layers-card" aria-label="Plan layers legend">
+        <h4>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2d98fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          KMC Layers
+        </h4>
+        <ul id="layerLegend">
+          <li tabindex="0" data-layer="wall"><i style="background:var(--c-wall)"></i>Wall</li>
+          <li tabindex="0" data-layer="door"><i style="background:var(--c-door)"></i>Door</li>
+          <li tabindex="0" data-layer="window"><i style="background:var(--c-win)"></i>Window</li>
+          <li tabindex="0" data-layer="staircase"><i style="background:var(--c-stair)"></i>Staircase</li>
+          <li tabindex="0" data-layer="column"><i style="background:var(--c-col)"></i>Column</li>
+          <li tabindex="0" data-layer="dimension"><i style="background:var(--c-dim)"></i>Dimension</li>
+          <li tabindex="0" data-layer="text"><i style="background:var(--c-text)"></i>Text</li>
+        </ul>
+        <div class="layers-hint">Hover a layer to highlight it</div>
+      </aside>
+    </div>
+  </header>
+
+  <!-- ═════════════ WORKFLOW ═════════════ -->
+  <main class="wrap workflow">
+    <div class="wf-head">
+      <div>
+        <div class="eyebrow">Get started</div>
+        <h2>Choose your workflow</h2>
+      </div>
+      <div class="rule"></div>
+      <p>Three focused tools for KMC drawing analysis</p>
+    </div>
+
+    <div class="wf-grid">
+
+      <!-- 01 Sanction -->
+      <div class="wf-card" id="sanctionCard" onclick="showSub('sanction')">
+        <div class="wf-top">
+          <span class="wf-num">01</span>
+          <div class="wf-ico">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2d7bff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           </div>
         </div>
-        <!-- Check Drawing card -->
-        <a class="type-card check-card" href="check.html" style="text-decoration:none;display:block;position:relative;overflow:hidden;">
-          <div class="tc-icon tc-icon-check">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              <line x1="11" y1="8" x2="11" y2="14"/>
-              <line x1="8" y1="11" x2="14" y2="11"/>
-            </svg>
-          </div>
-          <h3>Check Drawing</h3>
-          <p>Upload any DXF drawing to instantly extract and review all KMC layers.</p>
-          <div style="
-            display:inline-flex; align-items:center; gap:6px;
-            margin-top:16px; font-size:.75rem; font-weight:700;
-            color:#8b5cf6; text-transform:uppercase; letter-spacing:.5px;
-          ">
-            Open Tool
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </div>
-        </a>
+        <svg class="wf-art" viewBox="0 0 132 106" aria-hidden="true"><path d="M30,8 H112 V98 H30 Z M30,38 H112 M30,68 H112 M62,8 V98 M86,38 V98"/></svg>
+        <h3>Sanction</h3>
+        <p class="desc">Calculate areas for sanction-related architectural drawings.</p>
+        <div class="chips"><span class="chip">Built-up area</span><span class="chip">FAR calculation</span><span class="chip">KMC norms</span></div>
+        <button type="button" class="wf-cta">Start calculation
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
 
+        <div class="sub-options" id="sanction-sub">
+          <button type="button" class="back-btn" onclick="hideSub(event,'sanction')">← Back</button>
+          <h4>Sanction Type</h4>
+          <a class="sub-btn" href="index_kmc.html">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Single Building
+          </a>
+          <a class="sub-btn" href="index_kmc_multi.html">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="8" height="14"/><rect x="14" y="7" width="8" height="14"/><rect x="7" y="3" width="10" height="18" rx="1"/></svg>
+            Multiple Buildings
+            <span class="tag new">New</span>
+          </a>
+        </div>
       </div>
+
+      <!-- 02 Completion -->
+      <div class="wf-card green" id="completionCard" onclick="showSub('completion')">
+        <div class="wf-top">
+          <span class="wf-num">02</span>
+          <div class="wf-ico">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <span class="wf-soon">Coming soon</span>
+        </div>
+        <svg class="wf-art" viewBox="0 0 132 106" aria-hidden="true"><path d="M12,58 L66,14 L120,58 M26,50 V98 H106 V50 M56,98 V70 H76 V98"/></svg>
+        <h3>Completion</h3>
+        <p class="desc">Calculate areas for completion-related architectural drawings.</p>
+        <div class="chips"><span class="chip">As-built verification</span><span class="chip">Area breakdown</span><span class="chip">Compliance check</span></div>
+        <button type="button" class="wf-cta">Start calculation
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+
+        <div class="sub-options" id="completion-sub">
+          <button type="button" class="back-btn" onclick="hideSub(event,'completion')">← Back</button>
+          <h4>Completion Type</h4>
+          <a class="sub-btn" href="#" onclick="event.preventDefault();alert('Coming soon!')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+            Single Building
+            <span class="tag">Soon</span>
+          </a>
+          <a class="sub-btn" href="#" onclick="event.preventDefault();alert('Coming soon!')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="8" height="14"/><rect x="14" y="7" width="8" height="14"/></svg>
+            Multiple Buildings
+            <span class="tag">Soon</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 03 Check Drawing -->
+      <a class="wf-card purple" href="check.html">
+        <div class="wf-top">
+          <span class="wf-num">03</span>
+          <div class="wf-ico">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </div>
+        </div>
+        <svg class="wf-art" viewBox="0 0 132 106" aria-hidden="true"><path d="M66,14 L120,38 L66,62 L12,38 Z M12,52 L66,76 L120,52 M12,66 L66,90 L120,66"/></svg>
+        <h3>Check Drawing</h3>
+        <p class="desc">Upload any DXF drawing to instantly extract and review all KMC layers.</p>
+        <div class="chips"><span class="chip">Layer detection</span><span class="chip">Layer tables</span><span class="chip">Filtered tables</span></div>
+        <span class="wf-cta">Open checker
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </span>
+      </a>
+
+    </div>
+  </main>
+
+  <!-- ═════════════ STEPS STRIP ═════════════ -->
+  <section class="wrap steps-wrap">
+    <div class="steps">
+      <div class="step">
+        <div class="step-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2d98fd" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></div>
+        <div><b>DXF upload</b><small>Upload your architectural drawing</small></div>
+      </div>
+      <div class="step">
+        <div class="step-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2d98fd" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
+        <div><b>Layer detection</b><small>Auto-detect KMC relevant layers</small></div>
+      </div>
+      <div class="step">
+        <div class="step-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2d98fd" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div><b>Area summary</b><small>Get detailed area calculations</small></div>
+      </div>
+      <div class="step">
+        <div class="step-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2d98fd" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div>
+        <div><b>KMC layer validation</b><small>Verify against KMC standards</small></div>
+      </div>
+    </div>
+  </section>
 
   <script>
+    /* Sanction / Completion: open the Single / Multiple Buildings chooser inside the card */
     function showSub(type) {
       document.getElementById(type + '-sub').classList.add('show');
     }
@@ -202,6 +545,33 @@
       e.stopPropagation();
       document.getElementById(type + '-sub').classList.remove('show');
     }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') document.querySelectorAll('.sub-options.show').forEach(function (s) { s.classList.remove('show'); });
+    });
+
+    /* Layers legend: hover / focus / tap a layer to highlight it on the plan */
+    (function () {
+      var plan = document.getElementById('plan');
+      var legend = document.getElementById('layerLegend');
+      if (!plan || !legend) return;
+      var groups = plan.querySelectorAll('[data-layer]');
+      var pinned = null;
+      function highlight(layer) {
+        groups.forEach(function (g) { g.classList.toggle('dim', !!layer && g.getAttribute('data-layer') !== layer); });
+      }
+      legend.querySelectorAll('li').forEach(function (li) {
+        var layer = li.getAttribute('data-layer');
+        li.addEventListener('mouseenter', function () { highlight(layer); });
+        li.addEventListener('mouseleave', function () { highlight(pinned); });
+        li.addEventListener('focus',      function () { highlight(layer); });
+        li.addEventListener('blur',       function () { highlight(pinned); });
+        li.addEventListener('click', function () {            /* click pins a layer (click again to release) */
+          pinned = (pinned === layer) ? null : layer;
+          legend.querySelectorAll('li').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-layer') === pinned); });
+          highlight(pinned);
+        });
+      });
+    })();
   </script>
 </body>
 </html>
