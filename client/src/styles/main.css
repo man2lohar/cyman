@@ -163,22 +163,15 @@ section { width:100vw; height:100vh; display:flex; justify-content:center; align
 .ticker-date { background:var(--blue); color:#fff; border-radius:100px; padding:3px 10px; font-size:.68rem; font-weight:700; opacity:1; flex-shrink:0; }
 
 /* ── Pricing ── */
-.price-card { border: 1px solid rgba(255,255,255,0.07); transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
-.price-card:hover { transform: translateY(-4px); border-color: rgba(77,163,255,0.35); box-shadow: 0 10px 28px rgba(0,0,0,0.12); }
-.price-card.featured-pc { box-shadow: 0 8px 24px rgba(45,137,245,0.16); }
-.price-card.featured-pc:hover { box-shadow: 0 12px 30px rgba(45,137,245,0.24); }
-.price-val { line-height: 1.25; letter-spacing: -0.5px; }
-.price-feat { line-height: 1.6; }
-.popular-badge { white-space: nowrap; z-index: 2; }
-
-@media (max-width: 600px) {
-  .price-row { gap: 18px; }
-  .price-card { flex: 1 1 100%; min-width: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .price-card { transition: none; }
-  .price-card:hover { transform: none; }
+.price-row { display:flex; gap:14px; margin-top:26px; flex-wrap:wrap; }
+.price-card { background:var(--input-bg); border-radius:14px; padding:18px 20px; flex:1; min-width:120px; position:relative; }
+.price-card.featured-pc { background:var(--blue); color:#fff; }
+.price-name { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:.6; margin-bottom:5px; }
+.featured-pc .price-name,.featured-pc .price-feat,.featured-pc .price-val { color:#fff; }
+.price-val { font-size:1.4rem; font-weight:800; }
+.price-val span { font-size:.78rem; font-weight:400; opacity:.6; }
+.price-feat { font-size:.72rem; margin-top:5px; opacity:.5; }
+.popular-badge { position:absolute; top:-9px; right:14px; background:var(--brown); color:var(--bg); font-size:.62rem; font-weight:800; padding:3px 9px; border-radius:100px; letter-spacing:1px; }
 }
 
 /* ── Support / Contact ── */
