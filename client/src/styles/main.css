@@ -16,6 +16,8 @@
   --radius:   26px;
   --blob1:    #2d98fd;
   --blob2:    #a78bfa;
+  --green:    #22c55e;
+  --red:      #ef4444;
   --sidebar-w: 220px;
   --scrollbar-color: rgba(45,152,253,0.35);
   --scrollbar-hover: rgba(45,152,253,0.7);
@@ -172,6 +174,9 @@ section { width:100vw; height:100vh; display:flex; justify-content:center; align
 .price-val span { font-size:.78rem; font-weight:400; opacity:.6; }
 .price-feat { font-size:.72rem; margin-top:5px; opacity:.5; }
 .popular-badge { position:absolute; top:-9px; right:14px; background:var(--brown); color:var(--bg); font-size:.62rem; font-weight:800; padding:3px 9px; border-radius:100px; letter-spacing:1px; }
+
+.feature-yes { color:var(--green); font-weight: 700; }
+.feature-no { color:var(--red); font-weight: 700; }
 
 /* ── Support / Contact ── */
 .contact-wrapper { display:flex; gap:32px; overflow:hidden; height:100%; }
