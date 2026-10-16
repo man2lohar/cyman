@@ -336,11 +336,12 @@ window.handleLogout = () => {
 
 /* ── Typing effect ───────────────────────────────────────────── */
 (function typewriter() {
-  const lines = [
-    'Architecture & Design Tools',
-    'Powered by AI & Data',
-    'Built for the Future',
-    'KMC Municipal Data — Fast'
+  const lines = 
+    'Find The Way - Extract Smarter. Work Faster',
+    'Built For Better Data Workflows',
+    'Extract Smarter. Work Faster',
+    'KMC Data Extraction, Simplified',
+    'Information Into Action'
   ];
   let li=0, ci=0, del=false;
   const el = document.getElementById('typingText');
