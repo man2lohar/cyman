@@ -336,7 +336,7 @@ window.handleLogout = () => {
 
 /* ── Typing effect ───────────────────────────────────────────── */
 (function typewriter() {
-  const lines = 
+  const lines = [
     'Find The Way - Extract Smarter. Work Faster',
     'Built For Better Data Workflows',
     'Extract Smarter. Work Faster',
