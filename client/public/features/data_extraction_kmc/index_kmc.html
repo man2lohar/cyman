@@ -1827,6 +1827,7 @@ function _kmcCheckMissingLayers() {
       var wasLoaded = false;
       function sync() {
         var loaded = mainCon.style.display === 'block';
+        document.documentElement.classList.toggle('kmc-has-data', loaded);
         card.style.display = loaded ? 'none' : '';
         note.style.display = loaded ? '' : 'none';
         if (hero) hero.style.display = loaded ? 'none' : '';
