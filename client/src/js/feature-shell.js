@@ -65,7 +65,7 @@
   ._cym-brand{display:flex!important;align-items:center!important;gap:8px!important;
     text-decoration:none!important;flex-shrink:0!important;white-space:nowrap!important}
   ._cym-brand img{height:22px!important}
-  ._cym-brand-name{font-family:'Akaya Kanadaka';font-size:1rem!important;
+  ._cym-brand-name{font-family:'Akaya Kanadaka',cursive;font-size:1rem!important;
     font-weight:100!important;color:#2d98fd!important}
   ._cym-sep{color:rgba(45,152,253,.4)!important;font-size:.85rem!important;margin:0 2px!important}
   ._cym-center{display:flex!important;align-items:center!important;gap:10px!important;
