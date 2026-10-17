@@ -7,6 +7,22 @@
   <link rel="icon" href="../../assets/images/cymansquare_logo.svg" type="image/svg+xml"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../../../src/styles/data_extraction_kmc/style_kmc.css"/>
+  <style>
+    /* OTHER tab + single-card Home layout */
+    .home-two-col.single-col { justify-content:center; }
+    .home-two-col.single-col .home-col { flex:0 1 640px; }
+    .other-wrap { display:flex; justify-content:center; max-width:1100px; margin:0 auto; padding:0 28px 32px; }
+    .other-wrap .home-col { flex:0 1 640px; }
+    .other-note { max-width:640px; margin:44px auto 32px; text-align:center; padding:30px 26px;
+      background:var(--paper,#fff); border:1px solid var(--border2,#e5e7eb); border-radius:16px; box-shadow:var(--shadow-lg,0 8px 24px rgba(0,0,0,.08)); }
+    .other-note h3 { font-size:1.05rem; font-weight:700; margin-bottom:8px; color:var(--ink,#111); }
+    .other-note p  { font-size:.88rem; color:var(--muted,#64748b); line-height:1.6; margin-bottom:16px; }
+    @media (max-width:768px) {
+      .home-two-col.single-col .home-col { flex:0 0 auto; width:100%; }
+      .other-wrap { padding:0 14px 24px; }
+      .other-wrap .home-col { flex:1 1 100%; }
+    }
+  </style>
 </head>
 <body>
   
@@ -157,6 +173,10 @@
         <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
         Home
       </button>
+      <button class="tab-btn" id="otherTab" data-tab="section-other" onclick="kmcTabClick('section-other')">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+        Other
+      </button>
       <button class="tab-btn" id="tabLayerTables" data-tab="section-tables" style="display:none" onclick="kmcTabClick('section-tables')">
         <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
         Layer Tables
@@ -197,106 +217,8 @@
         </div>
 
         <!-- TWO COLUMN LAYOUT -->
-        <div class="home-two-col">
+        <div class="home-two-col single-col">
 
-          <!-- ════ LEFT — Extracted Excel Upload ════ -->
-          <div class="home-col home-col-left">
-
-            <!-- NEW: decorative floating icon + badge (non-functional) -->
-            <div class="col-icon" aria-hidden="true">
-              <div class="col-icon-ring r-blue">
-                <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="2" width="29" height="44" rx="3" fill="#217346"/>
-                  <rect x="18" y="7" width="27" height="32" rx="2" fill="#1e5c38"/>
-                  <path fill="#fff" d="M8 15l3.5 7-3.5 7h3l1.5-3.5L15.5 29H19l-3.5-7L19 15h-3l-1.5 3.5L13 15z"/>
-                </svg>
-              </div>
-            </div>
-            <div class="col-badge b-blue" aria-hidden="true">01</div>
-
-            <!-- NEW: card title area -->
-            <div class="col-card-title">
-              <h2>Upload <span class="c-blue">Extracted Excel File</span></h2>
-              <p>Upload your Extracted Excel file and run it in AutoCAD<br>to extract data with precision.</p>
-            </div>
-
-            <!-- ORIGINAL content wrapped in col-inner -->
-            <div class="col-inner">
-              <div id="info-container">
-
-                <!-- Upload hero card — original -->
-                <div class="upload-hero">
-                  <div class="upload-label-bar">
-                    <div class="upload-label-bar-title">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                      Upload Extracted Excel File
-                    </div>
-                  </div>
-                  <input type="file" id="file-input" accept=".xls,.xlsx,.csv"/>
-                  <label for="file-input" id="chooseFileBtn" style="display:none"></label>
-                  <div id="uploadZone" class="upload-zone-hero">
-                    <div class="upload-zone-inner">
-                      <div class="upload-excel-icon">
-                        <svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">
-                          <rect x="2" y="2" width="30" height="44" rx="3" fill="#217346"/>
-                          <rect x="18" y="8" width="28" height="32" rx="3" fill="#1e5c38"/>
-                          <path fill="#fff" d="M8 16l4 8-4 8h4l2-4 2 4h4l-4-8 4-8h-4l-2 4-2-4z"/>
-                        </svg>
-                      </div>
-                      <div class="upload-text">
-                        <h4>Drop your Extracted Excel file here</h4>
-                        <p>or <span class="upload-browse">click to browse</span></p>
-                        <div class="upload-formats">
-                          <span>.xls</span><span>.xlsx</span><span>.csv</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Single instruction card -->
-                <div class="steps-row steps-row-single">
-                  <div class="step-card step-card-full">
-                    <div class="step-card-text" style="text-align:center;">
-                      Read full instructions before starting calculations
-                      <br/>
-                      <div style="display: flex; gap: 12px;">
-                        <button class="open-btn" style="margin-top:10px;margin-left:0" onclick="document.getElementById('instrOverlay').classList.add('active')">
-                          📋 Full Instructions
-                        </button>
-                        <a id="kmc-how-btn" class="sh-btn-how" href="https://youtu.be/S5dDn3anN0U" target="_blank" rel="noopener">
-                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <style>
-                              .yt-logo {
-                                stroke: none;
-                                stroke-width: 0;
-                              }
-                            </style>
-                            <g class="yt-logo">
-                              <!-- Red Background -->
-                              <path 
-                                d="M23.5 6.6c-.3-1.1-1.1-1.9-2.2-2.2C19.3 4 12 4 12 4s-7.3 0-9.3.4c-1.1.3-1.9 1.1-2.2 2.2C0 8.6 0 12 0 12s0 3.4.4 5.4c.3 1.1 1.1 1.9 2.2 2.2 2 .4 9.3.4 9.3.4s7.3 0 9.3-.4c1.1-.3 1.9-1.1 2.2-2.2.4-2 .4-5.4.4-5.4s0-3.4-.4-5.4z" 
-                                fill="#FF0000"/>
-                              <!-- White Play Triangle -->
-                              <polygon points="9.5 8 15.5 12 9.5 16" fill="#FFFFFF"/>
-                            </g>
-                          </svg>
-                          <span>How It Works</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div><!-- /info-container -->
-            </div><!-- /col-inner -->
-          </div><!-- /home-col-left -->
-          
-        <!-- NEW: OR divider between the two cards -->
-          <div class="home-divider" aria-hidden="true">
-            <span class="home-divider-badge">OR</span>
-          </div>
-          
           <!-- ════ RIGHT — DXF Layer Extractor ════ -->
           <div class="home-col home-col-right" id="dxf-right-col">
 
@@ -311,7 +233,7 @@
                 </svg>
               </div>
             </div>
-            <div class="col-badge b-purple" aria-hidden="true">02</div>
+            <div class="col-badge b-purple" aria-hidden="true">01</div>
 
             <!-- NEW: card title area -->
             <div class="col-card-title">
@@ -481,6 +403,120 @@
 
     </div><!-- /section-home -->
 
+    <!-- ══════════════════════════════════════════
+         OTHER TAB — Upload Extracted Excel File
+         (the card was moved here from Home; all element ids are unchanged)
+    ══════════════════════════════════════════ -->
+    <div id="section-other" class="tab-section">
+      <div class="page">
+        <div class="home-hero" id="other-hero">
+          <h2>Already have an <span class="c-blue">Extracted Excel</span> file?</h2>
+          <p>Upload it here to load your data and continue with the calculations.</p>
+        </div>
+
+        <div class="other-wrap" id="other-wrap">
+          <div class="home-col home-col-left">
+
+            <!-- NEW: decorative floating icon + badge (non-functional) -->
+            <div class="col-icon" aria-hidden="true">
+              <div class="col-icon-ring r-blue">
+                <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="2" width="29" height="44" rx="3" fill="#217346"/>
+                  <rect x="18" y="7" width="27" height="32" rx="2" fill="#1e5c38"/>
+                  <path fill="#fff" d="M8 15l3.5 7-3.5 7h3l1.5-3.5L15.5 29H19l-3.5-7L19 15h-3l-1.5 3.5L13 15z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="col-badge b-blue" aria-hidden="true">01</div>
+
+            <!-- NEW: card title area -->
+            <div class="col-card-title">
+              <h2>Upload <span class="c-blue">Extracted Excel File</span></h2>
+              <p>Upload your Extracted Excel file and run it in AutoCAD<br>to extract data with precision.</p>
+            </div>
+
+            <!-- ORIGINAL content wrapped in col-inner -->
+            <div class="col-inner">
+              <div id="info-container">
+
+                <!-- Upload hero card — original -->
+                <div class="upload-hero">
+                  <div class="upload-label-bar">
+                    <div class="upload-label-bar-title">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      Upload Extracted Excel File
+                    </div>
+                  </div>
+                  <input type="file" id="file-input" accept=".xls,.xlsx,.csv"/>
+                  <label for="file-input" id="chooseFileBtn" style="display:none"></label>
+                  <div id="uploadZone" class="upload-zone-hero">
+                    <div class="upload-zone-inner">
+                      <div class="upload-excel-icon">
+                        <svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="2" y="2" width="30" height="44" rx="3" fill="#217346"/>
+                          <rect x="18" y="8" width="28" height="32" rx="3" fill="#1e5c38"/>
+                          <path fill="#fff" d="M8 16l4 8-4 8h4l2-4 2 4h4l-4-8 4-8h-4l-2 4-2-4z"/>
+                        </svg>
+                      </div>
+                      <div class="upload-text">
+                        <h4>Drop your Extracted Excel file here</h4>
+                        <p>or <span class="upload-browse">click to browse</span></p>
+                        <div class="upload-formats">
+                          <span>.xls</span><span>.xlsx</span><span>.csv</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Single instruction card -->
+                <div class="steps-row steps-row-single">
+                  <div class="step-card step-card-full">
+                    <div class="step-card-text" style="text-align:center;">
+                      Read full instructions before starting calculations
+                      <br/>
+                      <div style="display: flex; gap: 12px;">
+                        <button class="open-btn" style="margin-top:10px;margin-left:0" onclick="document.getElementById('instrOverlay').classList.add('active')">
+                          📋 Full Instructions
+                        </button>
+                        <a id="kmc-how-btn" class="sh-btn-how" href="https://youtu.be/S5dDn3anN0U" target="_blank" rel="noopener">
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <style>
+                              .yt-logo {
+                                stroke: none;
+                                stroke-width: 0;
+                              }
+                            </style>
+                            <g class="yt-logo">
+                              <!-- Red Background -->
+                              <path 
+                                d="M23.5 6.6c-.3-1.1-1.1-1.9-2.2-2.2C19.3 4 12 4 12 4s-7.3 0-9.3.4c-1.1.3-1.9 1.1-2.2 2.2C0 8.6 0 12 0 12s0 3.4.4 5.4c.3 1.1 1.1 1.9 2.2 2.2 2 .4 9.3.4 9.3.4s7.3 0 9.3-.4c1.1-.3 1.9-1.1 2.2-2.2.4-2 .4-5.4.4-5.4s0-3.4-.4-5.4z" 
+                                fill="#FF0000"/>
+                              <!-- White Play Triangle -->
+                              <polygon points="9.5 8 15.5 12 9.5 16" fill="#FFFFFF"/>
+                            </g>
+                          </svg>
+                          <span>How It Works</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div><!-- /info-container -->
+            </div><!-- /col-inner -->
+          </div><!-- /home-col-left -->
+        </div><!-- /other-wrap -->
+
+        <!-- Shown instead of the card while a file is already loaded -->
+        <div class="other-note" id="other-loaded-note" style="display:none">
+          <h3>A file is already loaded</h3>
+          <p>Your data is loaded and ready. Use <strong>Clear Data</strong> in the top bar if you want to upload a different file.</p>
+          <button type="button" class="btn" onclick="kmcTabClick('section-home')">View loaded data</button>
+        </div>
+      </div><!-- /page -->
+    </div><!-- /section-other -->
+
 
     <!-- ══════════════════════════════════════════
          GUIDE NAV SECTION (new — outside tabs)
@@ -498,7 +534,7 @@
             <div class="kns-step"><div class="kns-snum sb">1</div><div><h4>Download the AutoCAD Script File</h4><p>Click <strong>"Download .dxf file"</strong> on the Home screen to get the <code>.dxe</code> AutoCAD script that extracts layer data.</p></div></div>
             <div class="kns-step"><div class="kns-snum sb">2</div><div><h4>Run the Script in AutoCAD</h4><p>Open your KMC drawing. Run the <code>.dxe</code> script via the <strong>SCRIPT</strong> command. AutoCAD extracts all layer data into an Excel file automatically.</p></div></div>
             <div class="kns-step"><div class="kns-snum sb">3</div><div><h4>Ensure All Sheets Are Present</h4><p>The Excel file must contain <strong>all sheets</strong> — the <code>MASTER</code> sheet and the <code>A</code> sheet — saved together in one <code>.xlsx</code> or <code>.xls</code> file.</p></div></div>
-            <div class="kns-step"><div class="kns-snum sb">4</div><div><h4>Upload the Excel File</h4><p>Drag and drop your file into the upload zone, or click <strong>"Upload Excel File"</strong>. Accepted: <code>.xls</code>, <code>.xlsx</code>, <code>.csv</code>.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sb">4</div><div><h4>Upload the Excel File</h4><p>Open the <strong>Other</strong> tab, then drag and drop your file into the upload zone, or click <strong>"Upload Excel File"</strong>. Accepted: <code>.xls</code>, <code>.xlsx</code>, <code>.csv</code>.</p></div></div>
             <div class="kns-step"><div class="kns-snum sb">5</div><div><h4>Use the Menu Tabs</h4><p>After upload the tab bar unlocks. Use <strong>Layer Tables → Filtered Tables → Floor Area → Parking → Occupancy → Final Summary</strong> in order.</p></div></div>
             <div class="kns-step"><div class="kns-snum sb">6</div><div><h4>Check for Errors</h4><p>Use <strong>"Check Errors"</strong>. <span style="color:#d4501a;font-weight:600;">Orange</span> = duplicate data. <span style="color:#e74c3c;font-weight:600;">Red</span> = incorrect data that must be fixed in your drawing.</p></div></div>
             <div class="kns-tip"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span><strong>Tip:</strong> Always save all sheets together before uploading. Individual sheets cause calculation errors.</span></div>
@@ -1774,5 +1810,35 @@ function _kmcCheckMissingLayers() {
   })();
   </script>
 
+  <script>
+  /* OTHER tab: show the Excel upload card only while no data is loaded.
+     Once a file is loaded (from Excel here, or from the DXF extractor on Home) the card is
+     replaced by a short note. If the Excel upload happened from this tab, jump to Home,
+     where the extracted-data table lives. */
+  (function () {
+    function init() {
+      var mainCon = document.getElementById('main-container');
+      var card    = document.querySelector('#section-other .home-col');
+      var note    = document.getElementById('other-loaded-note');
+      var hero    = document.getElementById('other-hero');
+      var sec     = document.getElementById('section-other');
+      if (!mainCon || !card || !note || !sec) return;
+      var wasLoaded = false;
+      function sync() {
+        var loaded = mainCon.style.display === 'block';
+        card.style.display = loaded ? 'none' : '';
+        note.style.display = loaded ? '' : 'none';
+        if (hero) hero.style.display = loaded ? 'none' : '';
+        if (loaded && !wasLoaded && sec.classList.contains('active') && typeof kmcTabClick === 'function') {
+          kmcTabClick('section-home');
+        }
+        wasLoaded = loaded;
+      }
+      new MutationObserver(sync).observe(mainCon, { attributes: true, attributeFilter: ['style'] });
+      sync();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+  </script>
 </body>
 </html>
