@@ -65,7 +65,7 @@
   ._cym-brand{display:flex!important;align-items:center!important;gap:8px!important;
     text-decoration:none!important;flex-shrink:0!important;white-space:nowrap!important}
   ._cym-brand img{height:22px!important}
-  ._cym-brand-name{font-family:'Akaya Kanadaka',cursive!important;font-size:1rem!important;
+  ._cym-brand-name{font-family:'Akaya Kanadaka'!important;font-size:1rem!important;
     font-weight:100!important;color:#2d98fd!important}
   ._cym-sep{color:rgba(45,152,253,.4)!important;font-size:.85rem!important;margin:0 2px!important}
   ._cym-center{display:flex!important;align-items:center!important;gap:10px!important;
@@ -143,7 +143,7 @@
   function buildBrand() {
     return `<a class="_cym-brand" href="${homeUrl}" title="CyManSquare">
       <img src="${logoSrc}" alt="" onerror="this.style.display='none'">
-      <span class="_cym-brand-name" style="font-family:'Akaya Kanadaka',cursive">CyMan²</span>
+      <span class="_cym-brand-name">CyMan²</span>
     </a><span class="_cym-sep">/</span>`;
   }
   function buildUser(user) {
