@@ -143,7 +143,7 @@
   function buildBrand() {
     return `<a class="_cym-brand" href="${homeUrl}" title="CyManSquare">
       <img src="${logoSrc}" alt="" onerror="this.style.display='none'">
-      <span class="_cym-brand-name">CyMan²</span>
+      <span class="_cym-brand-name" style="font-family:'Akaya Kanadaka',cursive">CyMan²</span>
     </a><span class="_cym-sep">/</span>`;
   }
   function buildUser(user) {
