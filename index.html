@@ -698,69 +698,120 @@
   </section>
 
   <!-- 06 Upgrade -->
+  <section>
+    <div class="card plans-card">
 
-<section>
-    <div class="card">
-      <div class="slide-label">06 / Upgrade</div>
-      <h1>Get More. Do More. Upgrade Today.</h1>
-      <p>Start free. Upgrade when you're ready. All plans include core features.</p>
-      <div class="price-row">
-        <div class="price-card">
-          <div class="price-name">Basic</div>
-          <div class="price-val">₹49<span>/ Month</span></div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Core extraction features</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Bulk extraction</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Advanced filters</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Unlimited storage</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Everything in Standard</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Scheduled extraction</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Advanced data exports</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Data validation tools</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Standard exports</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Excel and CSV exports</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Email support</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Priority technical support</div>
+      <div class="plans-top">
+        <div>
+          <div class="slide-label">06 / Upgrade</div>
+          <h1 class="plans-title">Choose the plan<br>that fits <span>your ambition.</span></h1>
+          <p class="plans-sub">Start free. Upgrade anytime. All plans include core features.</p>
         </div>
-        <div class="price-card featured-pc">
-          
-          <div class="price-name">Standard</div>
-          <div class="price-val">₹99<span>/ Month</span></div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Core extraction features</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Bulk extraction</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Advanced filters</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Unlimited storage</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Everything in Standard</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Scheduled extraction</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Advanced data exports</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Data validation tools</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Standard exports</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Excel and CSV exports</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Email support</div>
-          <div class="price-feat"> <span class="feature-no">X</span> Priority technical support</div>
-          <div class="popular-badge">Popular</div>
-        </div>
-        <div class="price-card">
-          
-          <div class="price-name">Premium</div>
-          <div class="price-val">₹149<span>/ Month</span></div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Core extraction features</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Bulk extraction</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Advanced filters</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Unlimited storage</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Everything in Standard</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Scheduled extraction</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Advanced data exports</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Data validation tools</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Standard exports</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Excel and CSV exports</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Email support</div>
-          <div class="price-feat"> <span class="feature-yes">✓</span> Priority technical support</div>
+        <div class="plans-toggle-wrap">
+          <div class="plans-toggle" id="billingToggle">
+            <button type="button" class="active" data-billing="monthly">Monthly</button>
+            <button type="button" data-billing="yearly">Yearly</button>
+          </div>
+          <span class="plans-save">Save 20%</span>
         </div>
       </div>
-      <p style="font-size:.72rem;opacity:.38;margin-top:14px">
-        💳 Payment integration is coming soon.
-      All features are currently free for early adopters.
-      *Unlimited storage is subject to your actual service limits.
+
+      <div class="plans-grid">
+
+        <!-- Simple -->
+        <article class="plan">
+          <div class="plan-head">
+            <div>
+              <h3>Simple</h3>
+              <p>For individuals getting started.</p>
+            </div>
+            <span class="plan-ico"><i class="bi bi-box"></i></span>
+          </div>
+          <div class="plan-price"><b data-m="0" data-y="0">₹0</b><span>/ month</span></div>
+          <ul class="plan-feats">
+            <li class="yes">Core extraction features</li>
+            <li class="yes">Basic filters</li>
+            <li class="no">Advanced filters</li>
+            <li class="no">Unlimited storage</li>
+            <li class="no">Scheduled extraction</li>
+            <li class="no">Advanced exports</li>
+            <li class="no">Priority support</li>
+          </ul>
+          <button class="plan-btn" onclick="(window.getStarted||toggleModal)()">Get Started <i class="bi bi-arrow-right"></i></button>
+        </article>
+
+        <!-- Classic -->
+        <article class="plan">
+          <div class="plan-head">
+            <div>
+              <h3>Classic</h3>
+              <p>For professionals.</p>
+            </div>
+            <span class="plan-ico"><i class="bi bi-file-text"></i></span>
+          </div>
+          <div class="plan-price"><b data-m="49" data-y="39">₹49</b><span>/ month</span></div>
+          <ul class="plan-feats">
+            <li class="yes">Core extraction features</li>
+            <li class="yes">Advanced filters</li>
+            <li class="yes">Standard storage</li>
+            <li class="yes">Standard exports</li>
+            <li class="no">Scheduled extraction</li>
+            <li class="no">Advanced exports</li>
+            <li class="no">Priority support</li>
+          </ul>
+          <button class="plan-btn" onclick="(window.getStarted||toggleModal)()">Get Started <i class="bi bi-arrow-right"></i></button>
+        </article>
+
+        <!-- Contemporary (featured) -->
+        <article class="plan plan-featured">
+          <span class="plan-badge">Most Popular</span>
+          <div class="plan-head">
+            <div>
+              <h3>Contemporary</h3>
+              <p>For growing teams.</p>
+            </div>
+            <span class="plan-ico"><i class="bi bi-layers"></i></span>
+          </div>
+          <div class="plan-price"><b data-m="99" data-y="79">₹99</b><span>/ month</span></div>
+          <ul class="plan-feats">
+            <li class="yes">Core extraction features</li>
+            <li class="yes">Advanced filters</li>
+            <li class="yes">Unlimited storage</li>
+            <li class="yes">Scheduled extraction</li>
+            <li class="yes">Advanced exports</li>
+            <li class="no">Priority support</li>
+          </ul>
+          <button class="plan-btn plan-btn-primary" onclick="(window.getStarted||toggleModal)()">Get Started <i class="bi bi-arrow-right"></i></button>
+        </article>
+
+        <!-- Luxury -->
+        <article class="plan">
+          <div class="plan-head">
+            <div>
+              <h3>Luxury</h3>
+              <p>For enterprises with advanced needs.</p>
+            </div>
+            <span class="plan-ico">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/><line x1="5" y1="21" x2="19" y2="21"/></svg>
+            </span>
+          </div>
+          <div class="plan-price"><b data-m="149" data-y="119">₹149</b><span>/ month</span></div>
+          <ul class="plan-feats">
+            <li class="yes">Core extraction features</li>
+            <li class="yes">Advanced filters</li>
+            <li class="yes">Unlimited storage</li>
+            <li class="yes">Scheduled extraction</li>
+            <li class="yes">Advanced exports</li>
+            <li class="yes">Priority support</li>
+          </ul>
+          <button class="plan-btn" onclick="(window.getStarted||toggleModal)()">Get Started <i class="bi bi-arrow-right"></i></button>
+        </article>
+
+      </div>
+
+      <p class="plans-note">
+        <i class="bi bi-info-circle"></i>
+        Payment integration is coming soon. All features are currently free for early adopters. Unlimited storage is subject to your actual service limits.
       </p>
     </div>
   </section>
