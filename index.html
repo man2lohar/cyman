@@ -1003,6 +1003,17 @@
       setTimeout(updateMobAuth, 100);
     }
   });
+  // ── Billing toggle (Upgrade slide) ──
+  document.querySelectorAll('#billingToggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#billingToggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const key = btn.dataset.billing === 'yearly' ? 'y' : 'm';
+      document.querySelectorAll('.plan-price b').forEach(el => {
+        el.textContent = '₹' + el.dataset[key];
+      });
+    });
+  });
 </script>
 </body>
 </html>
