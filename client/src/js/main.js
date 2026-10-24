@@ -390,3 +390,36 @@ if (supportForm) {
     }
   });
 }
+/* ── Updates timeline (managed from the admin panel → siteContent/updates) ── */
+(function initUpdatesTimeline() {
+  const tl = document.getElementById('updTimeline');
+  if (!tl) return;
+  const ICONS = { folder:'bi-folder2-open', gear:'bi-gear', star:'bi-star', rocket:'bi-rocket-takeoff', shield:'bi-shield-check',
+                  bolt:'bi-lightning-charge', bug:'bi-bug', megaphone:'bi-megaphone', chat:'bi-chat-dots', tools:'bi-tools',
+                  chart:'bi-graph-up-arrow', doc:'bi-file-earmark-text' };
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const monthLabel = ym => {
+    const [y, m] = String(ym || '').split('-').map(Number);
+    return (y && m) ? new Date(y, m - 1, 1).toLocaleString('en-US', { month:'short', year:'numeric' }) : '';
+  };
+  const builtIn = tl.innerHTML;            // the static markup in index.html = offline / not-yet-configured fallback
+  tl.classList.add('upd-loading');         // hide it for a moment so there is no flash of old content
+
+  onValue(ref(db, 'siteContent/updates'), snap => {
+    tl.classList.remove('upd-loading');
+    if (!snap.exists()) { tl.innerHTML = builtIn; return; }
+    const items = Object.values(snap.val())
+      .filter(u => u && u.title && u.visible !== false)
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || (b.createdAt || 0) - (a.createdAt || 0));
+    if (!items.length) { tl.innerHTML = '<div class="upd-empty">No updates to show yet.</div>'; return; }
+    tl.innerHTML = items.map(u => {
+      const pts = (Array.isArray(u.points) ? u.points : []).filter(Boolean).slice(0, 6);
+      return `<article class="upd-item">
+        <span class="upd-pill">${esc(monthLabel(u.date))}</span><span class="upd-dot"></span>
+        <div class="upd-ico"><i class="bi ${ICONS[u.icon] || 'bi-stars'}"></i></div>
+        <div class="upd-main">${u.tag ? `<span class="upd-tag">${esc(u.tag)}</span>` : ''}<h3 class="upd-title">${esc(u.title)}</h3>${u.desc ? `<div class="upd-desc">${esc(u.desc)}</div>` : ''}</div>
+        ${pts.length ? `<ul class="upd-points">${pts.map(p => `<li><i class="bi bi-check-circle-fill"></i><span>${esc(p)}</span></li>`).join('')}</ul>` : '<span></span>'}
+      </article>`;
+    }).join('');
+  }, () => { tl.classList.remove('upd-loading'); });   // permission denied / offline → keep the built-in markup
+})();
