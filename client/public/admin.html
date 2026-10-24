@@ -744,6 +744,10 @@ mark{background:rgba(245,166,35,.25);color:var(--accent);border-radius:2px;paddi
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91A16 16 0 0 0 14 16l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
       Broadcast <span class="nav-badge green" id="sb-broadcast">0</span>
     </div>
+    <div class="nav-item" onclick="nav('updates',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Site Updates <span class="nav-badge green" id="sb-updates">0</span>
+    </div>  
     <div class="nav-item" onclick="nav('admins',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       Admins
@@ -1436,6 +1440,45 @@ mark{background:rgba(245,166,35,.25);color:var(--accent);border-radius:2px;paddi
     </div>
 
     <!-- ═══ ADMINS ═════════════════════════════════════ -->
+        <!-- SITE UPDATES (home page "04 / Updates" timeline) -->
+    <div class="tab-panel" id="tab-updates">
+      <div class="banner banner-blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Updates published here appear in the "04 / Updates" timeline on the home page. The newest month is shown first.</span>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title" id="upd-form-title">New Update</div></div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <div style="flex:1"><label style="display:block;font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">MONTH</label><input id="upd-date" type="month" class="inline-input"/></div>
+            <div style="flex:1"><label style="display:block;font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">LABEL</label><input id="upd-tag" class="inline-input" list="upd-tags" maxlength="24" placeholder="New Release"/>
+              <datalist id="upd-tags"><option value="New Release"><option value="Improvements"><option value="New Features"><option value="Bug Fixes"><option value="Announcement"></datalist></div>
+          </div>
+          <label style="display:block;font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">ICON</label>
+          <select id="upd-icon" class="inline-input" style="margin-bottom:8px">
+            <option value="folder">Folder / Project</option><option value="gear">Gear / Fixes</option><option value="star">Star / Features</option>
+            <option value="rocket">Rocket / Launch</option><option value="shield">Shield / Security</option><option value="bolt">Lightning / Speed</option>
+            <option value="bug">Bug</option><option value="megaphone">Megaphone</option><option value="chat">Chat</option>
+            <option value="tools">Tools</option><option value="chart">Growth</option><option value="doc">Document</option>
+          </select>
+          <label style="display:block;font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">TITLE</label>
+          <input id="upd-title" class="inline-input" style="margin-bottom:8px" maxlength="100" placeholder="Project Management system launched"/>
+          <label style="display:block;font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">DESCRIPTION</label>
+          <textarea id="upd-desc" class="bc-ta" maxlength="400" placeholder="One or two sentences about this update"></textarea>
+          <label style="display:block;font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">HIGHLIGHTS (ONE PER LINE, MAX 6)</label>
+          <textarea id="upd-points" class="bc-ta" placeholder="Create and manage projects&#10;Task tracking with real-time updates"></textarea>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-bottom:12px;cursor:pointer"><input type="checkbox" id="upd-visible" checked/> Show on website</label>
+          <div style="display:flex;gap:8px">
+            <button class="tb-btn tb-btn-green" id="upd-save" onclick="saveSiteUpdate()" style="flex:1;justify-content:center">Publish Update</button>
+            <button class="tb-btn" id="upd-cancel" onclick="resetSiteUpdateForm()" style="display:none">Cancel</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">Published Updates</div><div class="sec-badge" id="upd-count">0</div></div>
+          <div id="upd-list"><div style="color:var(--text3);font-size:12px;text-align:center;padding:24px 0">Loading...</div></div>
+        </div>
+      </div>
+    </div>
     <div class="tab-panel" id="tab-admins">
       <div class="banner banner-blue">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -1705,7 +1748,7 @@ function bootAdmin(){
 }
 
 /* ══════════════ NAVIGATION ══════════════ */
-const PAGE_LABELS={overview:'Dashboard',analytics:'Analytics',users:'Users',uploads:'KMC Uploads',projects:'Projects',teamreport:'Team Report Analytics',tasks:'Tasks',trash:'Trash',admins:'Admins',activity:'Activity Log',settings:'Settings'};
+const PAGE_LABELS={updates:'Site Updates',overview:'Dashboard',analytics:'Analytics',users:'Users',uploads:'KMC Uploads',projects:'Projects',teamreport:'Team Report Analytics',tasks:'Tasks',trash:'Trash',admins:'Admins',activity:'Activity Log',settings:'Settings'};
 function nav(tab,el){
   // Normalise: strip leading 'tab-' so we always work with bare key
   const key=tab.startsWith('tab-')?tab.slice(4):tab;
@@ -1717,6 +1760,7 @@ function nav(tab,el){
   setText('tb-page',PAGE_LABELS[key]||key);
   if(key==='activity') renderActivityLog();
   if(key==='broadcast') loadBroadcastHistory();
+  if(key==='updates') loadSiteUpdates();
   if(key==='analytics') setTimeout(renderAnalytics,50);
   if(key==='teamreport') setTimeout(loadTeamReportData,50);
 }
@@ -2835,6 +2879,99 @@ async function deleteBroadcast(id){
   logAction('Delete Announcement',currentAdmin?.email||'admin',id);
   toast('Announcement deleted','ok');
   loadBroadcastHistory();
+}
+/* ===== SITE UPDATES (home page timeline -> siteContent/updates) ===== */
+const UPD_PATH='siteContent/updates';
+let _updCache={}, _updEditId=null;
+function updLabel(ym){const [y,m]=String(ym||'').split('-').map(Number);return (y&&m)?new Date(y,m-1,1).toLocaleString('en-US',{month:'short',year:'numeric'}):'-';}
+function updSorted(){return Object.values(_updCache).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||(b.createdAt||0)-(a.createdAt||0));}
+async function loadSiteUpdates(){
+  const list=document.getElementById('upd-list');
+  try{ const snap=await db.ref(UPD_PATH).once('value'); _updCache=snap.val()||{}; }
+  catch(e){ list.innerHTML='<div style="color:var(--red);font-size:12px;text-align:center;padding:24px 0">Could not load updates: '+esc(e.message)+'<br>Check the Realtime Database rules for siteContent.</div>'; return; }
+  const items=updSorted();
+  setText('upd-count',items.length); setText('sb-updates',items.length);
+  if(!items.length){
+    list.innerHTML='<div style="color:var(--text3);font-size:12px;text-align:center;padding:24px 0">No updates yet.<br><br><button class="tb-btn tb-btn-blue" style="margin:0 auto" onclick="seedSiteUpdates()">Import the 3 current updates</button></div>';
+    return;
+  }
+  list.innerHTML=items.map(u=>{
+    const hidden=u.visible===false, n=(u.points||[]).length;
+    return `<div class="bc-history-item"${hidden?' style="opacity:.55"':''}>
+      <div style="min-width:62px;font-size:10px;font-family:var(--mono);color:var(--blue);margin-top:2px">${esc(updLabel(u.date))}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;margin-bottom:2px">${esc(u.title)}${hidden?' <span class="sec-badge">hidden</span>':''}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">${esc(u.tag||'-')} &middot; ${n} highlight${n===1?'':'s'}</div>
+      </div>
+      <button class="act info" onclick="editSiteUpdate('${u.id}')">Edit</button>
+      <button class="act ok" onclick="toggleSiteUpdate('${u.id}')">${hidden?'Show':'Hide'}</button>
+      <button class="act del" onclick="deleteSiteUpdate('${u.id}')">Del</button>
+    </div>`;}).join('');
+}
+function resetSiteUpdateForm(){
+  _updEditId=null;
+  ['upd-date','upd-tag','upd-title','upd-desc','upd-points'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('upd-icon').value='folder';
+  document.getElementById('upd-visible').checked=true;
+  setText('upd-form-title','New Update'); setText('upd-save','Publish Update');
+  document.getElementById('upd-cancel').style.display='none';
+}
+function editSiteUpdate(id){
+  const u=_updCache[id]; if(!u)return;
+  _updEditId=id;
+  document.getElementById('upd-date').value=u.date||'';
+  document.getElementById('upd-tag').value=u.tag||'';
+  document.getElementById('upd-icon').value=u.icon||'folder';
+  document.getElementById('upd-title').value=u.title||'';
+  document.getElementById('upd-desc').value=u.desc||'';
+  document.getElementById('upd-points').value=(u.points||[]).join('\n');
+  document.getElementById('upd-visible').checked=u.visible!==false;
+  setText('upd-form-title','Edit Update'); setText('upd-save','Save Changes');
+  document.getElementById('upd-cancel').style.display='';
+  document.getElementById('upd-title').focus();
+}
+async function saveSiteUpdate(){
+  const val=i=>document.getElementById(i).value.trim();
+  const date=val('upd-date'), title=val('upd-title');
+  if(!date||!title){toast('Month and title are required','warn');return;}
+  const points=val('upd-points').split('\n').map(x=>x.trim()).filter(Boolean).slice(0,6).map(x=>x.slice(0,120));
+  const now=Date.now(), id=_updEditId||('u_'+now), old=_updCache[id]||{};
+  const entry={id,date,tag:val('upd-tag'),icon:document.getElementById('upd-icon').value,title,desc:val('upd-desc'),points,
+    visible:document.getElementById('upd-visible').checked,createdAt:old.createdAt||now,updatedAt:now,createdBy:old.createdBy||auth.currentUser.email};
+  try{
+    await db.ref(UPD_PATH+'/'+id).set(entry);
+    toast(_updEditId?'Update saved':'Update published','ok');
+    logAction(_updEditId?'Edit Site Update':'Publish Site Update',auth.currentUser.email,title);
+    resetSiteUpdateForm(); loadSiteUpdates();
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+async function toggleSiteUpdate(id){
+  const u=_updCache[id]; if(!u)return;
+  try{ await db.ref(UPD_PATH+'/'+id+'/visible').set(u.visible===false); toast(u.visible===false?'Now visible on the website':'Hidden from the website','ok'); loadSiteUpdates(); }
+  catch(e){toast('Error: '+e.message,'err');}
+}
+async function deleteSiteUpdate(id){
+  const u=_updCache[id]; if(!u)return;
+  if(!confirm('Delete "'+u.title+'"?'))return;
+  try{
+    await db.ref(UPD_PATH+'/'+id).remove();
+    logAction('Delete Site Update',auth.currentUser.email,u.title);
+    toast('Update deleted','ok');
+    if(_updEditId===id)resetSiteUpdateForm();
+    loadSiteUpdates();
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+async function seedSiteUpdates(){
+  const now=Date.now(), by=auth.currentUser.email;
+  const seed=[
+    {date:'2025-11',tag:'New Release',icon:'folder',title:'Project Management system launched',desc:'A complete project management system to help teams plan, track, and collaborate more efficiently.',points:['Create and manage projects','Task tracking with real-time updates','Team collaboration and permissions']},
+    {date:'2024-11',tag:'Improvements',icon:'gear',title:'Major bug fixes & KMC improvements',desc:"We've fixed several issues and made important improvements to the KMC for a more stable and smoother experience.",points:['Resolved critical bugs','Improved KMC performance','Better stability and error handling']},
+    {date:'2024-07',tag:'New Features',icon:'star',title:'New features & FAQ section added',desc:"We've added new features to enhance your workflow and introduced a comprehensive FAQ section.",points:['New tools and enhancements','FAQ section with helpful guides','Improved overall user experience']}
+  ];
+  try{
+    for(let i=0;i<seed.length;i++){ const id='u_'+(now+i); await db.ref(UPD_PATH+'/'+id).set({...seed[i],id,visible:true,createdAt:now+i,updatedAt:now+i,createdBy:by}); }
+    toast('Imported 3 updates','ok'); loadSiteUpdates();
+  }catch(e){toast('Error: '+e.message,'err');}
 }
 async function loadBroadcastHistory(){
   const snap=await db.ref('announcements').once('value');
