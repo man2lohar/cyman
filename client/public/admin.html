@@ -1024,9 +1024,9 @@ mark{background:rgba(245,166,35,.25);color:var(--accent);border-radius:2px;paddi
           <thead><tr>
             <th>File</th><th>User</th><th>Type</th><th>Size</th>
             <th class="sortable" onclick="sortUploads('uploadedAt')">Uploaded ↕</th>
-            <th>Expires</th><th>Status</th><th>Actions</th>
+            <th>Expires</th><th>Status</th><th>Data</th><th>Actions</th>
           </tr></thead>
-          <tbody id="uploads-body"><tr class="loading-row"><td colspan="8"><span class="spin"></span>Loading…</td></tr></tbody>
+          <tbody id="uploads-body"><tr class="loading-row"><td colspan="9"><span class="spin"></span>Loading…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -1589,6 +1589,44 @@ set(ref(db, `users/${user.uid}/profile`), {
   </div>
 </div>
 
+<!-- KMC UPLOAD DATA VIEWER -->
+<style>
+#upload-view-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:7600;backdrop-filter:blur(6px);padding:20px}
+#upload-view-modal.open{display:flex}
+.uv-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:1250px;max-width:100%;height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.6);animation:fadeIn .18s ease}
+.uv-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.uv-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:10px 20px 0}
+.uv-tab{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:6px;padding:5px 12px;font-size:11px;font-family:var(--mono);cursor:pointer}
+.uv-tab.on{border-color:var(--blue);color:var(--blue);background:rgba(45,152,253,.1)}
+.uv-tools{display:flex;gap:8px;align-items:center;padding:10px 20px}
+.uv-scroll{flex:1;overflow:auto;margin:0 20px 16px;border:1px solid var(--border);border-radius:8px}
+.uv-scroll table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}
+.uv-scroll th{position:sticky;top:0;z-index:1;background:var(--surface2);color:var(--text2);text-align:left;text-transform:none;letter-spacing:0;font-weight:600;padding:7px 10px;border-bottom:1px solid var(--border2);white-space:nowrap}
+.uv-scroll td{padding:5px 10px;border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text)}
+.uv-scroll td.n,.uv-scroll th.n{text-align:right}
+.uv-scroll td.rn,.uv-scroll th.rn{color:var(--text3);text-align:right}
+.uv-scroll tr:hover td{background:rgba(255,255,255,.03)}
+.uv-msg{padding:48px 20px;text-align:center;color:var(--text3);font-size:12px}
+</style>
+<div id="upload-view-modal" onclick="if(event.target===this)closeUploadView()">
+  <div class="uv-card">
+    <div class="uv-hdr">
+      <div style="min-width:0">
+        <div id="uv-title" style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Upload data</div>
+        <div id="uv-sub" style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px"></div>
+      </div>
+      <button onclick="closeUploadView()" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:16px">&times;</button>
+    </div>
+    <div class="uv-tabs" id="uv-tabs"></div>
+    <div class="uv-tools" id="uv-tools" style="display:none">
+      <input id="uv-filter" class="inline-input" style="max-width:280px" placeholder="Filter rows (any column)..." oninput="uvFilterChange(this.value)"/>
+      <span id="uv-count" style="font-size:11px;color:var(--text3);font-family:var(--mono)"></span>
+      <button class="tb-btn" style="margin-left:auto" onclick="uvDownload()">Download CSV</button>
+    </div>
+    <div class="uv-scroll" id="uv-body"><div class="uv-msg">Loading...</div></div>
+  </div>
+</div>
+  
 <!-- ══ COMPARE MODAL ══════════════════════════════════ -->
 <div id="compare-modal" onclick="if(event.target===this)closeCompare()">
   <div class="compare-card">
@@ -2083,7 +2121,7 @@ function renderUploadsTable(){
   if(fs==='expired') rows=rows.filter(r=>r.expiresAt&&r.expiresAt<now);
   rows.sort((a,b)=>_sortUploads.asc?(a[_sortUploads.k]||0)-(b[_sortUploads.k]||0):(b[_sortUploads.k]||0)-(a[_sortUploads.k]||0));
   setText('uploads-count',rows.length);
-  if(!rows.length){body.innerHTML='<tr class="loading-row"><td colspan="8">No uploads found</td></tr>';return;}
+  if(!rows.length){body.innerHTML='<tr class="loading-row"><td colspan="9">No uploads found</td></tr>';return;}
   body.innerHTML=rows.map(r=>{
     const exp=r.expiresAt&&r.expiresAt<now;
     const soon=!exp&&r.expiresAt&&(r.expiresAt-now)<7*864e5;
@@ -2097,6 +2135,9 @@ function renderUploadsTable(){
       <td class="td-mono td-dim">${fmtDate(new Date(r.uploadedAt||0))}</td>
       <td class="td-mono td-dim">${fmtDate(new Date(r.expiresAt||0))}</td>
       <td>${chip}</td>
+      <td><button class="act info upload-view-btn" data-uid="${r._uid}" data-id="${r.id||''}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View
+      </button></td>
       <td><button class="act del upload-del-btn" data-uid="${r._uid}" data-id="${r.id||''}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Del
       </button></td>
@@ -2105,6 +2146,8 @@ function renderUploadsTable(){
 }
 // Event delegation for uploads table
 document.addEventListener('click',function(e){
+  const view=e.target.closest('.upload-view-btn');
+  if(view){ viewUploadData(view.dataset.uid, view.dataset.id); return; }
   const btn=e.target.closest('.upload-del-btn');
   if(!btn) return;
   deleteUpload(btn.dataset.uid, btn.dataset.id);
@@ -2635,6 +2678,84 @@ async function revokeAdmin(uid){
     logAction('Revoke Admin',uid,'Revoked by '+currentAdmin.email);
     toast('Admin access revoked','ok'); refreshAll();
   });
+}
+/* ===== KMC UPLOAD DATA VIEWER (users/{uid}/kmc_csv_data/{id}) ===== */
+const UV_PAGE=200;
+let _uvSets={}, _uvCur=null, _uvShown=UV_PAGE, _uvFilter='', _uvMeta={};
+function uvParseCsv(text){
+  const rows=[]; let row=[], cell='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){ row.push(cell); cell=''; }
+    else if(c==='\n'){ row.push(cell); rows.push(row); row=[]; cell=''; }
+    else if(c!=='\r') cell+=c;
+  }
+  if(cell!==''||row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r=>r.length>1||String(r[0]||'').trim()!=='');
+}
+function closeUploadView(){ document.getElementById('upload-view-modal').classList.remove('open'); _uvSets={}; }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeUploadView(); });
+async function viewUploadData(uid,id){
+  if(!id){toast('Upload ID missing','err');return;}
+  const m=_uploadsAll.find(r=>r.id===id&&r._uid===uid)||{};
+  _uvMeta={name:m.name||id, uid, id};
+  const body=document.getElementById('uv-body');
+  setText('uv-title',m.name||id);
+  setText('uv-sub',[(m._email||uid),(m.type||'single'),(m.sizeLabel||''),'uploaded '+fmtDate(new Date(m.uploadedAt||0))].filter(Boolean).join('  \u00b7  '));
+  document.getElementById('uv-tabs').innerHTML='';
+  document.getElementById('uv-tools').style.display='none';
+  body.innerHTML='<div class="uv-msg">Loading...</div>';
+  document.getElementById('upload-view-modal').classList.add('open');
+  let d=null;
+  try{ const snap=await db.ref(`users/${uid}/kmc_csv_data/${id}`).once('value'); d=snap.val(); }
+  catch(e){ body.innerHTML='<div class="uv-msg" style="color:var(--red)">Could not load data: '+esc(e.message)+'<br>Check the Realtime Database rules for users/&lt;uid&gt;/kmc_csv_data.</div>'; return; }
+  if(!d||(!d.csv&&!d.master&&!d.blocks)){ body.innerHTML='<div class="uv-msg">No data is stored for this upload.<br>It may have expired, been cleared, or was uploaded before data saving was added.</div>'; return; }
+  _uvSets={};
+  if(d.master||d.blocks){
+    if(d.master) _uvSets['Master']={csv:d.master};
+    Object.keys(d.blocks||{}).sort().forEach(k=>{ if(d.blocks[k]) _uvSets['Block '+k]={csv:d.blocks[k]}; });
+    if(d.csv) _uvSets['Combined']={csv:d.csv};
+  } else _uvSets['Data']={csv:d.csv};
+  const names=Object.keys(_uvSets);
+  document.getElementById('uv-tabs').innerHTML=names.length>1?names.map(n=>`<button class="uv-tab" data-n="${esc(n)}" onclick="uvSelect(this.dataset.n)">${esc(n)}</button>`).join(''):'';
+  document.getElementById('uv-tools').style.display='flex';
+  logAction('View Upload Data',uid,'Upload: '+id);
+  uvSelect(names[0]);
+}
+function uvSelect(name){
+  if(!_uvSets[name]) return;
+  _uvCur=name;
+  const s=_uvSets[name]; if(!s.rows) s.rows=uvParseCsv(s.csv||'');
+  _uvFilter=''; _uvShown=UV_PAGE; document.getElementById('uv-filter').value='';
+  document.querySelectorAll('#uv-tabs .uv-tab').forEach(b=>b.classList.toggle('on',b.dataset.n===name));
+  uvRender();
+}
+function uvFilterChange(v){ _uvFilter=String(v||'').trim().toLowerCase(); _uvShown=UV_PAGE; uvRender(); }
+function uvMore(){ _uvShown+=UV_PAGE; uvRender(); }
+function uvRender(){
+  const s=_uvSets[_uvCur], body=document.getElementById('uv-body');
+  if(!s||!s.rows||s.rows.length===0){ body.innerHTML='<div class="uv-msg">This sheet is empty.</div>'; setText('uv-count',''); return; }
+  const head=s.rows[0], all=s.rows.slice(1);
+  const list=_uvFilter?all.filter(r=>r.some(c=>String(c).toLowerCase().includes(_uvFilter))):all;
+  const show=list.slice(0,_uvShown);
+  const isNum=v=>/^-?\d+(\.\d+)?$/.test(String(v).trim());
+  if(!s.num){ s.num=head.map((_,j)=>{ let n=0,t=0; for(let i=0;i<Math.min(all.length,50);i++){ const v=String(all[i][j]===undefined?'':all[i][j]).trim(); if(v!==''){ t++; if(isNum(v)) n++; } } return t>0&&n/t>0.8; }); }
+  setText('uv-count',(_uvFilter?list.length+' of '+all.length:all.length)+' rows \u00b7 '+head.length+' columns');
+  body.innerHTML='<table><thead><tr><th class="rn">#</th>'+head.map((h,j)=>'<th'+(s.num[j]?' class="n"':'')+'>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+
+    show.map((r,i)=>'<tr><td class="rn">'+(i+1)+'</td>'+head.map((_,j)=>{const v=r[j]===undefined?'':r[j];return '<td'+(s.num[j]?' class="n"':'')+'>'+esc(v)+'</td>';}).join('')+'</tr>').join('')+
+    '</tbody></table>'+
+    (list.length>show.length?'<div style="text-align:center;padding:12px"><button class="tb-btn" onclick="uvMore()">Show '+Math.min(UV_PAGE,list.length-show.length)+' more ('+(list.length-show.length)+' remaining)</button></div>':'')+
+    (list.length===0?'<div class="uv-msg">No rows match "'+esc(_uvFilter)+'".</div>':'');
+}
+function uvDownload(){
+  const s=_uvSets[_uvCur]; if(!s) return;
+  const safe=String(_uvMeta.name||'upload').replace(/[^\w.\-]+/g,'_');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([s.csv||''],{type:'text/csv'}));
+  a.download=safe+(Object.keys(_uvSets).length>1?'-'+_uvCur.replace(/\s+/g,'_'):'')+'.csv';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 async function deleteUpload(uid,id){
   if(!id){toast('Upload ID missing','err');return;}
