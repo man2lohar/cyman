@@ -1,0 +1,199 @@
+{
+  "meta": {
+    "source": "NKDA_Smart DCR_User Manual_Version 2.0 (Vinzas Solutions India Pvt Ltd)",
+    "scope": "Pre-Check only (geometry/format compliance). No building-rule scrutiny.",
+    "rulesVersion": "1.1.1-stage2",
+    "note": "Values copied as written in the manual, including typos. Fields marked assumption or fromExample are NOT stated in the manual text and must be confirmed."
+  },
+
+  "settings": {
+    "colorMode": "explicit_only",
+    "colorModeNote": "Decision A: only a colour (ACI 1-255) set directly on the object counts. ByLayer (256), ByBlock (0) and true-colour (RGB) objects are errors.",
+    "processedLayerPrefix": "FLOOR",
+    "otherLayersIgnored": true,
+    "caseInsensitiveLayerNames": true,
+    "caseInsensitiveText": true,
+    "caseNoteAssumption": "Manual does not state case rules. AutoCAD layer names are case-insensitive; text lists are shown in capitals. Assumed case-insensitive.",
+    "units": { "required": "metres", "dxfInsUnits": 6, "scale": "1:1" },
+    "minTextHeightExclusive": 0.05,
+    "textMustBeSingleLine": true,
+    "modelSpaceOnly": true,
+    "allowedEntityTypes": ["LINE", "LWPOLYLINE", "TEXT"],
+    "forbiddenEntityTypes": ["INSERT", "REGION", "WIPEOUT", "OLE2FRAME", "MTEXT", "POLYLINE_3D", "XREF"],
+    "forbiddenNote": "Blocks, Regions, Wipeouts, External references, OLE objects and MTEXT are not allowed in FLOOR layers. 3D polylines are not supported.",
+    "unlistedEntityTypes": "warn",
+    "unlistedNoteAssumption": "ARC, CIRCLE, HATCH, SPLINE etc. in FLOOR layers are not addressed by the manual. Reported as warnings.",
+    "entityProperties": {
+      "zCoordinate": 0,
+      "elevation": 0,
+      "thickness": 0,
+      "globalWidth": 0,
+      "lineweight": 0
+    },
+    "polylinesMustBeClosedDefault": true,
+    "closedNoteAssumption": "Manual says Pre-Check verifies closed polylines. Applied to every 'Polyline' rule below unless the rule sets closed to null.",
+    "boundingRectangle": {
+      "type": "LWPOLYLINE",
+      "lowerLeftCorner": [0, 0, 0],
+      "colorOfOutermostSheetBoundary": 61,
+      "objectsOutsideIgnored": true,
+      "objectsOutsideReportedAs": "error",
+      "noteAssumption": "Manual 3.1.1 (bounding rectangle at 0,0,0) and rule SITE-15 (Outermost Sheet Boundary, colour 61) are treated as the same rectangle."
+    },
+    "compulsoryLabels": ["every floor", "every block", "building use"],
+    "floorObjectsAllowedOnGround": false,
+    "floorObjectsAllowedOnGroundNote": "Confirmed by the user: floor-area objects (FLR-xx) go on the applicable numbered floor layer (FLOOR01, FLOOR02...). FLOOR-GROUND is reserved for common site-related details."
+  },
+
+  "mandatory": [
+    { "name": "Plot boundary (colour 7 polyline)", "anyOfRuleIds": ["SITE-01"], "severity": "error", "assumption": true },
+    { "name": "Outermost sheet / bounding rectangle (colour 61 polyline)", "anyOfRuleIds": ["SITE-15"], "severity": "error", "assumption": true },
+    { "name": "At least one floor area polyline (colours 181, 6, 134, 122 or 33)", "anyOfRuleIds": ["FLR-01", "FLR-02", "FLR-03", "FLR-04", "FLR-05"], "severity": "error", "assumption": true }
+  ],
+  "mandatoryNote": "The manual lists 'Mandatory requirements' as a Pre-Check error class but does not say which items are mandatory. These three are my assumption. Edit this list to change them.",
+
+  "layerRules": {
+    "caseInsensitive": true,
+    "patterns": [
+      { "id": "L-FLOORNN", "regex": "^FLOOR\\d{2,}$", "meaning": "Proposed floor layer: FLOOR01, FLOOR02, ... (Applicable floor layer)", "kind": "applicable_floor" },
+      { "id": "L-GROUND", "regex": "^FLOOR-GROUND$", "meaning": "Common site details", "kind": "ground" },
+      { "id": "L-PARKING", "regex": "^FLOOR-PARKING$", "meaning": "Named in 3.1.1.1 as alternative to FLOOR-GROUND for common site details", "kind": "parking" },
+      { "id": "L-BF", "regex": "^FLOOR-BF\\d*$", "meaning": "Basement floors: FLOOR-BF, FLOOR-BF1, FLOOR-BF2, ...", "kind": "basement" },
+      { "id": "L-SERVICE", "regex": "^FLOOR-SERVICE$", "meaning": "Service floor area", "kind": "service" },
+      { "id": "L-TERRACE", "regex": "^FLOOR-TERRACE$", "meaning": "Terrace floor objects", "kind": "terrace" },
+      { "id": "L-MEZZANINE", "regex": "^FLOOR-MEZZANINE$", "meaning": "Named in the heading of section 17.3 and in the 4.0 table heading", "kind": "mezzanine" }
+    ],
+    "doNotNameLayer": "APPLICABLE FLOOR LAYER"
+  },
+
+  "siteObjects": {
+    "heading": "OBJECTS TO BE DRAWN IN SITE PLAN OR FLOOR PLAN. Layer: FLOOR-GROUND (or) FLOOR-BF",
+    "rules": [
+      { "id": "SITE-01", "name": "Plot Boundary (Plot Area)", "color": 7, "types": ["LWPOLYLINE"], "layers": ["ground"], "annexPage": 16 },
+      { "id": "SITE-02", "name": "Setback Boundary (Ground Coverage)", "color": 10, "types": ["LWPOLYLINE"], "layers": ["ground"], "annexPage": 17, "note": "Outer polyline. Maximum projections must be included." },
+      { "id": "SITE-03", "name": "Duct Area in Ground Coverage", "color": 19, "types": ["LWPOLYLINE"], "layers": ["ground"], "annexPage": 18, "note": "Drawn inside colour 10 boundary." },
+      { "id": "SITE-04-FRONT", "name": "Setback (Front) Length", "color": 4, "types": ["LINE"], "layers": ["ground"], "annexPage": 19 },
+      { "id": "SITE-04-REAR", "name": "Setback (Rear) Length", "color": 3, "types": ["LINE"], "layers": ["ground"], "annexPage": 19 },
+      { "id": "SITE-04-SIDE1", "name": "Setback (Side1) Length", "color": 6, "types": ["LINE"], "layers": ["ground"], "annexPage": 19 },
+      { "id": "SITE-04-SIDE2", "name": "Setback (Side2) Length", "color": 2, "types": ["LINE"], "layers": ["ground"], "annexPage": 19 },
+      { "id": "SITE-05", "name": "Parking Floor Area Excluding Mixed", "color": 5, "types": ["LWPOLYLINE"], "layers": ["ground", "basement"], "annexPage": 20, "note": "Polyline on the outer wall of each parking floor." },
+      { "id": "SITE-06", "name": "Car Parking Stalls", "color": 140, "types": ["LWPOLYLINE"], "layers": ["ground", "basement"], "annexPage": 21 },
+      { "id": "SITE-07", "name": "Available Parking Area - Model 1", "color": 167, "types": ["LWPOLYLINE"], "layers": ["ground", "basement"], "annexPage": 22, "note": "Annex: many cars available, use this model." },
+      { "id": "SITE-08", "name": "Available Parking Area - Model 2", "color": 167, "types": ["LWPOLYLINE"], "layers": ["ground", "basement"], "annexPage": 23, "note": "Annex: small parking place, use this model. Same colour as SITE-07, so the two cannot be told apart by colour." },
+      { "id": "SITE-09", "name": "Truck Space Parking Stall", "color": 221, "types": ["LWPOLYLINE"], "layers": ["ground"], "annexPage": 24 },
+      { "id": "SITE-10", "name": "Bus Space Parking Stall", "color": 220, "types": ["LWPOLYLINE"], "layers": ["ground"], "annexPage": 25 },
+      { "id": "SITE-11", "name": "LCV Space Parking Stall", "color": 138, "types": ["LWPOLYLINE"], "layers": ["ground"], "annexPage": 26 },
+      { "id": "SITE-12", "name": "Stacked Parking", "color": 146, "types": ["LWPOLYLINE", "TEXT"], "layers": ["ground", "basement"], "annexPage": 27, "textFormat": { "regex": "^LEVEL-\\d+$", "fromExample": true, "example": "LEVEL-2", "meaning": "Number is the count of parking levels" } },
+      { "id": "SITE-13", "name": "Green Open Space", "color": 60, "types": ["LWPOLYLINE"], "layers": ["ground"], "annexPage": 28 },
+      { "id": "SITE-14", "name": "Distinguishing Blocks", "color": 50, "types": ["LWPOLYLINE", "TEXT"], "layers": ["ground"], "annexPage": 29, "textFormat": { "regex": "^BLOCK-[A-Z0-9]+$", "fromExample": true, "example": "BLOCK-A", "meaning": "Block name text in same colour; each block's floor plans must lie completely inside its colour 50 rectangle" } },
+      { "id": "SITE-15", "name": "Outermost Sheet Boundary", "color": 61, "types": ["LWPOLYLINE"], "layers": ["ground"], "annexPage": 30, "note": "Anything outside is not scrutinised or included in the returned PDF." },
+      { "id": "SITE-16-HEIGHT", "name": "Height of the Building", "color": 151, "types": ["LINE"], "layers": ["ground"], "annexPage": 31 },
+      { "id": "SITE-16-TOTAL", "name": "Total Height of the Building", "color": 233, "types": ["LINE"], "layers": ["ground"], "annexPage": 31 },
+      { "id": "SITE-17", "name": "Partial Parking Area", "color": 231, "types": ["LWPOLYLINE"], "layers": ["ground", "basement"], "annexPage": 32, "conflict": "Table 4.0 (page 8) lists FLOOR-GROUND only; annex page 32 lists FLOOR-GROUND (OR) FLOOR-BF. Union used.", "note": "Only for partially covered parking." },
+      { "id": "SITE-18", "name": "Outer Courtyard", "color": 235, "types": ["LWPOLYLINE", "TEXT"], "layers": ["ground"], "annexPage": 33, "textFormat": { "fromExample": true, "examples": ["OUTER COURTYARD", "HEIGHT OF LOWER BUILDING- 15"] } },
+      { "id": "SITE-19", "name": "Recess Open Space", "color": 235, "types": ["LWPOLYLINE", "TEXT"], "layers": ["ground"], "annexPage": 34, "textFormat": { "fromExample": true, "examples": ["RECESS"] }, "note": "Same colour as SITE-18." },
+      { "id": "SITE-20", "name": "Road Width", "color": 41, "types": ["LINE"], "layers": ["ground"], "annexPage": 35, "note": "One line per road for corner plots." },
+      { "id": "SITE-21", "name": "Driveway Width", "color": 39, "types": ["LWPOLYLINE"], "layers": ["ground", "basement"], "annexPage": 36, "closed": null, "closedNoteAssumption": "Annex drawing shows an open driveway loop. Closed check skipped for this rule." },
+      { "id": "SITE-22", "name": "Gate Goomti Area & Height", "color": 4, "types": ["LWPOLYLINE", "TEXT"], "layers": ["ground"], "annexPage": 37, "textFormat": { "fromExample": true, "examples": ["GATE GOOMTI", "HEIGHT-3.00"] }, "note": "Height marked separately." }
+    ]
+  },
+
+  "floorObjects": {
+    "heading": "OBJECTS TO BE DRAWN IN FLOOR PLANS. Layers: FLOOR01, FLOOR02, FLOOR03 ... (APPLICABLE FLOOR LAYER)",
+    "rules": [
+      { "id": "FLR-01", "name": "Floor Area of Residential", "color": 181, "types": ["LWPOLYLINE"], "layers": ["applicable_floor"], "annexPage": 39, "note": "On the outer wall." },
+      { "id": "FLR-02", "name": "Floor Area of Business / Mercantile (Retail) / Mercantile (Wholesale) / IT&ITES / Business Assembly / Business - Mercantile (Retail) / Mercantile (Retail) Assembly", "color": 6, "types": ["LWPOLYLINE", "TEXT"], "layers": ["applicable_floor"], "annexPage": 40, "textMustBeFromLists": ["business", "mercantileRetail", "mercantileWholesale", "itItes", "assembly"], "textInsideBoundary": true },
+      { "id": "FLR-03", "name": "Floor Area of Industrial / Storage / Hazardous", "color": 134, "types": ["LWPOLYLINE", "TEXT"], "layers": ["applicable_floor"], "annexPage": 41, "textMustBeFromLists": ["industrial", "storage", "hazardous"], "textInsideBoundary": true },
+      { "id": "FLR-04", "name": "Floor Area of Educational", "color": 122, "types": ["LWPOLYLINE", "TEXT"], "layers": ["applicable_floor"], "annexPage": 42, "textMustBeFromLists": ["educational"], "textInsideBoundary": true },
+      { "id": "FLR-05", "name": "Floor Area of Institutional", "color": 33, "types": ["LWPOLYLINE", "TEXT"], "layers": ["applicable_floor"], "annexPage": 43, "textMustBeFromLists": ["institutional"], "textInsideBoundary": true },
+      { "id": "FLR-06-STAIR", "name": "Staircase Area, Fire Staircase Area", "color": 115, "types": ["LWPOLYLINE", "TEXT"], "layers": ["applicable_floor"], "annexPage": 44, "note": "Inner polyline inside the inner wall of the stair well. Fire Escape staircase also carries text." },
+      { "id": "FLR-06-WINDOW", "name": "Staircase Window Area and Fire Staircase Window Area", "color": 105, "types": ["LWPOLYLINE"], "layers": ["applicable_floor"], "annexPage": 44, "conflict": "Table 4.0 lists Polyline only; annex text says fire escape window area is polyline and text in colour 105." },
+      { "id": "FLR-07", "name": "Voids, Ducts (Deductions)", "color": 3, "types": ["LWPOLYLINE"], "layers": ["applicable_floor"], "annexPage": 45, "note": "Voids and ducts within FAR." },
+      { "id": "FLR-08", "name": "Ventilation Shaft", "color": 11, "types": ["LWPOLYLINE"], "layers": ["applicable_floor"], "annexPage": 46 },
+      { "id": "FLR-09", "name": "Lift Well", "color": 22, "types": ["LWPOLYLINE", "TEXT"], "layers": ["applicable_floor"], "annexPage": 47, "textFormat": { "regex": "^L\\d+-START$", "fromExample": true, "example": "L1-START", "meaning": "Lift name L1, L2... then START (starting floor). Additional lifts starting from different floors follow the same text." } },
+      { "id": "FLR-10", "name": "Floor Naming for Typical Floors", "color": 7, "types": ["TEXT"], "layers": ["applicable_floor"], "annexPage": 48, "textFormat": "typicalFloorText" },
+      { "id": "FLR-11", "name": "Facility Area", "color": 54, "types": ["LWPOLYLINE", "TEXT"], "layers": ["applicable_floor"], "annexPage": 49, "note": "Must be drawn inside the FAR boundary." },
+      { "id": "FLR-12", "name": "Inner Courtyard Area", "color": 40, "types": ["LWPOLYLINE"], "layers": ["applicable_floor"], "annexPage": 50 },
+      { "id": "FLR-13", "name": "Height of the Highest Wall abutting Inner Courtyard", "color": 40, "types": ["LINE"], "layers": ["applicable_floor"], "annexPage": 51, "note": "Same colour as FLR-12; separated by object type." },
+      { "id": "FLR-14", "name": "Refuge Area", "color": 4, "types": ["LWPOLYLINE", "TEXT"], "layers": ["applicable_floor"], "annexPage": 52, "textFormat": { "regex": "^REFUGE AREA-\\d+$", "fromExample": true, "example": "REFUGE AREA-30", "meaning": "Number of persons" } },
+      { "id": "FLR-15", "name": "Other Non-FAR Room Name and Incidental Structures", "color": 4, "types": ["LWPOLYLINE", "TEXT"], "layers": ["applicable_floor"], "annexPage": 53, "textMustBeFromLists": ["nonFar"], "failMessage": "Drawing will fail precheck if some other text is used." }
+    ]
+  },
+
+  "terraceServiceObjects": {
+    "heading": "OBJECTS TO BE DRAWN IN FLOOR-MEZZANINE OR FLOOR-TERRACE (section 17.3)",
+    "headingConflict": "Heading names FLOOR-MEZZANINE or FLOOR-TERRACE, but the Service Floor rule names layer FLOOR-SERVICE. Both FLOOR-SERVICE and FLOOR-MEZZANINE are allowed for SVC-01 until confirmed.",
+    "rules": [
+      { "id": "SVC-01", "name": "Service Floor Area", "color": 125, "types": ["LWPOLYLINE", "TEXT"], "layers": ["service", "mezzanine"], "annexPage": 55, "textFormat": { "fromExample": true, "examples": ["SERVICE AREA", "HEIGHT -2.5"], "meaning": "Height of the service floor" } },
+      { "id": "TER-01", "name": "Terrace Floor Boundary", "color": 227, "types": ["LWPOLYLINE"], "layers": ["terrace"], "annexPage": 56 },
+      { "id": "TER-02", "name": "Staircase Headroom Area", "color": 4, "types": ["LWPOLYLINE", "TEXT"], "layers": ["terrace"], "annexPage": 57, "textFormat": { "fromExample": true, "examples": ["STAIRCASE HEADROOM"] }, "conflict": "Annex example shows STAIRCASE HEADROOM; Non-FAR list (15.0) says STAIRCASE HEAD ROOM." },
+      { "id": "TER-03", "name": "Roof Top Garden Area", "color": 94, "types": ["LWPOLYLINE", "TEXT"], "layers": ["terrace"], "annexPage": 58, "textFormat": { "fromExample": true, "examples": ["GARDEN AREA", "GARDEN"] } },
+      { "id": "TER-04", "name": "Lift Machine Room Area", "color": 4, "types": ["LWPOLYLINE", "TEXT"], "layers": ["terrace"], "annexPage": 59, "textFormat": { "fromExample": true, "examples": ["LIFT MACHINE ROOM", "HEIGHT-3.0"] } }
+    ]
+  },
+
+  "buildingUseText": {
+    "industrial":        { "section": "5.0",  "title": "Industrial Building",        "color": 134, "items": ["LABORATORIES", "FACTORY", "SMOKE HOUSE", "MILL", "POWER PLANT", "WORKSHOP", "GAS PLANT", "DAIRIES"] },
+    "storage":           { "section": "6.0",  "title": "Storage Building",           "color": 134, "items": ["STORAGE", "COLD STORAGE", "FREIGHT DEPOT", "TRANSIT SHED", "STORE HOUSE", "PUBLIC GARAGE", "HANGARS", "SILOS", "BARNS"] },
+    "hazardous":         { "section": "7.0",  "title": "Hazardous Building",         "color": 134, "items": ["TOXIC", "NOXIOUS", "ALKALIS", "ACIDS", "HAZARDOUS", "NOXIOUS ALKALIS"] },
+    "business":          { "section": "8.0",  "title": "Business Building",          "color": 6,   "items": ["OFFICE", "BANK"] },
+    "mercantileRetail":  { "section": "9.0",  "title": "Mercantile-Retail Building", "color": 6,   "items": ["SHOP-RETAIL", "MARKET-RETAIL", "STORE-RETAIL"] },
+    "mercantileWholesale": { "section": "10.0", "title": "Mercantile-Wholesale Building", "color": 6, "items": ["SHOP-WHOLESALE", "MARKET-WHOLESALE", "TRUCK TRANSPORT", "STORAGE FACILITIES", "WIRE HOUSE"] },
+    "itItes":            { "section": "11.0", "title": "IT/ITES Building",           "color": 6,   "items": ["IT", "ITES", "IT/ITES"] },
+    "assembly": {
+      "section": "12.0", "title": "Assembly Building", "color": 6,
+      "items": [
+        "SOCIAL", "DORMITORIES", "RELIGIOUS", "PATRIOTIC",
+        "CIVIL", "TRAVEL", "SPORTS", "THEATRE",
+        "MOTION PICTURE HOUSE", "DRIVE IN THEATRE", "CITY BALL", "TOWN HALL",
+        "AUDITORIA", "EXHIBITION HALL", "MUSEUM", "SKATING RING",
+        "RESTAURANT", "BAR", "HOTEL", "CATING HOUSE",
+        "BOARDING HOUSE", "PLACES OF WORSHIP", "DANCE HALL", "CLUB ROOM",
+        "GYMNASIUMS", "PASSENGERS STATION", "TRANSPORTATION SERVICE", "STADIUM",
+        "GUEST HOUSE", "FOOD COURT EATING HOUSE", "AUDITORIUM", "TERMINAL OF AIR"
+      ],
+      "ambiguous": { "FOOD COURT EATING HOUSE": "Printed as one wrapped table cell. Stored as a single text. Could also mean two separate texts, FOOD COURT and EATING HOUSE." }
+    },
+    "institutional":     { "section": "13.0", "title": "Institutional Building",     "color": 33,  "items": ["HOSPITAL", "CLINIC", "DOCTOR'S CHAMBER", "DISPENSARY", "SANATORIA", "INSTITUTIONAL", "INSTITUTION", "PRISON", "MENTAL HOSPITAL", "CUSTODIAN INSTITUTION"] },
+    "educational":       { "section": "14.0", "title": "Educational Building",       "color": 122, "items": ["SCHOOL", "COLLEGE", "LIBRARY", "EDUCATION", "DAY CARE"] }
+  },
+
+  "nonFarText": {
+    "section": "15.0",
+    "color": 4,
+    "singleLine": true,
+    "items": [
+      "SERVANT ROOM", "SERVANT TOILET", "LIFT LOBBY", "ROOF TANK",
+      "STAIRCASE HEAD ROOM", "LIFT MACHINE ROOM", "GATE GOOMTI", "CARETAKER",
+      "DARWANS", "QUARTERS", "ELECTRICAL EQUIPMENT", "GENERATOR ROOM",
+      "REFUGE AREA", "METER ROOM", "SERVICE AREA", "SWIMMING POOL",
+      "AHU", "UPS ROOM", "ELECTRICAL METER ROOM", "AIR CONDITIONED PLANT ROOM",
+      "ELECTRICAL ROOM", "PUMP ROOM", "STAIRCASE LOBBY", "SERVANT QUARTERS",
+      "PANEL ROOM", "HVAC ROOM", "CARETAKER ROOM", "SECURITY CABIN",
+      "GARDEN EQUIPMENT STORE", "GARDEN EQUIPMENT ROOM", "GATE KEEPER ROOM", "FIRE FIGHTING EQUIPMENT",
+      "WATER TREATMENT PLANT", "LIFT MACHINE ROOM LESS",
+      "SOILD WASTE MANAGEMENT", "STORING DOMESTIC WATER", "FIRE FIGHTING STORAGE WATER", "STP", "RAW WATER", "RAIN WATER"
+    ],
+    "note": "The list is split over manual pages 12 and 13 under the same heading 15.0. Merged here."
+  },
+
+  "typicalFloorText": {
+    "section": "16.0",
+    "color": 7,
+    "floorFormat": { "template": "FLOOR01, FLOOR02, FLOOR03......FLOORnth- Typical", "regex": "^FLOOR\\d{2,}(\\s*,\\s*FLOOR\\d{2,})*\\s*-\\s*TYPICAL$", "regexFromTemplate": true },
+    "blockFormat": { "template": "BLOCK01, BLOCK02, BLOCK03...... BLOCKnth- Typical", "regex": "^BLOCK\\d{2,}(\\s*,\\s*BLOCK\\d{2,})*\\s*-\\s*TYPICAL$", "regexFromTemplate": true },
+    "annexExample": "FLOOR01,FLOOR02,FLOOR03-TYPICAL",
+    "note": "Regexes are my reading of the template and the annex example. The manual does not give a grammar."
+  },
+
+  "knownConflicts": [
+    { "id": "C1", "where": "SITE-17", "issue": "Layer: table says FLOOR-GROUND only, annex says FLOOR-GROUND or FLOOR-BF.", "currentHandling": "Both allowed." },
+    { "id": "C2", "where": "SVC-01 / section 17.3", "issue": "Heading says FLOOR-MEZZANINE or FLOOR-TERRACE; service floor rule says FLOOR-SERVICE.", "currentHandling": "FLOOR-SERVICE and FLOOR-MEZZANINE both allowed for the service floor rule." },
+    { "id": "C3", "where": "TER-02 vs nonFarText", "issue": "STAIRCASE HEADROOM (annex) vs STAIRCASE HEAD ROOM (list).", "currentHandling": "Both texts accepted for TER-02." },
+    { "id": "C4", "where": "FLR-06-WINDOW", "issue": "Table says Polyline only; annex says polyline and text for fire escape window area.", "currentHandling": "Polyline required; text allowed." },
+    { "id": "C5", "where": "layerRules", "issue": "FLOOR-PARKING is named in 3.1.1.1 but no object rule uses it.", "currentHandling": "Layer name accepted; objects on it checked against ground rules." },
+    { "id": "C6", "where": "colour reuse", "issue": "Colours 4, 6, 7, 40, 167 and 235 are used by several rules.", "currentHandling": "Resolved by object type, layer and text content in the checks engine (stage 2)." },
+    { "id": "C8", "where": "ground floor plan layer", "issue": "Annex shows GROUND FLOOR PLANs for floor-area objects, but layer rules name FLOOR-GROUND for site details.", "currentHandling": "RESOLVED by user: FLR-xx objects must be on numbered floor layers only; FLR-xx on FLOOR-GROUND or FLOOR-BF is an error." },
+    { "id": "C7", "where": "assembly list", "issue": "AUDITORIA and AUDITORIUM both appear; FOOD COURT EATING HOUSE may be two texts.", "currentHandling": "Both spellings kept; FOOD COURT EATING HOUSE kept as one text." }
+  ]
+}

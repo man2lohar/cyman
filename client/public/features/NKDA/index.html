@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NKDA Smart DCR Pre-Check (unofficial)</title>
+<style>
+:root{--bg:#0f1216;--panel:#171b21;--panel2:#1d222a;--line:#2a313b;--text:#e6e9ee;--muted:#9aa4b2;--err:#ff5c5c;--warn:#ffb020;--ok:#3ecf8e;--accent:#5aa9ff;--r:10px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;color:inherit}
+header{padding:20px clamp(14px,3vw,32px) 8px}
+h1{margin:0;font-size:1.35rem;letter-spacing:.2px}
+.tag{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+main{padding:8px clamp(14px,3vw,32px) 28px;max-width:1500px;margin:0 auto}
+.banner{background:#3a1d1d;border:1px solid #7a2e2e;color:#ffd0d0;padding:10px 14px;border-radius:var(--r);margin:10px 0}
+.drop{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:22px 14px;border:2px dashed var(--line);border-radius:var(--r);background:var(--panel);cursor:pointer;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over,.drop:focus-within{border-color:var(--accent);background:var(--panel2)}
+.drop b{font-size:1.02rem}
+.drop small{color:var(--muted)}
+.drop input{position:absolute;opacity:0;width:1px;height:1px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.status{color:var(--muted);font-size:.9rem}
+.btn{background:var(--accent);color:#06121f;border:0;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}.btn:hover,.btn:focus-visible{filter:brightness(1.1)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.link{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;text-decoration:underline;font-size:.9rem}
+.sum{border-radius:var(--r);padding:14px 16px;margin:12px 0;border:1px solid var(--line);background:var(--panel)}
+.sum.ok{border-color:#1f6b4d;background:#10261d}.sum.bad{border-color:#7a2e2e;background:#2a1517}
+.sum-title{font-size:1.25rem;font-weight:650}.sum.ok .sum-title{color:var(--ok)}.sum.bad .sum-title{color:var(--err)}
+.sum-sub,.sum-note{color:var(--muted);font-size:.9rem;margin-top:2px}
+.work{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:14px;align-items:start}
+@media(max-width:980px){.work{grid-template-columns:1fr}}
+.viewer{position:relative;height:min(72vh,760px);min-height:320px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#000}
+@media(max-width:980px){.viewer{height:55vh}}
+canvas{display:block;touch-action:none;cursor:grab}
+canvas:active{cursor:grabbing}
+.tools{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:6px}
+.tools button{width:38px;height:38px;border-radius:8px;border:1px solid #3a424e;background:rgba(23,27,33,.92);cursor:pointer;font-size:1.05rem}
+.tools button:hover,.tools button:focus-visible{border-color:var(--accent)}
+.hint{position:absolute;left:10px;bottom:8px;color:#7d8794;font-size:.78rem;pointer-events:none}
+.side{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;height:min(72vh,760px);min-height:320px;overflow:hidden}
+@media(max-width:980px){.side{height:auto;max-height:70vh}}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tab{flex:1;padding:10px 6px;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer}
+.tab[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent)}
+.panel{overflow:auto;flex:1;min-height:0}
+.filters{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.filters label{display:flex;align-items:center;gap:5px;font-size:.88rem;cursor:pointer}
+.filters input[type=search]{flex:1 1 100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:7px 10px;border-radius:8px;font:inherit}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.grp{display:flex;gap:8px;align-items:center;width:100%;text-align:left;padding:8px 12px;background:var(--panel2);border:0;border-bottom:1px solid var(--line);cursor:pointer;position:sticky;top:0}
+.grp-code{font:600 .78rem ui-monospace,Consolas,monospace;padding:1px 6px;border-radius:5px;background:#000}
+.sev-error .grp-code{color:var(--err)}.sev-warning .grp-code{color:var(--warn)}.sev-info .grp-code{color:var(--accent)}
+.grp-title{flex:1;font-size:.9rem}.grp-count{color:var(--muted);font-size:.85rem}
+.iss{display:block;width:100%;text-align:left;padding:9px 12px;background:none;border:0;border-bottom:1px solid var(--line);cursor:pointer}
+.iss:hover{background:#1a1f26}.iss.sel{background:#232b36;box-shadow:inset 3px 0 0 var(--accent)}
+.iss-msg{font-size:.9rem}.iss-meta{color:var(--muted);font-size:.78rem;margin-top:2px;word-break:break-word}
+.empty,.note,.note-h{padding:0 14px;color:var(--muted)}.empty{padding:16px 14px}
+.note-h{color:var(--text);font-weight:600;margin:14px 0 4px}.note{margin:4px 0;font-size:.9rem}
+.lay{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.lay-name{flex:1;font-weight:500}.lay-tag{color:var(--muted);font-size:.78rem}.lay-n{color:var(--muted);font-size:.85rem;min-width:2.5em;text-align:right}
+footer{color:var(--muted);font-size:.82rem;padding:6px clamp(14px,3vw,32px) 30px;max-width:1500px;margin:0 auto}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>NKDA Smart DCR Pre-Check <span style="color:var(--muted);font-weight:400">(unofficial)</span></h1>
+  <p class="tag">Check your DXF drawing against the Smart DCR User Manual v2.0 before you submit. Your file stays on your device: everything runs in your browser.</p>
+</header>
+<main>
+  <div id="banner" class="banner" role="alert" hidden></div>
+
+  <label id="drop" class="drop" for="file">
+    <b>Drop your .dxf file here, or click to choose</b>
+    <small>Save from AutoCAD as ASCII DXF (SAVEAS). DWG files cannot be read in the browser.</small>
+    <input id="file" type="file" accept=".dxf">
+  </label>
+  <div class="row">
+    <span id="status" class="status" aria-live="polite"></span>
+    <span class="status">No drawing handy? Try a sample:</span>
+    <button id="sampleGood" class="link" type="button">clean drawing</button>
+    <button id="sampleBad" class="link" type="button">drawing with faults</button>
+  </div>
+
+  <section id="results" hidden>
+    <div id="sumBar" class="sum" role="status"></div>
+    <div class="row">
+      <button id="btnPdf" class="btn" type="button">Download PDF report</button>
+      <button id="btnDxf" class="btn" type="button">Download marked-up DXF</button>
+      <span class="status">The marked-up DXF adds circles, grey crosses and error text on a new layer called NONCOMPLIANT. Smart DCR ignores that layer.</span>
+    </div>
+    <div class="work">
+      <div id="viewerWrap" class="viewer">
+        <canvas id="canvas" aria-label="Drawing preview. Drag to pan, scroll to zoom."></canvas>
+        <div class="tools">
+          <button id="btnIn" type="button" aria-label="Zoom in">+</button>
+          <button id="btnOut" type="button" aria-label="Zoom out">&minus;</button>
+          <button id="btnFit" type="button" aria-label="Fit drawing" title="Fit drawing">&#9635;</button>
+        </div>
+        <div class="hint">Drag to pan &middot; scroll or pinch to zoom &middot; click a red or amber ring to select an issue &middot; grey cross = object with an error</div>
+      </div>
+      <aside class="side">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" data-tab="Issues" aria-selected="true">Issues</button>
+          <button class="tab" role="tab" data-tab="Layers" aria-selected="false">Layers</button>
+          <button class="tab" role="tab" data-tab="Notes" aria-selected="false">Not checked</button>
+        </div>
+        <div id="panelIssues" class="panel">
+          <div class="filters">
+            <label><input id="f-error" type="checkbox" checked><span class="dot" style="background:var(--err)"></span>Errors <span id="cnt-error">0</span></label>
+            <label><input id="f-warning" type="checkbox" checked><span class="dot" style="background:var(--warn)"></span>Warnings <span id="cnt-warning">0</span></label>
+            <label><input id="f-info" type="checkbox" checked><span class="dot" style="background:var(--accent)"></span>Info <span id="cnt-info">0</span></label>
+            <input id="q" type="search" placeholder="Search issues, layers, handles..." aria-label="Search issues">
+          </div>
+          <div id="issueList"></div>
+        </div>
+        <div id="panelLayers" class="panel" hidden><div id="layerList"></div></div>
+        <div id="panelNotes" class="panel" hidden><div id="notesList"></div></div>
+      </aside>
+    </div>
+  </section>
+</main>
+<footer>
+  Unofficial tool based on the NKDA Smart DCR User Manual v2.0 (Vinzas Solutions India Pvt Ltd). It checks drawing format only (Pre-Check), not building rules. It is not affiliated with NKDA, and passing here does not guarantee the official Pre-Check will pass. The architect remains responsible for compliance with the rules.
+</footer>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="nkda-checker.js"></script>
+<script src="report.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
