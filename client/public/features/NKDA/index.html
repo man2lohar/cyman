@@ -1,204 +1,300 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
-<title>NKDA Smart DCR Pre-Check (unofficial)</title>
-<style>
-:root{
-  --bg:#f6f4ee;--surface:#fffdf8;--soft:#f0ede4;--ink:#1b1a17;--muted:#6c675d;--line:#e3dfd3;--line2:#cdc7b6;
-  --accent:#0e6b63;--err:#c2412d;--errbg:#fbebe7;--warn:#a86400;--ok:#1d7a58;--okbg:#e8f4ee;--info:#2f5f9e;
-  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
-  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme:dark){:root{
-  --bg:#111110;--surface:#1a1a17;--soft:#22221e;--ink:#efece4;--muted:#9a958a;--line:#2d2c27;--line2:#45433b;
-  --accent:#5fd0c0;--err:#ff8a73;--errbg:#2c1a17;--warn:#f0b24a;--ok:#4fd1a1;--okbg:#14261f;--info:#8fb8f0;
-}}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
-button,input{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-[hidden]{display:none!important}
-*{scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
-
-/* ---------- header ---------- */
-.top{position:relative;overflow:hidden;padding:clamp(28px,5vw,56px) clamp(16px,4vw,48px) clamp(18px,3vw,30px)}
-.top::before{content:"";position:absolute;inset:0;z-index:0;opacity:.55;
-  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
-  background-size:32px 32px;-webkit-mask-image:linear-gradient(to bottom,#000 0%,transparent 90%);mask-image:linear-gradient(to bottom,#000 0%,transparent 90%)}
-.top-in{position:relative;z-index:1;max-width:1280px;margin:0 auto;display:flex;gap:clamp(14px,2.5vw,28px);align-items:flex-start}
-.mark{flex:none;width:46px;height:46px;margin-top:6px;color:var(--ink)}
-.eyebrow{margin:0 0 10px;font:600 .72rem/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
-h1{margin:0;font:400 clamp(1.9rem,4.4vw,3.15rem)/1.06 var(--serif);letter-spacing:-.025em;max-width:16em}
-h1 em{font-style:italic;color:var(--accent)}
-.tag{margin:14px 0 0;max-width:46em;color:var(--muted);font-size:.98rem}
-.steps{display:flex;flex-wrap:wrap;gap:6px 22px;list-style:none;margin:18px 0 0;padding:0;counter-reset:s;font-size:.8rem;letter-spacing:.04em;color:var(--muted)}
-.steps li{counter-increment:s}
-.steps li::before{content:"0" counter(s);font:600 .72rem var(--mono);color:var(--ink);margin-right:7px}
-
-main{padding:0 clamp(16px,4vw,48px) 36px;max-width:1376px;margin:0 auto}
-.banner{background:var(--errbg);border:1px solid var(--err);color:var(--err);padding:11px 16px;border-radius:12px;margin:0 0 14px}
-
-/* ---------- upload ---------- */
-.drop{--c:var(--ink);position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:34px 16px 30px;cursor:pointer;
-  border:1px solid var(--line);border-radius:6px;transition:background .2s,border-color .2s;
-  background:
-   linear-gradient(var(--c),var(--c)) 0 0/18px 1.5px no-repeat,linear-gradient(var(--c),var(--c)) 0 0/1.5px 18px no-repeat,
-   linear-gradient(var(--c),var(--c)) 100% 0/18px 1.5px no-repeat,linear-gradient(var(--c),var(--c)) 100% 0/1.5px 18px no-repeat,
-   linear-gradient(var(--c),var(--c)) 0 100%/18px 1.5px no-repeat,linear-gradient(var(--c),var(--c)) 0 100%/1.5px 18px no-repeat,
-   linear-gradient(var(--c),var(--c)) 100% 100%/18px 1.5px no-repeat,linear-gradient(var(--c),var(--c)) 100% 100%/1.5px 18px no-repeat,
-   var(--surface)}
-.drop:hover,.drop.over,.drop:focus-within{--c:var(--accent);border-color:var(--line2)}
-.drop.over{background-color:var(--soft)}
-.drop svg{width:26px;height:26px;color:var(--accent);margin-bottom:6px}
-.drop b{font:400 1.25rem/1.25 var(--serif);letter-spacing:-.01em}
-.drop small{color:var(--muted)}
-.drop input{position:absolute;opacity:0;width:1px;height:1px}
-.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:14px 0}
-.status{color:var(--muted);font-size:.86rem}.status:empty{display:none}
-.link{background:none;border:0;border-bottom:1px solid var(--line2);color:var(--ink);cursor:pointer;padding:0 0 1px;font-size:.86rem}
-.link:hover{border-color:var(--accent);color:var(--accent)}
-
-/* ---------- summary and actions ---------- */
-#results{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
-@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){#results{animation:none}*{transition:none!important}}
-.sum{display:grid;gap:2px;padding:18px 22px;margin:18px 0 0;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line2);border-radius:6px 14px 14px 6px}
-.sum.ok{border-left-color:var(--ok);background:linear-gradient(90deg,var(--okbg),var(--surface) 55%)}
-.sum.bad{border-left-color:var(--err);background:linear-gradient(90deg,var(--errbg),var(--surface) 55%)}
-.sum-title{font:400 clamp(1.5rem,3vw,2.05rem)/1.15 var(--serif);letter-spacing:-.02em}
-.sum.ok .sum-title{color:var(--ok)}.sum.bad .sum-title{color:var(--err)}
-.sum-sub,.sum-note{color:var(--muted);font-size:.88rem}
-.actions{margin:14px 0 18px}
-.btn{background:var(--ink);color:var(--bg);border:1px solid var(--ink);border-radius:999px;padding:9px 18px;font-weight:550;font-size:.88rem;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
-.btn:hover{background:var(--accent);border-color:var(--accent);color:var(--surface)}
-.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line2)}
-.btn.ghost:hover{background:transparent;color:var(--accent);border-color:var(--accent)}
-.btn:disabled{opacity:.35;cursor:not-allowed}
-
-/* ---------- workspace ---------- */
-.work{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;align-items:start}
-@media (max-width:1000px){.work{grid-template-columns:1fr}}
-.viewer{position:relative;height:min(72vh,760px);min-height:320px;border-radius:14px;overflow:hidden;background:#000;
-  box-shadow:0 0 0 1px var(--line2),0 24px 48px -28px rgba(0,0,0,.45)}
-@media (max-width:1000px){.viewer{height:56vh}}
-canvas{display:block;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}
-.tools{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:1px;border-radius:10px;overflow:hidden;background:#3a3a36}
-.tools button{width:38px;height:38px;border:0;background:rgba(18,18,16,.92);color:#eee;cursor:pointer;font-size:1.05rem;transition:background .15s}
-.tools button:hover,.tools button:focus-visible{background:#2b2b27;color:#fff}
-.hint{position:absolute;left:14px;bottom:10px;right:60px;color:#8b887f;font-size:.72rem;letter-spacing:.02em;pointer-events:none}
-.side{display:flex;flex-direction:column;height:min(72vh,760px);min-height:320px;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:14px}
-@media (max-width:1000px){.side{height:auto;max-height:70vh}}
-.tabs{display:flex;gap:4px;padding:0 10px;border-bottom:1px solid var(--line)}
-.tab{padding:13px 10px 11px;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--muted);cursor:pointer;font-size:.74rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
-.tab:hover{color:var(--ink)}
-.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
-.panel{overflow:auto;flex:1;min-height:0}
-.filters{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
-.filters label{display:flex;align-items:center;gap:6px;font-size:.84rem;cursor:pointer}
-.filters input[type=checkbox],.lay input{accent-color:var(--accent)}
-.filters input[type=search]{flex:1 1 100%;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:.88rem}
-.filters input[type=search]::placeholder{color:var(--muted)}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
-.grp{position:sticky;top:0;display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:9px 14px;background:var(--soft);border:0;border-bottom:1px solid var(--line);cursor:pointer}
-.grp-code{font:600 .7rem var(--mono);padding:2px 7px;border-radius:999px;background:var(--surface);border:1px solid var(--line2)}
-.sev-error .grp-code{color:var(--err)}.sev-warning .grp-code{color:var(--warn)}.sev-info .grp-code{color:var(--info)}
-.grp-title{flex:1;font-size:.86rem;font-weight:550}.grp-count{color:var(--muted);font:.8rem var(--mono)}
-.iss{display:block;width:100%;text-align:left;padding:11px 14px;background:none;border:0;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s}
-.iss:hover{background:var(--soft)}
-.iss.sel{background:var(--soft);box-shadow:inset 3px 0 0 var(--accent)}
-.iss-msg{font-size:.88rem;line-height:1.45}.iss-meta{color:var(--muted);font:.72rem var(--mono);margin-top:3px;word-break:break-word}
-.empty,.note,.note-h{padding:0 16px;color:var(--muted)}.empty{padding:18px 16px}
-.note-h{color:var(--ink);font:400 1.05rem var(--serif);margin:18px 0 6px}.note{margin:5px 0;font-size:.88rem}
-.lay{display:flex;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
-.lay:hover{background:var(--soft)}
-.lay-name{flex:1;font:500 .86rem var(--mono)}.lay-tag{color:var(--muted);font-size:.74rem}.lay-n{color:var(--muted);font:.8rem var(--mono);min-width:2.5em;text-align:right}
-
-@media (max-width:600px){.mark,.hint{display:none}.top-in{display:block}.steps{gap:4px 16px}}
-footer{border-top:1px solid var(--line);color:var(--muted);font-size:.8rem;padding:20px clamp(16px,4vw,48px) 36px;max-width:1376px;margin:0 auto}
-footer p{max-width:62em;margin:0}
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NKDA Smart DCR Pre-Check | CyManSquare</title>
+  <link rel="icon" href="../../assets/images/cymansquare_logo.svg" type="image/svg+xml"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Akaya+Kanadaka&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../src/styles/data_extraction_kmc/style_kmc.css"/>
+  <link rel="stylesheet" href="nkda.css"/>
 </head>
 <body>
-<header class="top">
-  <div class="top-in">
-    <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <rect x="3" y="3" width="42" height="42" stroke="currentColor" stroke-width="1.6"/>
-      <rect x="11" y="11" width="26" height="26" stroke="#0e6b63" stroke-width="1.6" stroke-dasharray="4 3"/>
-      <path d="M17 24.5l5 5 9-11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- SVG Background -->
+  <div class="bg-vector">
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <ellipse class="blob b1" cx="25%" cy="35%" rx="320" ry="220"/>
+      <ellipse class="blob b2" cx="75%" cy="65%" rx="280" ry="200"/>
+      <g id="gridLines"></g>
+      <g id="geoShapes"></g>
     </svg>
-    <div>
-      <p class="eyebrow">Smart DCR &middot; Pre-Check &middot; Unofficial</p>
-      <h1>Check your drawing <em>before</em> you submit it.</h1>
-      <p class="tag">Upload a DXF and see, object by object, what the NKDA Smart DCR manual would reject. Everything runs in your browser, so your drawing never leaves your device.</p>
-      <ol class="steps"><li>Upload your DXF</li><li>Review the issues</li><li>Download the report</li></ol>
-    </div>
-  </div>
-</header>
-<main>
-  <div id="banner" class="banner" role="alert" hidden></div>
-
-  <label id="drop" class="drop" for="file">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 17v3h16v-3"/></svg>
-    <b>Drop your .dxf file here, or choose a file</b>
-    <small>Save from AutoCAD as ASCII DXF (SAVEAS). DWG files cannot be read in the browser.</small>
-    <input id="file" type="file" accept=".dxf">
-  </label>
-  <div class="row">
-    <span id="status" class="status" aria-live="polite"></span>
-    <span class="status">No drawing handy? Try a sample:</span>
-    <button id="sampleGood" class="link" type="button">clean drawing</button>
-    <button id="sampleBad" class="link" type="button">drawing with faults</button>
   </div>
 
-  <section id="results" hidden>
-    <div id="sumBar" class="sum" role="status"></div>
-    <div class="row actions">
-      <button id="btnPdf" class="btn" type="button">Download PDF report</button>
-      <button id="btnDxf" class="btn ghost" type="button">Download marked-up DXF</button>
-      <span class="status">The marked-up DXF adds circles, grey crosses and error text on a new layer called NONCOMPLIANT, which Smart DCR ignores.</span>
-    </div>
-    <div class="work">
-      <div id="viewerWrap" class="viewer">
-        <canvas id="canvas" aria-label="Drawing preview. Drag to pan, scroll to zoom."></canvas>
-        <div class="tools">
-          <button id="btnIn" type="button" aria-label="Zoom in">+</button>
-          <button id="btnOut" type="button" aria-label="Zoom out">&minus;</button>
-          <button id="btnFit" type="button" aria-label="Fit drawing" title="Fit drawing">&#9635;</button>
+  <!-- Firebase SDKs + shared header / footer / login guard (same as check.html) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="../../../src/js/feature-shell.js"
+          data-feature="NKDA Smart DCR Pre-Check / V-1.0.0"
+          data-login="../data_extraction_kmc/login.html"
+          data-home="../../../../index.html">
+  </script>
+
+  <!-- Inject nav pills + status + clear button into #_cymShellBar (created by feature-shell.js) -->
+  <script>
+  (function injectIntoShellBar() {
+    function doInject() {
+      var bar = document.getElementById('_cymShellBar');
+      if (!bar) return;
+
+      if (!document.getElementById('kmc-nav-pills')) {
+        var nav = document.createElement('div');
+        nav.className = 'sh-nav';
+        nav.innerHTML =
+          '<nav class="sh-nav-pills" id="kmc-nav-pills">' +
+            '<button class="sh-pill active" onclick="nkSwitchNav(\'home\',this)">' +
+              '<svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>Home' +
+            '</button>' +
+            '<button class="sh-pill" onclick="nkSwitchNav(\'guide\',this)">' +
+              '<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Guide' +
+            '</button>' +
+            '<button class="sh-pill" onclick="nkSwitchNav(\'updates\',this)">' +
+              '<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Updates' +
+            '</button>' +
+          '</nav>';
+        var firstChild = bar.firstElementChild;
+        if (firstChild && firstChild.nextSibling) bar.insertBefore(nav, firstChild.nextSibling);
+        else bar.appendChild(nav);
+      }
+
+      if (!document.getElementById('kmc-shell-right')) {
+        var right = document.createElement('div');
+        right.id = 'kmc-shell-right';
+        right.className = 'sh-right';
+        right.innerHTML =
+          '<div class="status-bar">' +
+            '<div class="status-dot" id="status-dot"></div>' +
+            '<span id="status-text">No file loaded — upload to begin</span>' +
+          '</div>' +
+          '<button id="clearStorageBtn" class="btn btn-danger" style="display:none" onclick="window.nkReset && window.nkReset()">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
+              '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>' +
+            '</svg>Clear Data' +
+          '</button>';
+        bar.appendChild(right);
+      }
+
+      bar.style.display = 'flex';
+      bar.style.alignItems = 'center';
+      bar.style.justifyContent = 'space-between';
+      bar.style.flexWrap = 'wrap';
+      bar.style.gap = '10px';
+    }
+    function tryInject() {
+      if (document.getElementById('_cymShellBar')) { doInject(); return; }
+      var tries = 0, poll = setInterval(function () {
+        tries++;
+        if (document.getElementById('_cymShellBar')) { doInject(); clearInterval(poll); }
+        else if (tries > 60) clearInterval(poll);
+      }, 50);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tryInject);
+    else tryInject();
+  })();
+
+  /* Top nav switcher: Home / Guide / Updates */
+  function nkSwitchNav(target, btn) {
+    document.getElementById('section-home').style.display      = (target === 'home')    ? '' : 'none';
+    document.getElementById('kmc-guide-section').style.display   = (target === 'guide')   ? '' : 'none';
+    document.getElementById('kmc-updates-section').style.display = (target === 'updates') ? '' : 'none';
+    document.querySelectorAll('.sh-pill').forEach(function (p) { p.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+    if (target === 'home') window.dispatchEvent(new Event('resize'));
+  }
+  </script>
+
+  <!-- ══════════════════════════════════════════
+       APP WRAPPER
+  ══════════════════════════════════════════ -->
+  <div class="app-wrapper">
+
+    <!-- ══════════ HOME / UPLOAD ══════════ -->
+    <div id="section-home" class="tab-section active">
+      <div class="page">
+
+        <div class="home-hero" id="home-hero">
+          <h2>Smarter Checks | Faster Fixes | Built for <span class="c-blue">NKDA Smart DCR</span> Professionals.</h2>
+          <p>Check your DXF drawing before you submit it. Everything runs in your browser.</p>
         </div>
-        <div class="hint">Drag to pan &middot; scroll or pinch to zoom &middot; click a ring to select an issue &middot; grey cross = object with an error</div>
-      </div>
-      <aside class="side">
-        <div class="tabs" role="tablist">
-          <button class="tab" role="tab" data-tab="Issues" aria-selected="true">Issues</button>
-          <button class="tab" role="tab" data-tab="Layers" aria-selected="false">Layers</button>
-          <button class="tab" role="tab" data-tab="Notes" aria-selected="false">Not checked</button>
-        </div>
-        <div id="panelIssues" class="panel">
-          <div class="filters">
-            <label><input id="f-error" type="checkbox" checked><span class="dot" style="background:var(--err)"></span>Errors <span id="cnt-error">0</span></label>
-            <label><input id="f-warning" type="checkbox" checked><span class="dot" style="background:var(--warn)"></span>Warnings <span id="cnt-warning">0</span></label>
-            <label><input id="f-info" type="checkbox" checked><span class="dot" style="background:var(--info)"></span>Info <span id="cnt-info">0</span></label>
-            <input id="q" type="search" placeholder="Search issues, layers, handles..." aria-label="Search issues">
+
+        <div class="home-two-col" style="justify-content:center;">
+          <div class="home-col home-col-right" id="dxf-right-col" style="max-width:560px;width:100%;">
+
+            <div class="col-icon" aria-hidden="true">
+              <div class="col-icon-ring r-purple">
+                <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="none">
+                  <rect x="6" y="2" width="28" height="38" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+                  <path d="M26 2v10h8" fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+                  <rect x="4" y="26" width="32" height="16" rx="3" fill="#7c3aed"/>
+                  <text x="20" y="38" text-anchor="middle" fill="#fff" font-weight="800" font-size="9" font-family="monospace">DXF</text>
+                </svg>
+              </div>
+            </div>
+            <div class="col-badge b-purple" aria-hidden="true">01</div>
+
+            <div class="col-card-title">
+              <h2>NKDA <span class="c-purple">Smart DCR Pre-Check</span></h2>
+              <p>Upload your AutoCAD DXF drawing to see, object by object,<br>what the Smart DCR manual would reject.</p>
+            </div>
+
+            <div class="col-inner">
+              <div id="info-container">
+                <div class="dxf-panel" id="dxf-upload-panel">
+                  <div class="dxf-panel-body">
+                    <div id="banner" class="nk-banner" role="alert" hidden></div>
+                    <div class="dxf-upload-row" style="justify-content:center;">
+                      <div class="dxf-dropzone" id="drop" style="width:100%;max-width:420px;grid-column:1/-1;margin:0 auto;">
+                        <input type="file" id="file" accept=".dxf" style="display:none"/>
+                        <span class="dxf-dz-icon" id="nk-ico">📂</span>
+                        <div class="dxf-dz-label">Your DXF Drawing</div>
+                        <div class="dxf-dz-hint" id="nk-hint">Drop or click · ASCII DXF only (no DWG)</div>
+                        <div class="dxf-dz-err" id="nk-err"></div>
+                      </div>
+                    </div>
+                    <div class="dxf-divider"></div>
+                    <button class="dxf-btn-extract" id="nk-btn-check" disabled>⚡ Check Drawing</button>
+                    <div class="dxf-info-text">
+                      In AutoCAD use SAVEAS and pick an ASCII DXF format.<br>
+                      Your drawing never leaves your device.
+                    </div>
+                    <div class="dxf-info-text" style="margin-top:8px;">
+                      <span id="status" class="nk-status" aria-live="polite"></span>
+                      No drawing handy? Try a sample:
+                      <button id="sampleGood" class="nk-link" type="button">clean drawing</button> ·
+                      <button id="sampleBad" class="nk-link" type="button">drawing with faults</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div id="issueList"></div>
         </div>
-        <div id="panelLayers" class="panel" hidden><div id="layerList"></div></div>
-        <div id="panelNotes" class="panel" hidden><div id="notesList"></div></div>
-      </aside>
+      </div><!-- /page -->
+
+      <!-- ══════════ RESULTS (shown after a check) ══════════ -->
+      <div id="results" class="nk-wide" hidden>
+        <div class="data-card" style="margin-top:0;">
+          <div class="data-card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <span>Check result — <span id="loaded-filename" style="font-weight:500;color:var(--accent);font-size:.9em;font-family:var(--font-mono);"></span></span>
+            <span style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button id="btnPdf" class="btn btn-primary" type="button">Download PDF report</button>
+              <button id="btnDxf" class="btn" type="button">Download marked-up DXF</button>
+            </span>
+          </div>
+          <div id="sumBar" class="sum" role="status"></div>
+          <div class="nk-note">The marked-up DXF adds circles, grey crosses and error text on a new layer called NONCOMPLIANT, which Smart DCR ignores.</div>
+
+          <div class="work">
+            <div id="viewerWrap" class="viewer">
+              <canvas id="canvas" aria-label="Drawing preview. Drag to pan, scroll to zoom."></canvas>
+              <div class="tools">
+                <button id="btnIn" type="button" aria-label="Zoom in">+</button>
+                <button id="btnOut" type="button" aria-label="Zoom out">&minus;</button>
+                <button id="btnFit" type="button" aria-label="Fit drawing" title="Fit drawing">&#9635;</button>
+              </div>
+              <div class="hint">Drag to pan &middot; scroll or pinch to zoom &middot; click a ring to select an issue &middot; grey cross = object with an error</div>
+            </div>
+            <aside class="side">
+              <div class="tabs" role="tablist">
+                <button class="tab" role="tab" data-tab="Issues" aria-selected="true">Issues</button>
+                <button class="tab" role="tab" data-tab="Layers" aria-selected="false">Layers</button>
+                <button class="tab" role="tab" data-tab="Notes" aria-selected="false">Not checked</button>
+              </div>
+              <div id="panelIssues" class="nk-panel">
+                <div class="filters">
+                  <label><input id="f-error" type="checkbox" checked><span class="dot" style="background:var(--accent-red)"></span>Errors <span id="cnt-error">0</span></label>
+                  <label><input id="f-warning" type="checkbox" checked><span class="dot" style="background:#d97706"></span>Warnings <span id="cnt-warning">0</span></label>
+                  <label><input id="f-info" type="checkbox" checked><span class="dot" style="background:var(--orange)"></span>Info <span id="cnt-info">0</span></label>
+                  <input id="q" type="search" placeholder="Search issues, layers, handles..." aria-label="Search issues">
+                </div>
+                <div id="issueList"></div>
+              </div>
+              <div id="panelLayers" class="nk-panel" hidden><div id="layerList"></div></div>
+              <div id="panelNotes" class="nk-panel" hidden><div id="notesList"></div></div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature strip -->
+      <div class="feature-strip" id="feature-strip">
+        <div class="feature-item">
+          <div class="feature-icon-wrap fi-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <div class="feature-txt"><strong>Secure &amp; Private</strong><span>Your drawing is checked in your browser and never uploaded.</span></div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-wrap fi-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+          </div>
+          <div class="feature-txt"><strong>Object-level Issues</strong><span>Click an issue to zoom to the exact object in the drawing preview.</span></div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-wrap fi-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div class="feature-txt"><strong>PDF Report</strong><span>Download a printable report of every error and warning.</span></div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon-wrap fi-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="feature-txt"><strong>Marked-up DXF</strong><span>Get your drawing back with each problem circled on its own layer.</span></div>
+        </div>
+      </div>
+    </div><!-- /section-home -->
+
+    <!-- ══════════ GUIDE ══════════ -->
+    <div id="kmc-guide-section" style="display:none;">
+      <div class="kmc-nav-section">
+        <div class="kns-hero"><h2>📋 Full Instructions</h2><p>Step-by-step guide for the NKDA Smart DCR Pre-Check.</p></div>
+        <div class="kns-block">
+          <div class="kns-block-header">
+            <div class="kns-num np">01</div>
+            <div><h3>DXF <span class="cp">Pre-Check</span></h3><p>Upload one DXF file and review what the Smart DCR manual would reject</p></div>
+          </div>
+          <div class="kns-steps">
+            <div class="kns-step"><div class="kns-snum sp">1</div><div><h4>Save as ASCII DXF</h4><p>In AutoCAD use <code>SAVEAS</code> and pick an ASCII DXF format. DWG files cannot be read in the browser.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sp">2</div><div><h4>Upload the DXF</h4><p>Click or drag your <code>.dxf</code> file into the upload zone. Any filename is accepted.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sp">3</div><div><h4>Check Drawing</h4><p>Click <strong>"⚡ Check Drawing"</strong>. Only objects on <strong>FLOOR</strong> layers are checked; other layers are ignored, as in Smart DCR.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sp">4</div><div><h4>Review the Issues</h4><p>Click an issue to zoom to the object. Red rings are errors, amber rings are warnings, and a grey cross marks an object with an error.</p></div></div>
+            <div class="kns-step"><div class="kns-snum sp">5</div><div><h4>Download the Reports</h4><p>Use <strong>Download PDF report</strong> for the full list, or <strong>Download marked-up DXF</strong> to see every problem on a new <code>NONCOMPLIANT</code> layer.</p></div></div>
+            <div class="kns-tip"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span><strong>Important:</strong> This is an unofficial tool. It checks drawing format only, not building rules, and passing here does not guarantee the official Pre-Check will pass.</span></div>
+          </div>
+        </div>
+      </div>
     </div>
-  </section>
-</main>
-<footer>
-  <p>Unofficial tool based on the NKDA Smart DCR User Manual v2.0 (Vinzas Solutions India Pvt Ltd). It checks drawing format only (Pre-Check), not building rules. It is not affiliated with NKDA, and passing here does not guarantee the official Pre-Check will pass. The architect remains responsible for compliance with the rules.</p>
-</footer>
-<script src="vendor/jspdf.umd.min.js"></script>
-<script src="nkda-checker.js"></script>
-<script src="report.js"></script>
-<script src="app.js"></script>
+
+    <!-- ══════════ UPDATES ══════════ -->
+    <div id="kmc-updates-section" style="display:none;">
+      <div class="kmc-nav-section narrow">
+        <div class="kns-hero"><h2>⚡ Updates &amp; Changelog</h2><p>What's new in the NKDA Smart DCR Pre-Check.</p></div>
+        <div class="kns-timeline">
+          <div class="kns-entry">
+            <div class="kns-entry-meta"><span class="kns-badge latest">v1.0.0 — Latest</span><span class="kns-date">November 2026</span></div>
+            <h4>First release</h4>
+            <ul>
+              <li>Checks an ASCII DXF against the NKDA Smart DCR User Manual v2.0 (format only)</li>
+              <li>Drawing preview with issue rings, zoom and pan</li>
+              <li>PDF report and marked-up DXF download</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app-wrapper -->
+
+  <div class="nk-disclaimer">
+    Unofficial tool based on the NKDA Smart DCR User Manual v2.0 (Vinzas Solutions India Pvt Ltd). It is not affiliated with NKDA. The architect remains responsible for compliance with the rules.
+  </div>
+
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="nkda-checker.js"></script>
+  <script src="report.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
