@@ -12,7 +12,8 @@
   'use strict';
 
   const script      = document.currentScript;
-  const featureName = script.getAttribute('data-feature') || 'Feature';
+  const featureName  = script.getAttribute('data-feature') || 'Feature';
+  const featureShort = script.getAttribute('data-feature-short') || featureName;
   const loginPage   = script.getAttribute('data-login')   || 'login.html';
   const homeUrl     = script.getAttribute('data-home')    || '../../../../index.html';
   const scriptBase  = script.src.substring(0, script.src.lastIndexOf('/') + 1);
@@ -136,6 +137,12 @@
   [data-dark="1"] #_cymShellFooter{border-color:rgba(255,255,255,.06);color:#8892b0}
   #_cymShellFooter a{color:#2d98fd;text-decoration:none}
   #_cymShellFooter a:hover{text-decoration:underline}
+  ._cym-feature-short{display:none!important}
+    @media(max-width:640px){
+      ._cym-feature-full{display:none!important}
+      ._cym-feature-short{display:inline!important}
+      ._cym-username{display:none!important}
+    }
   `;
   document.head.appendChild(st);
 
@@ -150,7 +157,7 @@
     const init = (user.displayName||user.email||'U')[0].toUpperCase();
     const name = user.displayName||user.email.split('@')[0];
     const av   = user.photoURL ? `<img src="${user.photoURL}" alt="${init}">` : init;
-    return `<div class="_cym-avatar" id="_cymAvatar">${av}</div>
+    return `<div class="_cym-avatar" id="_cymAvatar" title="${name}">${av}</div>
       <span class="_cym-username">${name}</span>
       <button class="_cym-ctrl-btn" id="_cymDarkToggle" data-tip="${isDark()?'Light mode':'Dark mode'}">
         <span id="_cymDarkIcon">
@@ -202,7 +209,7 @@
     bar.id = '_cymShellBar';
     bar.innerHTML = `
       <div style="display:flex;align-items:center;gap:6px">${buildBrand()}
-        <span style="font-size:.78rem;font-weight:600;opacity:.5">${featureName}</span>
+        <span style="font-size:.78rem;font-weight:600;opacity:.5"><span class="_cym-feature-full">${featureName}</span><span class="_cym-feature-short">${featureShort}</span></span>
       </div>
       <div class="_cym-right">${buildUser(user)}</div>`;
     document.body.insertBefore(bar, document.body.firstChild);
