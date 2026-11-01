@@ -737,3 +737,76 @@ body.dark-mode .plan-btn { border-color: rgba(255,255,255,.18); }
   .upd-ico { width:46px; height:46px; font-size:1.25rem; }
   .upd-points { width:100%; }
 }
+/* =================================
+   HOME PAGE NKDA DEMO VIDEO
+================================= */
+
+.viewport section:first-child .card {
+    position: relative;
+    overflow: hidden;
+}
+
+.home-video-wrap {
+    position: absolute;
+    width: 30%;
+    right: 4%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #10152205;
+    border: 1px solid rgba(29, 129, 230, 0.507);
+}
+
+.home-demo-video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: #101522;
+}
+
+.video-caption {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 14px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    color: #2d98fd;
+    background: rgba(10, 17, 30, 0.96);
+}
+
+.video-live-dot {
+    width: 8px;
+    height: 8px;
+    background: #2d98fd;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #2d98fd;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+
+    .viewport section:first-child .card {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        overflow-y: auto;
+    }
+
+    .home-video-wrap {
+        position: relative;
+        width: 100%;
+        right: auto;
+        top: auto;
+        transform: none;
+        margin-top: 25px;
+    }
+
+    .home-demo-video {
+        width: 100%;
+    }
+}
