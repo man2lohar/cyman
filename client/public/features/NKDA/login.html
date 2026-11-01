@@ -287,10 +287,10 @@
     /* ── URL params ── */
     const params   = new URLSearchParams(location.search);
     const feature  = params.get('feature')  || 'Feature';
-    const DEFAULT_REDIRECT = 'index_kmc.html';
+    const DEFAULT_REDIRECT = 'index.html';
     const ALLOWED_REDIRECTS = new Set([
-      '/features/data_extraction_kmc/index_kmc.html',
-      '/features/data_extraction_kmc/login.html'
+      '/features/NKDA/index.html',
+      '/features/NKDA/login.html'
     ]);
 
     function getSafeRedirect(value) {
