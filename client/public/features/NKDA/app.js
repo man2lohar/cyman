@@ -80,6 +80,40 @@
 
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
 
+  /* ---- page state (shell status bar, upload card, reset) ---- */
+  function showUpload(on) {
+    ['home-hero', 'feature-strip'].forEach(function (id) { var n = $(id); if (n) n.style.display = on ? '' : 'none'; });
+    var col = document.querySelector('.home-two-col'); if (col) col.style.display = on ? 'flex' : 'none';
+  }
+  function setShell(loaded, name) {
+    var dot = $('status-dot'), txt = $('status-text'), clr = $('clearStorageBtn');
+    if (dot) dot.classList.toggle('green', !!loaded);
+    if (txt) txt.textContent = loaded ? 'Checked — ' + name : 'No file loaded — upload to begin';
+    if (clr) clr.style.display = loaded ? 'inline-flex' : 'none';
+  }
+  root.nkReset = function () {
+    state.result = null; state.pending = null; state.fileName = ''; state.dxfText = '';
+    $('results').hidden = true; $('banner').hidden = true; $('status').textContent = '';
+    $('drop').classList.remove('ok', 'err', 'over'); $('nk-ico').textContent = '\ud83d\udcc2';
+    $('nk-hint').textContent = 'Drop or click \u00b7 ASCII DXF only (no DWG)'; $('nk-err').textContent = '';
+    $('nk-btn-check').disabled = true; $('nk-btn-check').textContent = '\u26a1 Check Drawing';
+    showUpload(true); setShell(false);
+  };
+  /* a file was chosen: validate, then wait for the Check Drawing button */
+  function pick(file) {
+    if (!file) return;
+    var dz = $('drop'); dz.classList.remove('ok', 'err'); showBanner('');
+    if (!/\.dxf$/i.test(file.name)) {
+      state.pending = null; $('nk-btn-check').disabled = true;
+      $('nk-ico').textContent = '\ud83d\udcc2'; dz.classList.add('err');
+      $('nk-err').textContent = 'Please choose a .dxf file (got "' + file.name + '"). DWG files cannot be read in the browser.';
+      return;
+    }
+    state.pending = file; $('nk-err').textContent = '';
+    $('nk-ico').textContent = '\u2705'; $('nk-hint').textContent = file.name; dz.classList.add('ok');
+    $('nk-btn-check').disabled = false;
+  }
+
   /* ---- loading ---- */
   function loadRules() {
     return fetch('rules.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) { state.rules = j; })
@@ -112,11 +146,11 @@
       state.dxfText = text; var canExport = res.drawing.entities.length > 0; $('btnPdf').disabled = !canExport; $('btnDxf').disabled = !canExport;
       state.errMap = new Map();
       res.issues.forEach(function (it) { if (it.ei != null && it.severity !== 'info') { var cur = state.errMap.get(it.ei); if (cur !== 'error') state.errMap.set(it.ei, it.severity); } });
-      $('status').textContent = name;
+      $('status').textContent = '';
       renderSummary(); renderIssues(); renderLayers(); renderNotes();
-      $('results').hidden = false;
+      $('results').hidden = false; $('loaded-filename').textContent = name;
+      showUpload(false); setShell(true, name);
       resize(); fitAll(); schedule();
-      if ($('results').scrollIntoView) $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 30);
   }
 
@@ -367,11 +401,13 @@
   $('q').addEventListener('input', function (ev) { state.filt.q = ev.target.value.trim().toLowerCase(); if (state.result) renderIssues(); });
 
   /* upload */
-  var drop = $('drop');
-  $('file').addEventListener('change', function (ev) { handleFile(ev.target.files[0]); ev.target.value = ''; });
+  var drop = $('drop'), fileInp = $('file');
+  drop.addEventListener('click', function (ev) { if (ev.target !== fileInp) fileInp.click(); });
+  fileInp.addEventListener('change', function (ev) { pick(ev.target.files[0]); ev.target.value = ''; });
   ['dragenter', 'dragover'].forEach(function (n) { drop.addEventListener(n, function (ev) { ev.preventDefault(); drop.classList.add('over'); }); });
   ['dragleave', 'drop'].forEach(function (n) { drop.addEventListener(n, function (ev) { ev.preventDefault(); drop.classList.remove('over'); }); });
-  drop.addEventListener('drop', function (ev) { handleFile(ev.dataTransfer.files[0]); });
+  drop.addEventListener('drop', function (ev) { pick(ev.dataTransfer.files[0]); });
+  $('nk-btn-check').addEventListener('click', function () { if (state.pending) handleFile(state.pending); });
   $('sampleGood').addEventListener('click', function () { loadSample('test/good.dxf', 'sample-clean.dxf'); });
   $('sampleBad').addEventListener('click', function () { loadSample('test/bad.dxf', 'sample-faulty.dxf'); });
 
