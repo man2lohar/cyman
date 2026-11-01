@@ -3,75 +3,148 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>NKDA Smart DCR Pre-Check (unofficial)</title>
 <style>
-:root{--bg:#0f1216;--panel:#171b21;--panel2:#1d222a;--line:#2a313b;--text:#e6e9ee;--muted:#9aa4b2;--err:#ff5c5c;--warn:#ffb020;--ok:#3ecf8e;--accent:#5aa9ff;--r:10px}
+:root{
+  --bg:#f6f4ee;--surface:#fffdf8;--soft:#f0ede4;--ink:#1b1a17;--muted:#6c675d;--line:#e3dfd3;--line2:#cdc7b6;
+  --accent:#0e6b63;--err:#c2412d;--errbg:#fbebe7;--warn:#a86400;--ok:#1d7a58;--okbg:#e8f4ee;--info:#2f5f9e;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111110;--surface:#1a1a17;--soft:#22221e;--ink:#efece4;--muted:#9a958a;--line:#2d2c27;--line2:#45433b;
+  --accent:#5fd0c0;--err:#ff8a73;--errbg:#2c1a17;--warn:#f0b24a;--ok:#4fd1a1;--okbg:#14261f;--info:#8fb8f0;
+}}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-button{font:inherit;color:inherit}
-header{padding:20px clamp(14px,3vw,32px) 8px}
-h1{margin:0;font-size:1.35rem;letter-spacing:.2px}
-.tag{margin:2px 0 0;color:var(--muted);font-size:.9rem}
-main{padding:8px clamp(14px,3vw,32px) 28px;max-width:1500px;margin:0 auto}
-.banner{background:#3a1d1d;border:1px solid #7a2e2e;color:#ffd0d0;padding:10px 14px;border-radius:var(--r);margin:10px 0}
-.drop{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:22px 14px;border:2px dashed var(--line);border-radius:var(--r);background:var(--panel);cursor:pointer;transition:border-color .15s,background .15s}
-.drop:hover,.drop.over,.drop:focus-within{border-color:var(--accent);background:var(--panel2)}
-.drop b{font-size:1.02rem}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+*{scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+
+/* ---------- header ---------- */
+.top{position:relative;overflow:hidden;padding:clamp(28px,5vw,56px) clamp(16px,4vw,48px) clamp(18px,3vw,30px)}
+.top::before{content:"";position:absolute;inset:0;z-index:0;opacity:.55;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:32px 32px;-webkit-mask-image:linear-gradient(to bottom,#000 0%,transparent 90%);mask-image:linear-gradient(to bottom,#000 0%,transparent 90%)}
+.top-in{position:relative;z-index:1;max-width:1280px;margin:0 auto;display:flex;gap:clamp(14px,2.5vw,28px);align-items:flex-start}
+.mark{flex:none;width:46px;height:46px;margin-top:6px;color:var(--ink)}
+.eyebrow{margin:0 0 10px;font:600 .72rem/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+h1{margin:0;font:400 clamp(1.9rem,4.4vw,3.15rem)/1.06 var(--serif);letter-spacing:-.025em;max-width:16em}
+h1 em{font-style:italic;color:var(--accent)}
+.tag{margin:14px 0 0;max-width:46em;color:var(--muted);font-size:.98rem}
+.steps{display:flex;flex-wrap:wrap;gap:6px 22px;list-style:none;margin:18px 0 0;padding:0;counter-reset:s;font-size:.8rem;letter-spacing:.04em;color:var(--muted)}
+.steps li{counter-increment:s}
+.steps li::before{content:"0" counter(s);font:600 .72rem var(--mono);color:var(--ink);margin-right:7px}
+
+main{padding:0 clamp(16px,4vw,48px) 36px;max-width:1376px;margin:0 auto}
+.banner{background:var(--errbg);border:1px solid var(--err);color:var(--err);padding:11px 16px;border-radius:12px;margin:0 0 14px}
+
+/* ---------- upload ---------- */
+.drop{--c:var(--ink);position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:34px 16px 30px;cursor:pointer;
+  border:1px solid var(--line);border-radius:6px;transition:background .2s,border-color .2s;
+  background:
+   linear-gradient(var(--c),var(--c)) 0 0/18px 1.5px no-repeat,linear-gradient(var(--c),var(--c)) 0 0/1.5px 18px no-repeat,
+   linear-gradient(var(--c),var(--c)) 100% 0/18px 1.5px no-repeat,linear-gradient(var(--c),var(--c)) 100% 0/1.5px 18px no-repeat,
+   linear-gradient(var(--c),var(--c)) 0 100%/18px 1.5px no-repeat,linear-gradient(var(--c),var(--c)) 0 100%/1.5px 18px no-repeat,
+   linear-gradient(var(--c),var(--c)) 100% 100%/18px 1.5px no-repeat,linear-gradient(var(--c),var(--c)) 100% 100%/1.5px 18px no-repeat,
+   var(--surface)}
+.drop:hover,.drop.over,.drop:focus-within{--c:var(--accent);border-color:var(--line2)}
+.drop.over{background-color:var(--soft)}
+.drop svg{width:26px;height:26px;color:var(--accent);margin-bottom:6px}
+.drop b{font:400 1.25rem/1.25 var(--serif);letter-spacing:-.01em}
 .drop small{color:var(--muted)}
 .drop input{position:absolute;opacity:0;width:1px;height:1px}
-.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
-.status{color:var(--muted);font-size:.9rem}
-.btn{background:var(--accent);color:#06121f;border:0;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}.btn:hover,.btn:focus-visible{filter:brightness(1.1)}.btn:disabled{opacity:.4;cursor:not-allowed}
-.link{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;text-decoration:underline;font-size:.9rem}
-.sum{border-radius:var(--r);padding:14px 16px;margin:12px 0;border:1px solid var(--line);background:var(--panel)}
-.sum.ok{border-color:#1f6b4d;background:#10261d}.sum.bad{border-color:#7a2e2e;background:#2a1517}
-.sum-title{font-size:1.25rem;font-weight:650}.sum.ok .sum-title{color:var(--ok)}.sum.bad .sum-title{color:var(--err)}
-.sum-sub,.sum-note{color:var(--muted);font-size:.9rem;margin-top:2px}
-.work{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:14px;align-items:start}
-@media(max-width:980px){.work{grid-template-columns:1fr}}
-.viewer{position:relative;height:min(72vh,760px);min-height:320px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#000}
-@media(max-width:980px){.viewer{height:55vh}}
-canvas{display:block;touch-action:none;cursor:grab}
-canvas:active{cursor:grabbing}
-.tools{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:6px}
-.tools button{width:38px;height:38px;border-radius:8px;border:1px solid #3a424e;background:rgba(23,27,33,.92);cursor:pointer;font-size:1.05rem}
-.tools button:hover,.tools button:focus-visible{border-color:var(--accent)}
-.hint{position:absolute;left:10px;bottom:8px;color:#7d8794;font-size:.78rem;pointer-events:none}
-.side{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;height:min(72vh,760px);min-height:320px;overflow:hidden}
-@media(max-width:980px){.side{height:auto;max-height:70vh}}
-.tabs{display:flex;border-bottom:1px solid var(--line)}
-.tab{flex:1;padding:10px 6px;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer}
-.tab[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:14px 0}
+.status{color:var(--muted);font-size:.86rem}.status:empty{display:none}
+.link{background:none;border:0;border-bottom:1px solid var(--line2);color:var(--ink);cursor:pointer;padding:0 0 1px;font-size:.86rem}
+.link:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ---------- summary and actions ---------- */
+#results{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#results{animation:none}*{transition:none!important}}
+.sum{display:grid;gap:2px;padding:18px 22px;margin:18px 0 0;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line2);border-radius:6px 14px 14px 6px}
+.sum.ok{border-left-color:var(--ok);background:linear-gradient(90deg,var(--okbg),var(--surface) 55%)}
+.sum.bad{border-left-color:var(--err);background:linear-gradient(90deg,var(--errbg),var(--surface) 55%)}
+.sum-title{font:400 clamp(1.5rem,3vw,2.05rem)/1.15 var(--serif);letter-spacing:-.02em}
+.sum.ok .sum-title{color:var(--ok)}.sum.bad .sum-title{color:var(--err)}
+.sum-sub,.sum-note{color:var(--muted);font-size:.88rem}
+.actions{margin:14px 0 18px}
+.btn{background:var(--ink);color:var(--bg);border:1px solid var(--ink);border-radius:999px;padding:9px 18px;font-weight:550;font-size:.88rem;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line2)}
+.btn.ghost:hover{background:transparent;color:var(--accent);border-color:var(--accent)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ---------- workspace ---------- */
+.work{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;align-items:start}
+@media (max-width:1000px){.work{grid-template-columns:1fr}}
+.viewer{position:relative;height:min(72vh,760px);min-height:320px;border-radius:14px;overflow:hidden;background:#000;
+  box-shadow:0 0 0 1px var(--line2),0 24px 48px -28px rgba(0,0,0,.45)}
+@media (max-width:1000px){.viewer{height:56vh}}
+canvas{display:block;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}
+.tools{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:1px;border-radius:10px;overflow:hidden;background:#3a3a36}
+.tools button{width:38px;height:38px;border:0;background:rgba(18,18,16,.92);color:#eee;cursor:pointer;font-size:1.05rem;transition:background .15s}
+.tools button:hover,.tools button:focus-visible{background:#2b2b27;color:#fff}
+.hint{position:absolute;left:14px;bottom:10px;right:60px;color:#8b887f;font-size:.72rem;letter-spacing:.02em;pointer-events:none}
+.side{display:flex;flex-direction:column;height:min(72vh,760px);min-height:320px;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+@media (max-width:1000px){.side{height:auto;max-height:70vh}}
+.tabs{display:flex;gap:4px;padding:0 10px;border-bottom:1px solid var(--line)}
+.tab{padding:13px 10px 11px;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--muted);cursor:pointer;font-size:.74rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
 .panel{overflow:auto;flex:1;min-height:0}
-.filters{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
-.filters label{display:flex;align-items:center;gap:5px;font-size:.88rem;cursor:pointer}
-.filters input[type=search]{flex:1 1 100%;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:7px 10px;border-radius:8px;font:inherit}
-.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
-.grp{display:flex;gap:8px;align-items:center;width:100%;text-align:left;padding:8px 12px;background:var(--panel2);border:0;border-bottom:1px solid var(--line);cursor:pointer;position:sticky;top:0}
-.grp-code{font:600 .78rem ui-monospace,Consolas,monospace;padding:1px 6px;border-radius:5px;background:#000}
-.sev-error .grp-code{color:var(--err)}.sev-warning .grp-code{color:var(--warn)}.sev-info .grp-code{color:var(--accent)}
-.grp-title{flex:1;font-size:.9rem}.grp-count{color:var(--muted);font-size:.85rem}
-.iss{display:block;width:100%;text-align:left;padding:9px 12px;background:none;border:0;border-bottom:1px solid var(--line);cursor:pointer}
-.iss:hover{background:#1a1f26}.iss.sel{background:#232b36;box-shadow:inset 3px 0 0 var(--accent)}
-.iss-msg{font-size:.9rem}.iss-meta{color:var(--muted);font-size:.78rem;margin-top:2px;word-break:break-word}
-.empty,.note,.note-h{padding:0 14px;color:var(--muted)}.empty{padding:16px 14px}
-.note-h{color:var(--text);font-weight:600;margin:14px 0 4px}.note{margin:4px 0;font-size:.9rem}
-.lay{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer}
-.lay-name{flex:1;font-weight:500}.lay-tag{color:var(--muted);font-size:.78rem}.lay-n{color:var(--muted);font-size:.85rem;min-width:2.5em;text-align:right}
-footer{color:var(--muted);font-size:.82rem;padding:6px clamp(14px,3vw,32px) 30px;max-width:1500px;margin:0 auto}
-[hidden]{display:none!important}
+.filters{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
+.filters label{display:flex;align-items:center;gap:6px;font-size:.84rem;cursor:pointer}
+.filters input[type=checkbox],.lay input{accent-color:var(--accent)}
+.filters input[type=search]{flex:1 1 100%;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:.88rem}
+.filters input[type=search]::placeholder{color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.grp{position:sticky;top:0;display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:9px 14px;background:var(--soft);border:0;border-bottom:1px solid var(--line);cursor:pointer}
+.grp-code{font:600 .7rem var(--mono);padding:2px 7px;border-radius:999px;background:var(--surface);border:1px solid var(--line2)}
+.sev-error .grp-code{color:var(--err)}.sev-warning .grp-code{color:var(--warn)}.sev-info .grp-code{color:var(--info)}
+.grp-title{flex:1;font-size:.86rem;font-weight:550}.grp-count{color:var(--muted);font:.8rem var(--mono)}
+.iss{display:block;width:100%;text-align:left;padding:11px 14px;background:none;border:0;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s}
+.iss:hover{background:var(--soft)}
+.iss.sel{background:var(--soft);box-shadow:inset 3px 0 0 var(--accent)}
+.iss-msg{font-size:.88rem;line-height:1.45}.iss-meta{color:var(--muted);font:.72rem var(--mono);margin-top:3px;word-break:break-word}
+.empty,.note,.note-h{padding:0 16px;color:var(--muted)}.empty{padding:18px 16px}
+.note-h{color:var(--ink);font:400 1.05rem var(--serif);margin:18px 0 6px}.note{margin:5px 0;font-size:.88rem}
+.lay{display:flex;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.lay:hover{background:var(--soft)}
+.lay-name{flex:1;font:500 .86rem var(--mono)}.lay-tag{color:var(--muted);font-size:.74rem}.lay-n{color:var(--muted);font:.8rem var(--mono);min-width:2.5em;text-align:right}
+
+@media (max-width:600px){.mark,.hint{display:none}.top-in{display:block}.steps{gap:4px 16px}}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:.8rem;padding:20px clamp(16px,4vw,48px) 36px;max-width:1376px;margin:0 auto}
+footer p{max-width:62em;margin:0}
 </style>
 </head>
 <body>
-<header>
-  <h1>NKDA Smart DCR Pre-Check <span style="color:var(--muted);font-weight:400">(unofficial)</span></h1>
-  <p class="tag">Check your DXF drawing against the Smart DCR User Manual v2.0 before you submit. Your file stays on your device: everything runs in your browser.</p>
+<header class="top">
+  <div class="top-in">
+    <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="42" height="42" stroke="currentColor" stroke-width="1.6"/>
+      <rect x="11" y="11" width="26" height="26" stroke="#0e6b63" stroke-width="1.6" stroke-dasharray="4 3"/>
+      <path d="M17 24.5l5 5 9-11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <p class="eyebrow">Smart DCR &middot; Pre-Check &middot; Unofficial</p>
+      <h1>Check your drawing <em>before</em> you submit it.</h1>
+      <p class="tag">Upload a DXF and see, object by object, what the NKDA Smart DCR manual would reject. Everything runs in your browser, so your drawing never leaves your device.</p>
+      <ol class="steps"><li>Upload your DXF</li><li>Review the issues</li><li>Download the report</li></ol>
+    </div>
+  </div>
 </header>
 <main>
   <div id="banner" class="banner" role="alert" hidden></div>
 
   <label id="drop" class="drop" for="file">
-    <b>Drop your .dxf file here, or click to choose</b>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 17v3h16v-3"/></svg>
+    <b>Drop your .dxf file here, or choose a file</b>
     <small>Save from AutoCAD as ASCII DXF (SAVEAS). DWG files cannot be read in the browser.</small>
     <input id="file" type="file" accept=".dxf">
   </label>
@@ -84,10 +157,10 @@ footer{color:var(--muted);font-size:.82rem;padding:6px clamp(14px,3vw,32px) 30px
 
   <section id="results" hidden>
     <div id="sumBar" class="sum" role="status"></div>
-    <div class="row">
+    <div class="row actions">
       <button id="btnPdf" class="btn" type="button">Download PDF report</button>
-      <button id="btnDxf" class="btn" type="button">Download marked-up DXF</button>
-      <span class="status">The marked-up DXF adds circles, grey crosses and error text on a new layer called NONCOMPLIANT. Smart DCR ignores that layer.</span>
+      <button id="btnDxf" class="btn ghost" type="button">Download marked-up DXF</button>
+      <span class="status">The marked-up DXF adds circles, grey crosses and error text on a new layer called NONCOMPLIANT, which Smart DCR ignores.</span>
     </div>
     <div class="work">
       <div id="viewerWrap" class="viewer">
@@ -97,7 +170,7 @@ footer{color:var(--muted);font-size:.82rem;padding:6px clamp(14px,3vw,32px) 30px
           <button id="btnOut" type="button" aria-label="Zoom out">&minus;</button>
           <button id="btnFit" type="button" aria-label="Fit drawing" title="Fit drawing">&#9635;</button>
         </div>
-        <div class="hint">Drag to pan &middot; scroll or pinch to zoom &middot; click a red or amber ring to select an issue &middot; grey cross = object with an error</div>
+        <div class="hint">Drag to pan &middot; scroll or pinch to zoom &middot; click a ring to select an issue &middot; grey cross = object with an error</div>
       </div>
       <aside class="side">
         <div class="tabs" role="tablist">
@@ -109,7 +182,7 @@ footer{color:var(--muted);font-size:.82rem;padding:6px clamp(14px,3vw,32px) 30px
           <div class="filters">
             <label><input id="f-error" type="checkbox" checked><span class="dot" style="background:var(--err)"></span>Errors <span id="cnt-error">0</span></label>
             <label><input id="f-warning" type="checkbox" checked><span class="dot" style="background:var(--warn)"></span>Warnings <span id="cnt-warning">0</span></label>
-            <label><input id="f-info" type="checkbox" checked><span class="dot" style="background:var(--accent)"></span>Info <span id="cnt-info">0</span></label>
+            <label><input id="f-info" type="checkbox" checked><span class="dot" style="background:var(--info)"></span>Info <span id="cnt-info">0</span></label>
             <input id="q" type="search" placeholder="Search issues, layers, handles..." aria-label="Search issues">
           </div>
           <div id="issueList"></div>
@@ -121,7 +194,7 @@ footer{color:var(--muted);font-size:.82rem;padding:6px clamp(14px,3vw,32px) 30px
   </section>
 </main>
 <footer>
-  Unofficial tool based on the NKDA Smart DCR User Manual v2.0 (Vinzas Solutions India Pvt Ltd). It checks drawing format only (Pre-Check), not building rules. It is not affiliated with NKDA, and passing here does not guarantee the official Pre-Check will pass. The architect remains responsible for compliance with the rules.
+  <p>Unofficial tool based on the NKDA Smart DCR User Manual v2.0 (Vinzas Solutions India Pvt Ltd). It checks drawing format only (Pre-Check), not building rules. It is not affiliated with NKDA, and passing here does not guarantee the official Pre-Check will pass. The architect remains responsible for compliance with the rules.</p>
 </footer>
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="nkda-checker.js"></script>
