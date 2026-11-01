@@ -116,6 +116,7 @@
       renderSummary(); renderIssues(); renderLayers(); renderNotes();
       $('results').hidden = false;
       resize(); fitAll(); schedule();
+      if ($('results').scrollIntoView) $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 30);
   }
 
