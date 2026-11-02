@@ -104,8 +104,28 @@ function bad() {
   return d.toString();
 }
 
+
+// Uses what manual v3.0 added: intermediate terrace layer, new assembly words, free block names, driveway polyline + text
+function v3() {
+  const d = new Dxf(6);
+  ['FLOOR-GROUND', 'FLOOR-PARKING', 'FLOOR01', 'FLOOR-TERRACE', 'FLOOR-TERRACEINTERMEDIATE 01', 'FLOOR-TERRACEINTERMEDIATE 02'].forEach(n => d.layer(n));
+  const G = 'FLOOR-GROUND', F = 'FLOOR01';
+  d.rect(G, 61, 0, 0, 100, 80);
+  d.rect(G, 7, 10, 10, 90, 70);
+  d.rect(G, 10, 20, 20, 80, 60);
+  d.rect(G, 50, 5, 5, 95, 75); d.text(G, 50, [40, 7], 0.5, 'SERVICE BUILDING');            // block names are free text in v3.0
+  d.poly('FLOOR-PARKING', 39, [[12, 12], [12, 30], [30, 30]], { closed: false }); d.text('FLOOR-PARKING', 39, [13, 20], 0.3, '4MT WIDE DRIVEWAY FOR CAR');
+  d.rect(F, 6, 20, 20, 80, 60); d.text(F, 6, [50, 40], 0.3, 'POLICE STATION');              // new assembly word
+  d.rect(F, 4, 25, 50, 28, 54); d.text(F, 4, [25.5, 51], 0.3, 'STP');
+  d.rect('FLOOR-TERRACE', 227, 20, 20, 80, 60);
+  d.rect('FLOOR-TERRACEINTERMEDIATE 01', 227, 20, 20, 50, 40);
+  d.rect('FLOOR-TERRACEINTERMEDIATE 02', 227, 50, 20, 80, 40);
+  return d.toString();
+}
+
 const dir = path.join(__dirname, 'test');
 fs.mkdirSync(dir, { recursive: true });
 fs.writeFileSync(path.join(dir, 'good.dxf'), good());
 fs.writeFileSync(path.join(dir, 'bad.dxf'), bad());
-console.log('wrote test/good.dxf and test/bad.dxf');
+fs.writeFileSync(path.join(dir, 'v3.dxf'), v3());
+console.log('wrote test/good.dxf, test/bad.dxf and test/v3.dxf');
