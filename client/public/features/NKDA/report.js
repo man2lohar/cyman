@@ -114,7 +114,7 @@
     var s = result.summary, pass = result.pass;
 
     para('NKDA Smart DCR Pre-Check Report', { size: 18, bold: true, gap: 0.5 });
-    para('Unofficial check against the Smart DCR User Manual v2.0 (format only, not building rules)', { size: 9, color: GREY, gap: 3 });
+    para('Unofficial check against the Smart DCR User Manual v' + (result.manualVersion || '3.0') + ' (format only, not building rules)', { size: 9, color: GREY, gap: 3 });
     para('File: ' + meta.fileName, { size: 10 }); para('Checked: ' + meta.when, { size: 10 });
     para('Engine ' + result.engineVersion + '  |  Rules ' + result.rulesVersion, { size: 9, color: GREY, gap: 3 });
 
