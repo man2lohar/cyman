@@ -1,0 +1,1770 @@
+{
+  "meta": {
+    "source": "UD&MA Smart DCR User Manual Version 10.0 (Vinzas Solutions India Private Limited)",
+    "manualVersion": "10.0",
+    "manualDate": "17_08_2026",
+    "scope": "Pre-Check geometry/format compliance only; the manual states that Pre-Check does not scrutinize building regulations.",
+    "rulesVersion": "3.0.0-manual-v10",
+    "note": "Rule entries transcribed from Version 10.0 Section 4.0 and Sections 5.0–17.3. Combined table rows retain grouped descriptions where the manual groups multiple values. Null colors indicate multiple distinct colors listed within one row; see notes. Exact colorVariants are supplied for grouped multi-color rows. A null color means the table row has multiple different colors, not that color is optional.",
+    "sourceSections": [
+      "Sections 3.0–3.1.2",
+      "Section 4.0 (printed pages 7–17)",
+      "Sections 5.0–16.0 (printed pages 18–20)",
+      "Annexure 17.1–17.3 (printed pages 22–122)"
+    ]
+  },
+  "settings": {
+    "processedLayerPrefix": "FLOOR",
+    "otherLayersIgnored": true,
+    "units": {
+      "required": "metres",
+      "scale": "1:1"
+    },
+    "minTextHeightExclusive": 0.05,
+    "textMustBeSingleLine": true,
+    "modelSpaceOnly": true,
+    "allowedEntityTypes": [
+      "LINE",
+      "LWPOLYLINE",
+      "TEXT"
+    ],
+    "forbiddenEntityTypes": [
+      "INSERT",
+      "REGION",
+      "WIPEOUT",
+      "OLE2FRAME",
+      "MTEXT",
+      "POLYLINE_3D",
+      "XREF"
+    ],
+    "forbiddenNote": "Blocks, Regions, Wipeouts and External references shall not be placed; OLE objects shall not be used; MTEXT is not processed; 3D polylines are not supported.",
+    "unlistedEntityTypes": "warn",
+    "entityProperties": {
+      "zCoordinate": 0,
+      "elevation": 0,
+      "thickness": 0,
+      "globalWidth": 0,
+      "lineweight": 0
+    },
+    "polylinesMustBeClosedDefault": null,
+    "closedNote": "The manual says the Pre-Check verifies closed polylines but Section 4.0 also expressly specifies open polylines for Width of Plot and travel distances. Apply closure checks by individual object semantics; do not blanket-close every polyline.",
+    "boundingRectangle": {
+      "type": "LWPOLYLINE",
+      "lowerLeftCorner": [
+        0,
+        0,
+        0
+      ],
+      "objectsOutsideIgnored": true
+    },
+    "compulsoryLabels": [
+      "all floors",
+      "all blocks",
+      "building use"
+    ],
+    "colorMode": "not_specified_by_manual",
+    "drawingPreparation": [
+      "Put the entire drawing in layer 0 before creating Smart DCR layers.",
+      "Only color-coded objects intended for processing are to be placed in layers starting with FLOOR.",
+      "Unlock, unfreeze and turn on layers before submission; purge unwanted layers.",
+      "Do not overlap objects or add unnecessary polyline coordinates."
+    ],
+    "caseInsensitiveLayerNames": null,
+    "caseInsensitiveText": null,
+    "colorModeNote": "The manual gives color-code numbers but does not specify whether ByLayer, ByBlock or true-colour assignments are accepted.",
+    "caseNote": "The manual does not state case-sensitivity rules."
+  },
+  "layerRules": {
+    "caseInsensitive": true,
+    "patterns": [
+      {
+        "id": "L-FLOORNN",
+        "regex": "^FLOOR\\d{2,}$",
+        "kind": "applicable_floor",
+        "meaning": "Any recognized applicable floor layer; applies to all floor categories, not only numbered FLOORnn layers."
+      },
+      {
+        "id": "L-GROUND",
+        "regex": "^FLOOR-GROUND$",
+        "kind": "ground",
+        "meaning": "Common site-related details"
+      },
+      {
+        "id": "L-PARKING",
+        "regex": "^FLOOR-PARKING$",
+        "kind": "parking",
+        "meaning": "Common site-related details"
+      },
+      {
+        "id": "L-BF",
+        "regex": "^FLOOR-BF\\d*$",
+        "kind": "basement",
+        "meaning": "Basement floors; FLOOR-BF1, FLOOR-BF2, etc."
+      },
+      {
+        "id": "L-SERVICE",
+        "regex": "^FLOOR-SERVICE$",
+        "kind": "service",
+        "meaning": "Service floor area"
+      },
+      {
+        "id": "L-MF",
+        "regex": "^FLOOR-MF(?:GROUND|\\d{2})TO\\d{2,}$",
+        "kind": "mezzanine",
+        "meaning": "Mezzanine levels, e.g. FLOOR-MFGROUNDTO01, FLOOR-MF01TO02, FLOOR-MF01TO03"
+      },
+      {
+        "id": "L-TERRACE",
+        "regex": "^FLOOR-TERRACE$",
+        "kind": "terrace",
+        "meaning": "Terrace floor objects"
+      }
+    ],
+    "doNotNameLayer": "APPLICABLE FLOOR LAYER",
+    "kindMeanings": {
+      "applicable_floor": "Any recognized floor layer (numbered floors, ground, parking, basement, service, mezzanine or terrace), wherever the rule specifies applicable_floor."
+    }
+  },
+  "mandatory": [
+    {
+      "name": "All floors must be labelled",
+      "source": "Section 3.0",
+      "severity": "error"
+    },
+    {
+      "name": "All blocks must be labelled",
+      "source": "Section 3.0",
+      "severity": "error"
+    },
+    {
+      "name": "Building use must be provided",
+      "source": "Section 3.0",
+      "severity": "error"
+    }
+  ],
+  "mandatoryNote": "The manual identifies these as compulsory labels. It lists 'Mandatory requirements' as a Pre-Check error class but does not enumerate other mandatory geometric objects.",
+  "siteObjects": {
+    "heading": "Objects to be drawn in site plan or floor plan; layers FLOOR-PARKING / FLOOR-GROUND / FLOOR-BF as specified in Section 4.0.",
+    "rules": [
+      {
+        "id": "SITE-1",
+        "name": "Plot Boundary",
+        "color": 7,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-2",
+        "name": "Setback Boundary",
+        "color": 10,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-3",
+        "name": "Setback Lengths (Front 4, Rear 3, Side1 6, Side2 2)",
+        "color": null,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ],
+        "colorVariants": [
+          4,
+          3,
+          6,
+          2
+        ]
+      },
+      {
+        "id": "SITE-4",
+        "name": "Width of Plot",
+        "color": 96,
+        "types": [
+          "LWPOLYLINE_OPEN"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-5",
+        "name": "Parking Area Boundary",
+        "color": 5,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking"
+        ]
+      },
+      {
+        "id": "SITE-5-1",
+        "name": "Parking Clear Headroom Height",
+        "color": 91,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "basement"
+        ],
+        "colorVariants": [
+          91
+        ]
+      },
+      {
+        "id": "SITE-6",
+        "name": "Basement Above Ground Level",
+        "color": 130,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-6-1",
+        "name": "Basement Floor Height",
+        "color": 91,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "basement"
+        ],
+        "colorVariants": [
+          130,
+          91
+        ]
+      },
+      {
+        "id": "SITE-7",
+        "name": "Driveway Width",
+        "color": 39,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-8",
+        "name": "Car Parking Stalls",
+        "color": 140,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground",
+          "basement"
+        ]
+      },
+      {
+        "id": "SITE-9",
+        "name": "Truck / Bus Space",
+        "color": 152,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-10",
+        "name": "Stacked Parking",
+        "color": 146,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground",
+          "basement"
+        ]
+      },
+      {
+        "id": "SITE-11",
+        "name": "Vehicular Ramp",
+        "color": 107,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground",
+          "basement"
+        ]
+      },
+      {
+        "id": "SITE-12",
+        "name": "Garage Area & Garage Head Room Height",
+        "color": 5,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-13",
+        "name": "Plinth of Garage",
+        "color": 205,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-14",
+        "name": "Road Width",
+        "color": 41,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-15",
+        "name": "Gifted Road (Road Strip)",
+        "color": 118,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-16",
+        "name": "Splay",
+        "color": 1,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-17",
+        "name": "Passage",
+        "color": 56,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-18",
+        "name": "Footpath (Footpath Length & Width)",
+        "color": 43,
+        "types": [
+          "LWPOLYLINE",
+          "LWPOLYLINE_OPEN"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-19",
+        "name": "Canopy or Porch",
+        "color": 112,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-20",
+        "name": "Septic Tank",
+        "color": 112,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-20-1",
+        "name": "Rain Water Harvesting",
+        "color": 42,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-21",
+        "name": "Sewage Treatment Plant",
+        "color": 112,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-22",
+        "name": "Transformer",
+        "color": 20,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-22-1",
+        "name": "Tree Cover Area",
+        "color": 93,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-23",
+        "name": "Row House",
+        "color": 237,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-24",
+        "name": "Distinguishing Blocks",
+        "color": 50,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-25",
+        "name": "Outermost Sheet Boundary",
+        "color": 61,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-26",
+        "name": "Boundary Wall Total Height",
+        "color": 160,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-27",
+        "name": "Height of the Building",
+        "color": 151,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-27-1",
+        "name": "Height of the Chimney above any Flat Roof",
+        "color": 99,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-27-2",
+        "name": "Plinth Height",
+        "color": 105,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-27-3",
+        "name": "Total Height of the Building",
+        "color": 233,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-28",
+        "name": "Pitched Roof Heights (eaves 173, habitable-room pitched roof 226, chimney above ridge 79)",
+        "color": null,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ],
+        "colorVariants": [
+          173,
+          226,
+          79
+        ]
+      },
+      {
+        "id": "SITE-29",
+        "name": "Linear Gap & Building Length",
+        "color": null,
+        "types": [
+          "LINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ],
+        "colorVariants": [
+          28,
+          31
+        ]
+      },
+      {
+        "id": "SITE-29-1",
+        "name": "Adjacent Building Boundary",
+        "color": 16,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-30",
+        "name": "Existing Building Boundary – Addition of Building",
+        "color": 153,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-31",
+        "name": "Existing Building Boundary – Addition of Block",
+        "color": 153,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-32",
+        "name": "Public Open Space",
+        "color": 36,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-32-1",
+        "name": "Public Open Space Length / Width",
+        "color": null,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ],
+        "colorVariants": [
+          31,
+          32
+        ]
+      },
+      {
+        "id": "SITE-33",
+        "name": "Internal Road & Road Length – Model 1",
+        "color": 113,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-34",
+        "name": "Internal Road & Road Length – Model 2",
+        "color": 113,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-35",
+        "name": "Projection Height",
+        "color": 202,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-36",
+        "name": "Existing Building Details",
+        "color": 75,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-37",
+        "name": "EV Charging Point",
+        "color": 129,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-38",
+        "name": "Connected Building Boundary",
+        "color": 203,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-39",
+        "name": "Basement Outer Boundary",
+        "color": 32,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "basement"
+        ]
+      },
+      {
+        "id": "SITE-40",
+        "name": "Interior Open Space Model - 1",
+        "color": 235,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-41",
+        "name": "Interior Open Space Model - 1(a) / Existence of Building",
+        "color": 235,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-42",
+        "name": "Interior Open Space Model - 2",
+        "color": 235,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-43",
+        "name": "Interior Open Space Model - 2(a) / Existence of Building",
+        "color": 235,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-44",
+        "name": "Notch Open Space",
+        "color": 235,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      },
+      {
+        "id": "SITE-45",
+        "name": "Waste Water Recycling",
+        "color": 112,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "parking",
+          "ground"
+        ]
+      }
+    ]
+  },
+  "floorObjects": {
+    "heading": "Objects to be drawn in floor plans on applicable floor layers FLOOR01, FLOOR02, FLOOR03, etc.",
+    "rules": [
+      {
+        "id": "FLR-1",
+        "name": "Residential F.A.R",
+        "color": 181,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-2",
+        "name": "Dwelling / Tenement Units Boundary and Text",
+        "color": 230,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-3",
+        "name": "Duplex Dwelling Unit",
+        "color": 230,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-4",
+        "name": "Kitchen Area / Kitchen Cum Dining Area",
+        "color": 150,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-5",
+        "name": "Habitable Room Area",
+        "color": 150,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-6",
+        "name": "Commercial / Mercantile-Retail / Mercantile-Wholesale / IT/ITES / Assembly Building F.A.R",
+        "color": 6,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-7",
+        "name": "Industrial / Storage / Hazardous F.A.R",
+        "color": 134,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-8",
+        "name": "Educational F.A.R",
+        "color": 122,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-9",
+        "name": "Institutional F.A.R",
+        "color": 33,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-10",
+        "name": "Staircase Area / Fire Staircase Area",
+        "color": 115,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-10-1",
+        "name": "Staircase Window Area / Fire Staircase Window Area",
+        "color": 105,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-11",
+        "name": "Staircase Width (tread 190, width 191, riser 192)",
+        "color": null,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ],
+        "colorVariants": [
+          190,
+          191,
+          192
+        ]
+      },
+      {
+        "id": "FLR-12",
+        "name": "Staircase Landing",
+        "color": 223,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-13",
+        "name": "Corridor",
+        "color": 51,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-14",
+        "name": "Gangway",
+        "color": 57,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-15",
+        "name": "Voids, Ducts (Deductions)",
+        "color": 3,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-16",
+        "name": "Ventilation Shaft",
+        "color": 11,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-17",
+        "name": "Lift Area",
+        "color": 22,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-17-1",
+        "name": "Lift Width & Lift Depth",
+        "color": null,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ],
+        "colorVariants": [
+          32,
+          31
+        ]
+      },
+      {
+        "id": "FLR-17-2",
+        "name": "Lift Lobby",
+        "color": 4,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-18",
+        "name": "Inner Courtyard Area",
+        "color": 40,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-19",
+        "name": "Height of Highest Wall abutting Inner Courtyard",
+        "color": 40,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-19-1",
+        "name": "Inner Courtyard Plinth Height",
+        "color": 44,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-20",
+        "name": "Store Room",
+        "color": 81,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-21",
+        "name": "Pantry Area",
+        "color": 81,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-22",
+        "name": "Loft Area & Loft Height",
+        "color": 120,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-22-1",
+        "name": "Loft Ceiling Height",
+        "color": 237,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-23",
+        "name": "Projection of Chajja",
+        "color": 85,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-24",
+        "name": "Projection of Cornice",
+        "color": 71,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-25",
+        "name": "Water Closet / Bath Room / Toilet",
+        "color": 81,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-26",
+        "name": "Ventilator for Toilet, Water Closet and Bath Room",
+        "color": 102,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-27",
+        "name": "Other Non-FAR Room Name and Incidental Structures",
+        "color": 4,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-28",
+        "name": "Floor Naming for Typical Floors",
+        "color": 7,
+        "types": [
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-29",
+        "name": "Window",
+        "color": 103,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-30",
+        "name": "Mechanical Ventilation",
+        "color": 232,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-31",
+        "name": "Travel Distance Between Two Exit Doors",
+        "color": 194,
+        "types": [
+          "LWPOLYLINE_OPEN"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-32",
+        "name": "Travel Distance Between Two Exits (Staircase to Staircase)",
+        "color": 195,
+        "types": [
+          "LWPOLYLINE_OPEN"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-33",
+        "name": "Travel Distance Between One Exit and Dead End of Corridor",
+        "color": 196,
+        "types": [
+          "LWPOLYLINE_OPEN"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-34",
+        "name": "Travel Distance Between One Exit Door and Staircase",
+        "color": 197,
+        "types": [
+          "LWPOLYLINE_OPEN"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-35",
+        "name": "Main Door Width",
+        "color": 84,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-36",
+        "name": "Floor to Floor Height",
+        "color": 91,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-37",
+        "name": "Escalator",
+        "color": 120,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-38",
+        "name": "Mixed Occupancies Boundary – Model 1",
+        "color": 100,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-39",
+        "name": "Mixed Occupancies Boundary – Model 2",
+        "color": 100,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-40",
+        "name": "Kitchen-Existing",
+        "color": 150,
+        "types": [
+          "TEXT"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-41",
+        "name": "Toilet / Bathroom / WC / Kitchen Height",
+        "color": null,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ],
+        "colorVariants": [
+          13,
+          133,
+          157,
+          74
+        ]
+      },
+      {
+        "id": "FLR-42",
+        "name": "Cupboard or Wardrobes",
+        "color": 163,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ]
+      },
+      {
+        "id": "FLR-43",
+        "name": "Habitable Room Height / Air-Condition Habitable Room Height / Retail Shop Room Height",
+        "color": null,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "applicable_floor"
+        ],
+        "colorVariants": [
+          21,
+          148,
+          149
+        ]
+      }
+    ]
+  },
+  "terraceServiceObjects": {
+    "heading": "Objects to be drawn in FLOOR-SERVICE / mezzanine layers / FLOOR-TERRACE as specified in Section 4.0 and Annexure 17.3.",
+    "rules": [
+      {
+        "id": "TRS-1",
+        "name": "Service Floor Area",
+        "color": 125,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "service"
+        ]
+      },
+      {
+        "id": "TRS-2",
+        "name": "Mezzanine Floor Height",
+        "color": 23,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "mezzanine"
+        ]
+      },
+      {
+        "id": "TRS-3",
+        "name": "Mezzanine Floor Area (use respective FAR colour; example residential 181)",
+        "color": 181,
+        "types": [
+          "TEXT"
+        ],
+        "layers": [
+          "mezzanine"
+        ]
+      },
+      {
+        "id": "TRS-4",
+        "name": "Terrace Floor Boundary",
+        "color": 227,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "terrace"
+        ]
+      },
+      {
+        "id": "TRS-5",
+        "name": "Roof Tank",
+        "color": 4,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "terrace"
+        ]
+      },
+      {
+        "id": "TRS-5-1",
+        "name": "Solar Panel",
+        "color": 95,
+        "types": [
+          "LWPOLYLINE"
+        ],
+        "layers": [
+          "terrace"
+        ]
+      },
+      {
+        "id": "TRS-6",
+        "name": "Roof Tank Height",
+        "color": 100,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "terrace"
+        ]
+      },
+      {
+        "id": "TRS-6-1",
+        "name": "Solar Panel Height",
+        "color": 95,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "terrace"
+        ]
+      },
+      {
+        "id": "TRS-7",
+        "name": "Parapet Wall Height",
+        "color": 17,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "terrace"
+        ]
+      },
+      {
+        "id": "TRS-8",
+        "name": "Toilet Area Boundary for Terrace Floor",
+        "color": 4,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "terrace"
+        ]
+      },
+      {
+        "id": "TRS-9",
+        "name": "Stair Cover Height",
+        "color": 211,
+        "types": [
+          "LINE"
+        ],
+        "layers": [
+          "terrace"
+        ]
+      },
+      {
+        "id": "TRS-10",
+        "name": "Staircase Headroom Area",
+        "color": 4,
+        "types": [
+          "LWPOLYLINE",
+          "TEXT"
+        ],
+        "layers": [
+          "terrace"
+        ]
+      }
+    ]
+  },
+  "buildingUseText": {
+    "industrial": {
+      "section": "5.0",
+      "color": 134,
+      "items": [
+        "LABORATORIES",
+        "FACTORY",
+        "SMOKE HOUSE",
+        "AUTOMOBILE",
+        "POWER PLANT",
+        "WORKSHOPS",
+        "REFINERIES",
+        "REPAIR GARAGE",
+        "GAS PLANT",
+        "PRINTING PRESS",
+        "MILL",
+        "INDUSTRIAL",
+        "DIARIES"
+      ]
+    },
+    "storage": {
+      "section": "6.0",
+      "color": 134,
+      "items": [
+        "COLD STORAGE",
+        "TRUCK TERMINAL",
+        "FREIGHT DEPOT",
+        "GRAIN ELEVATORS",
+        "TRANSIT SHED",
+        "BARNS",
+        "STORE HOUSE",
+        "STABLES",
+        "PUBLIC GARAGE",
+        "STORAGE",
+        "HANGARS"
+      ]
+    },
+    "hazardous": {
+      "section": "7.0",
+      "color": 134,
+      "items": [
+        "HIGHLY COMBUSTIBLE",
+        "ACIDS",
+        "HIGHLY CORROSIVE",
+        "EXPLOSION",
+        "HIGHLY EXPLOSIVE",
+        "TOXIC",
+        "HAZARDOUS",
+        "ALKALIS",
+        "CHEMICAL PRODUCING FLAMES"
+      ]
+    },
+    "commercial": {
+      "section": "8.0",
+      "color": 6,
+      "items": [
+        "OFFICE",
+        "BANK",
+        "COURT HOUSE",
+        "PROFESSIONAL ESTABLISHMENT"
+      ]
+    },
+    "mercantileRetail": {
+      "section": "9.0",
+      "color": 6,
+      "items": [
+        "RETAIL SHOP",
+        "RETAIL MARKET",
+        "RETAIL STORE",
+        "SHOP",
+        "SAFE DEPOSIT",
+        "ATM SPACE",
+        "RETAIL MERCHANDISE",
+        "RETAIL OFFICE AND STORAGE SERVICE"
+      ]
+    },
+    "mercantileWholesale": {
+      "section": "10.0",
+      "color": 6,
+      "items": [
+        "HYPER MARKET",
+        "WAREHOUSE",
+        "TRUCK BOOKING OFFICE"
+      ]
+    },
+    "itItes": {
+      "section": "11.0",
+      "color": 6,
+      "items": [
+        "IT",
+        "ITES",
+        "IT/ITES"
+      ]
+    },
+    "assembly": {
+      "section": "12.0",
+      "color": 6,
+      "items": [
+        "THEATRE",
+        "MOTION PICTURE HOUSE",
+        "DRIVE-IN-THEATRE",
+        "CITY HALL",
+        "TOWN HALL",
+        "CEREMONIAL HALL",
+        "AUDITORIA",
+        "EXHIBITION HALL",
+        "MUSEUM",
+        "SKATING RINK",
+        "GYMNASIUM",
+        "RESTAURANT",
+        "BAR",
+        "BOARDING HOUSE",
+        "PLACE OF WORKSHIP",
+        "DANCE HALL",
+        "STAIDA",
+        "GYMKHANAS",
+        "ENTERTAINMENT CENTRE",
+        "PASSENGER STATION",
+        "CLUB ROOM",
+        "CLUB HOUSE",
+        "TERMINALS OF AIR",
+        "RECREATION PIERS",
+        "FOOD COURT EATING HOUSE",
+        "MULTIPLEX",
+        "PUBLIC TRANSPORTATION SERVICES",
+        "HOTEL",
+        "SPORTS",
+        "SPORTS STADIUM"
+      ]
+    },
+    "institutional": {
+      "section": "13.0",
+      "color": 33,
+      "items": [
+        "HOSPITAL",
+        "CLINIC",
+        "DIAGNOSTIC CENTRE",
+        "DOCTOR'S CHAMBER",
+        "DISPENSARIES",
+        "NURSING HOME",
+        "SANATORIA",
+        "JAILS",
+        "PRISONS",
+        "MENTAL HOSPITAL",
+        "REFORMATORIES"
+      ]
+    },
+    "educational": {
+      "section": "14.0",
+      "color": 122,
+      "items": [
+        "SCHOOL",
+        "COLLEGE",
+        "LIBRARY",
+        "TRAINING INSTITUTE",
+        "DAY-CARE"
+      ]
+    }
+  },
+  "nonFarText": {
+    "section": "15.0",
+    "color": 4,
+    "singleLine": true,
+    "items": [
+      "LIFT LOBBY",
+      "SECURITY CABIN",
+      "AIR CONDITIONED PLANT ROOM",
+      "GENERATOR ROOM",
+      "FIRE FIGHTING EQUIPMENT",
+      "ELECTRICAL EQUIPMENT",
+      "LIFT ROOM",
+      "ROOF TANK",
+      "ELECTRICAL ROOM",
+      "UPS ROOM",
+      "METER ROOM",
+      "PUMP ROOM",
+      "ELECTRICAL METER ROOM",
+      "LIFT MACHINE ROOM",
+      "AHU",
+      "STAIRCASE HEAD ROOM"
+    ]
+  },
+  "typicalFloorText": {
+    "section": "16.0",
+    "color": 7,
+    "floorFormat": {
+      "template": "FLOOR01, FLOOR02, FLOOR03……FLOORnth- Typical",
+      "regex": "^FLOOR\\d{2,}(\\s*,\\s*FLOOR\\d{2,})*\\s*-\\s*TYPICAL$",
+      "regexFromTemplate": true
+    },
+    "blockFormat": {
+      "template": "BLOCK01, BLOCK02, BLOCK03…… BLOCKnth- Typical",
+      "regex": "^BLOCK\\d{2,}(\\s*,\\s*BLOCK\\d{2,})*\\s*-\\s*TYPICAL$",
+      "regexFromTemplate": true
+    },
+    "note": "The manual specifies these text formats but does not provide a formal grammar; regex is an implementation interpretation."
+  },
+  "manualRequirements": {
+    "drawingFileFormat": "DWG",
+    "polylineType": "Lightweight polyline (LWPOLYLINE); 3D polylines are not supported.",
+    "polylineLineThicknessLineweightElevationGlobalWidth": "0.00",
+    "textHeight": "greater than 0.05 m",
+    "space": "Model space only",
+    "scale": "1:1 (metres), including Site Plan",
+    "passwordProtectedDrawing": "Do not upload password-protected CAD drawings"
+  },
+  "notesAndLimitations": [
+    "The manual uses 'Polyline' generically in tables; this JSON represents it as LWPOLYLINE except where the manual expressly says Open Polyline.",
+    "Several table rows contain multiple colors or descriptions. Where the table lists distinct color values in the same row, the grouped entry uses null and records the color variants in its name or notes; confirm before enforcing these grouped rows in an automated checker.",
+    "Manual text extraction retains printed spellings such as DIARIES, STAIDA and PLACE OF WORKSHIP; these have not been silently corrected.",
+    "Section 4.0 is authoritative for color/type/layer combinations; Annexure 17.1–17.3 provides visual examples and may add contextual detail."
+  ]
+}
