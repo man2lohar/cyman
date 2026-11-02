@@ -15,7 +15,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '2.0.0-stage2';
+  var VERSION = '2.1.0-manual-v3';
   var EPS = 1e-6;
   var ZERO = 1e-9;
 
@@ -39,7 +39,7 @@
 
   var KIND_NAME = {
     ground: 'FLOOR-GROUND', basement: 'FLOOR-BF / FLOOR-BFn', applicable_floor: 'FLOOR01, FLOOR02...',
-    service: 'FLOOR-SERVICE', terrace: 'FLOOR-TERRACE', mezzanine: 'FLOOR-MEZZANINE', unknown: 'unknown'
+    service: 'FLOOR-SERVICE', terrace: 'FLOOR-TERRACE', terrace_intermediate: 'FLOOR-TERRACEINTERMEDIATE (01, 02...)', mezzanine: 'FLOOR-MEZZANINE', unknown: 'unknown'
   };
   var TYPE_NAME = { LWPOLYLINE: 'Polyline', LINE: 'Line', TEXT: 'Text' };
   var FORBID = {
@@ -286,7 +286,7 @@
         return o;
       }) : [];
       return {
-        engineVersion: VERSION, rulesVersion: rules.meta.rulesVersion, pass: counts.error === 0,
+        engineVersion: VERSION, rulesVersion: rules.meta.rulesVersion, manualVersion: rules.meta.manualVersion || '', pass: counts.error === 0,
         summary: { errors: counts.error, warnings: counts.warning, info: counts.info, entitiesTotal: doc && doc.entities ? doc.entities.length : 0, entitiesChecked: (processed || []).length, entitiesIgnored: (ignored || []).length, byLayer: byLayer },
         issues: issues, notChecked: notChecked,
         drawing: { entities: ents, layers: doc && doc.layers ? doc.layers : {}, header: doc ? { insUnits: doc.insUnits, acadVer: doc.acadVer } : {} }
@@ -324,7 +324,7 @@
     Object.keys(layerInfo).forEach(function (u) {
       var li = layerInfo[u], kind = classify(li.name), L = doc.layers[u];
       if (kind === 'unknown')
-        add(li.count ? 'error' : 'warning', 'L-NAME', 'Layer "' + li.name + '" starts with FLOOR but is not a valid Smart DCR layer name (' + li.count + ' objects). Allowed: FLOORnn, FLOOR-GROUND, FLOOR-PARKING, FLOOR-BFn, FLOOR-SERVICE, FLOOR-TERRACE, FLOOR-MEZZANINE.' + (li.count ? '' : ' It is empty: purge it.'), null, { layer: li.name });
+        add(li.count ? 'error' : 'warning', 'L-NAME', 'Layer "' + li.name + '" starts with FLOOR but is not a valid Smart DCR layer name (' + li.count + ' objects). Allowed: FLOORnn, FLOOR-GROUND, FLOOR-PARKING, FLOOR-BFn, FLOOR-SERVICE, FLOOR-TERRACE, FLOOR-TERRACEINTERMEDIATE (01, 02...), FLOOR-MEZZANINE.' + (li.count ? '' : ' It is empty: purge it.'), null, { layer: li.name });
       if (L) {
         var st = []; if (L.locked) st.push('locked'); if (L.frozen) st.push('frozen'); if (L.off) st.push('turned off');
         if (st.length) add('error', 'L-STATE', 'Layer "' + li.name + '" is ' + st.join(', ') + '. Unlock, unfreeze and turn on all layers before submission.', null, { layer: li.name });
