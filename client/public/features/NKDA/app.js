@@ -236,7 +236,7 @@
     box.appendChild(el('p', 'note-h', 'This tool does not check the following:'));
     state.result.notChecked.forEach(function (n) { box.appendChild(el('p', 'note', n)); });
     box.appendChild(el('p', 'note-h', 'Versions'));
-    box.appendChild(el('p', 'note', 'Engine ' + state.result.engineVersion + ' \u00b7 Rules ' + state.result.rulesVersion + ' \u00b7 Manual: NKDA Smart DCR User Manual v2.0'));
+    box.appendChild(el('p', 'note', 'Engine ' + state.result.engineVersion + ' \u00b7 Rules ' + state.result.rulesVersion + ' \u00b7 Manual: NKDA Smart DCR User Manual v' + state.result.manualVersion'));
   }
 
   /* ---- canvas ---- */
