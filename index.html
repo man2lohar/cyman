@@ -19,6 +19,25 @@
   <!-- Styles -->
   <link rel="stylesheet" href="client/src/styles/main.css">
 <link rel="stylesheet" href="client/src/styles/mobile.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+
 </head>
 <body id="body">
 
@@ -119,7 +138,7 @@
           </button>
         </form>
 
-        <button type="button" id="googleSignInBtn" id="googleSignInBtn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;background:transparent;border:1.5px solid var(--border, rgba(0,0,0,.15));border-radius:10px;font-size:.85rem;font-weight:600;color:inherit;cursor:pointer;margin-top:4px;transition:background .15s,border-color .15s" onmouseover="this.style.background='rgba(0,0,0,.04)'" onmouseout="this.style.background='transparent'">
+        <button type="button" id="googleSignInBtn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;background:transparent;border:1.5px solid var(--border, rgba(0,0,0,.15));border-radius:10px;font-size:.85rem;font-weight:600;color:inherit;cursor:pointer;margin-top:4px;transition:background .15s,border-color .15s" onmouseover="this.style.background='rgba(0,0,0,.04)'" onmouseout="this.style.background='transparent'">
           <svg width="17" height="17" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
           Continue with Google
         </button>
@@ -144,30 +163,32 @@
         <span style="font-family:'Akaya Kanadaka',cursive;font-weight:100">CyMan²</span>
       </div>
 
-      <div class="dash-nav-label">Dashboard</div>
+      <div class="dash-nav-label">Workspace</div>
       <nav class="dash-nav">
         <a class="dash-nav-item active" data-tab="overview">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-          Overview
+          <i class="bi bi-grid-1x2"></i> Overview
         </a>
+        <div class="dash-nav-label dash-nav-subtitle">Tools</div>
+        <a class="dash-nav-item" data-tab="tool-kmc"><i class="bi bi-file-earmark-spreadsheet"></i> KMC Data Extraction</a>
+        <a class="dash-nav-item" data-tab="tool-nkda"><i class="bi bi-shield-check"></i> NKDA Smart DCR</a>
+        <a class="dash-nav-item" data-tab="tool-udma"><i class="bi bi-buildings"></i> UD&amp;MA Smart DCR</a>
+        <a class="dash-nav-item" data-tab="tool-projects"><i class="bi bi-kanban"></i> Project Management</a>
+        <a class="dash-nav-item" data-tab="tool-reports"><i class="bi bi-graph-up-arrow"></i> Project Status Report</a>
+        <div class="dash-nav-divider"></div>
+        <div class="dash-nav-label dash-nav-subtitle">Activity</div>
         <a class="dash-nav-item" data-tab="uploads">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          KMC Uploads
+          <i class="bi bi-cloud-arrow-up"></i> KMC Upload History
           <span class="nav-badge" id="uploadBadge" style="display:none">0</span>
         </a>
         <a class="dash-nav-item" data-tab="announcements">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
-          Announcements
+          <i class="bi bi-megaphone"></i> Announcements
           <span class="nav-badge" id="announcementBadge" style="display:none;background:rgba(239,68,68,.15);color:#f87171;border-color:rgba(239,68,68,.3)">0</span>
         </a>
         <div class="dash-nav-divider"></div>
-        <a class="dash-nav-item" data-tab="profile">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          My Profile
-        </a>
-        <a class="dash-nav-item" id="adminNavBtn" data-tab="admin" id="adminPanelBtn" style="display:none;color:#f59e0b">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Admin Panel
+        <div class="dash-nav-label dash-nav-subtitle">Account</div>
+        <a class="dash-nav-item" data-tab="profile"><i class="bi bi-person"></i> My Profile</a>
+        <a class="dash-nav-item" id="adminNavBtn" data-tab="admin" style="display:none;color:#f59e0b">
+          <i class="bi bi-shield-lock"></i> Admin Panel
         </a>
       </nav>
 
@@ -189,84 +210,115 @@
       <!-- Topbar -->
       <div class="dash-topbar">
         <div>
-          <h1 class="dash-greeting" id="dashGreeting">Welcome 👋</h1>
-          <p class="dash-sub">Your CyMan² workspace</p>
+          <h1 class="dash-greeting dash-greeting-line" id="dashGreeting"><span id="dashGreetingText">Good day</span><span id="dashGreetingName" class="dash-greeting-name"></span><span class="greeting-icon morning" id="dashGreetingIcon" aria-hidden="true"><i class="bi bi-sunrise-fill"></i></span></h1>
+          <p class="dash-sub">Your architectural workspace at a glance</p>
         </div>
-        <button class="dash-close-btn" onclick="closeDashboard()" aria-label="Close dashboard">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+        <div class="dash-topbar-actions">
+          <button class="dash-theme-btn" id="dashThemeToggle" type="button" aria-label="Switch theme" title="Switch theme"><i class="bi bi-sun-fill" aria-hidden="true"></i></button>
+          <button class="dash-close-btn" onclick="closeDashboard()" aria-label="Close dashboard">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
       </div>
 
       <!-- ── Tab: Overview ── -->
       <div class="dash-tab active" id="tab-overview">
-        <!-- Stat cards -->
         <div class="dash-stats-row">
           <div class="dash-stat-card">
-            <div class="dsc-icon" style="background:rgba(45,152,253,.12)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d98fd" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="dsc-icon" style="background:rgba(45,152,253,.13)">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#48a8ff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </div>
-            <div>
-              <div class="dsc-val" id="stat-uploads">—</div>
-              <div class="dsc-lbl">Active Uploads</div>
-            </div>
+            <div><div class="dsc-val" id="stat-uploads">—</div><div class="dsc-lbl">Available uploads</div></div>
           </div>
           <div class="dash-stat-card">
-            <div class="dsc-icon" style="background:rgba(250,173,20,.12)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#faad14" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div class="dsc-icon" style="background:rgba(250,173,20,.13)">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffbd54" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
             </div>
-            <div>
-              <div class="dsc-val" id="stat-expiring">—</div>
-              <div class="dsc-lbl">Expiring in 7 days</div>
-            </div>
+            <div><div class="dsc-val" id="stat-expiring">—</div><div class="dsc-lbl">Expiring in 7 days</div></div>
           </div>
           <div class="dash-stat-card">
-            <div class="dsc-icon" style="background:rgba(82,196,26,.12)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#52c41a" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div class="dsc-icon" style="background:rgba(82,196,26,.13)">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#52c878" stroke-width="2"><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="m9 12 3 3L22 5"/></svg>
             </div>
-            <div>
-              <div class="dsc-val" id="stat-total">—</div>
-              <div class="dsc-lbl">Total Uploads</div>
-            </div>
+            <div><div class="dsc-val" id="stat-total">—</div><div class="dsc-lbl">Total uploads</div></div>
           </div>
         </div>
 
-        <!-- Quick actions -->
-        <div class="dash-panel">
-          <div class="panel-header">
-            <h3>Quick Actions</h3>
-          </div>
-          <div class="quick-actions">
-            <button class="qa-btn" onclick="window.open('client/public/features/data_extraction_kmc/home.html','_blank')">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              KMC Data Extraction
-            </button>
-            <button class="qa-btn" onclick="window.open('client/public/features/project_management/index.html','_blank')">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-              Project Management
-            </button>
-            <button class="qa-btn" onclick="window.open('client/public/features/project_status_report/Team_Report_Builder.html','_blank')">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7"/>
-                <path d="M16 19l2 2 4-4"/>
-                <line x1="7" y1="7" x2="17" y2="7"/>
-                <line x1="7" y1="11" x2="13" y2="11"/>
-                <line x1="7" y1="15" x2="11" y2="15"/>
-              </svg>
-              Project Status Report
-            </button>
-          </div>
+        <div class="workspace-intro">
+          <div><h2>Your Workspace</h2><p>Choose a tool to continue your architectural workflow.</p></div>
+        </div>
+        <div class="workspace-grid">
+          <button class="workspace-card" onclick="window.cymanGoTab('tool-kmc')">
+            <span class="workspace-card-heading"><span class="workspace-icon"><i class="bi bi-file-earmark-spreadsheet"></i></span><strong>KMC Data Extraction</strong></span>
+            <small>Extract structured data from drawings, specifications and documents.</small>
+          </button>
+          <button class="workspace-card nkda" onclick="window.cymanGoTab('tool-nkda')">
+            <span class="workspace-card-heading"><span class="workspace-icon"><i class="bi bi-shield-check"></i></span><strong>NKDA Smart DCR</strong></span>
+            <small>Pre-check DXF drawings against NKDA Smart DCR requirements.</small>
+          </button>
+          <button class="workspace-card udma" onclick="window.cymanGoTab('tool-udma')">
+            <span class="workspace-card-heading"><span class="workspace-icon"><i class="bi bi-buildings"></i></span><strong>UD&amp;MA Smart DCR</strong></span>
+            <small>Access the Urban Development &amp; Municipal Affairs drawing workflow.</small>
+          </button>
+          <button class="workspace-card pm" onclick="window.cymanGoTab('tool-projects')">
+            <span class="workspace-card-heading"><span class="workspace-icon"><i class="bi bi-kanban"></i></span><strong>Project Management</strong></span>
+            <small>Keep projects, tasks, teams and timelines organised.</small>
+          </button>
+          <button class="workspace-card report" onclick="window.cymanGoTab('tool-reports')">
+            <span class="workspace-card-heading"><span class="workspace-icon"><i class="bi bi-graph-up-arrow"></i></span><strong>Project Status Report</strong></span>
+            <small>Prepare clear reports on project progress and delivery.</small>
+          </button>
         </div>
 
-        <!-- Recent uploads -->
-        <div class="dash-panel">
-          <div class="panel-header">
-            <h3>Recent KMC Uploads</h3>
-            <button class="panel-link" onclick="window.switchTab('uploads')">View all →</button>
+        <div class="overview-lower">
+          <div class="dash-panel">
+            <div class="panel-header">
+              <h3>Recent KMC Uploads</h3>
+              <button class="panel-link" onclick="window.cymanGoTab('uploads')">View history <i class="bi bi-arrow-right"></i></button>
+            </div>
+            <div id="recentUploadsList">
+              <div class="dash-empty" style="padding:20px;text-align:center;opacity:.55;font-size:.82rem">Loading your recent files…</div>
+            </div>
           </div>
-          <div id="recentUploadsList">
-            <div class="dash-empty" style="padding:20px;text-align:center;opacity:.4;font-size:.82rem">Loading…</div>
+          <div class="dash-panel" style="display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div class="panel-header"><h3>Workspace updates</h3></div>
+              <div style="display:flex;align-items:flex-start;gap:12px;color:#aebbd0;font-size:.79rem;line-height:1.55">
+                <span style="width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;background:rgba(75,166,255,.12);color:#69b7ff"><i class="bi bi-megaphone"></i></span>
+                <span>Stay informed about product notices, workflow changes and important messages from the CyMan² team.</span>
+              </div>
+            </div>
+            <button class="panel-link" onclick="window.cymanGoTab('announcements')" style="align-self:flex-start;margin-top:22px">View announcements <i class="bi bi-arrow-right"></i></button>
           </div>
         </div>
+        <div class="workspace-note"><i class="bi bi-info-circle"></i><span>Your KMC upload history is retained according to the current 30-day file-retention policy. Check the Upload History section for file details and expiry information.</span></div>
+      </div>
+
+      <!-- Tool detail tabs: sidebar selections stay inside the dashboard. -->
+      <div class="dash-tab" id="tab-tool-kmc">
+        <div class="panel-header"><div><h3>KMC Data Extraction</h3><p style="font-size:.76rem;opacity:.55;margin-top:4px">Drawing and document data extraction workspace.</p></div></div>
+        <div class="tool-detail-hero"><span class="tool-detail-icon"><i class="bi bi-file-earmark-spreadsheet"></i></span><div><h2>KMC Data Extraction</h2><p>Extract structured information from architectural drawings, specifications and supporting documents.</p></div></div>
+        <div class="tool-detail-grid"><div class="tool-detail-card"><h3><i class="bi bi-clock-history" style="color:var(--dash-accent);margin-right:7px"></i>Recent upload history</h3><p>Your KMC files, upload dates, file sizes and expiry information are available in the upload history.</p><div class="tool-detail-actions"><button class="dash-new-btn" type="button" onclick="window.cymanGoTab('uploads')">View KMC upload history</button><button class="primary-btn sm" type="button" onclick="window.open('client/public/features/data_extraction_kmc/home.html', '_blank', 'noopener,noreferrer')"><i class="bi bi-box-arrow-up-right"></i> New Upload</button></div></div><div class="tool-detail-card"><h3><i class="bi bi-lightning-charge" style="color:var(--dash-accent);margin-right:7px"></i>Continue extraction</h3><p>Open the KMC extraction workspace when you're ready to process a new drawing or document.</p><div class="tool-detail-actions"><button class="primary-btn sm" onclick="window.cymanGoTab('uploads')">Review KMC uploads <i class="bi bi-arrow-right"></i></button></div></div></div>
+      </div>
+      <div class="dash-tab" id="tab-tool-nkda">
+        <div class="panel-header"><div><h3>NKDA Smart DCR</h3><p style="font-size:.76rem;opacity:.55;margin-top:4px">DXF drawing pre-check workspace.</p></div></div>
+        <div class="tool-detail-hero"><span class="tool-detail-icon" style="color:#4dd9aa;background:rgba(51,211,159,.13)"><i class="bi bi-shield-check"></i></span><div><h2>NKDA Smart DCR</h2><p>Pre-check DXF drawings against the NKDA Smart DCR requirements before submission.</p></div></div>
+        <div class="tool-detail-grid"><div class="tool-detail-card"><h3><i class="bi bi-activity" style="color:var(--dash-accent);margin-right:7px"></i>Pre-check activity</h3><p>Use this area to review validation runs and drawing-check history. Historical results will appear here when connected to the dashboard.</p><div class="tool-detail-empty"><i class="bi bi-info-circle"></i><span>NKDA validation history is not currently connected to the dashboard.</span></div></div><div class="tool-detail-card"><h3><i class="bi bi-file-earmark-check" style="color:var(--dash-accent);margin-right:7px"></i>Start a drawing check</h3><p>Continue to the NKDA Smart DCR tool to upload and pre-check a DXF drawing.</p><div class="tool-detail-actions"><button class="primary-btn sm" type="button" onclick="window.open('client/public/features/NKDA/index.html', '_blank', 'noopener,noreferrer')"><i class="bi bi-box-arrow-up-right"></i> New Upload</button></div></div></div>
+      </div>
+      <div class="dash-tab" id="tab-tool-udma">
+        <div class="panel-header"><div><h3>UD&amp;MA Smart DCR</h3><p style="font-size:.76rem;opacity:.55;margin-top:4px">Urban Development &amp; Municipal Affairs drawing workflow.</p></div></div>
+        <div class="tool-detail-hero"><span class="tool-detail-icon" style="color:#b69aff;background:rgba(173,133,255,.13)"><i class="bi bi-buildings"></i></span><div><h2>UD&amp;MA Smart DCR</h2><p>Access the Urban Development &amp; Municipal Affairs drawing workflow from your CyMan² workspace.</p></div></div>
+        <div class="tool-detail-grid"><div class="tool-detail-card"><h3><i class="bi bi-clock-history" style="color:var(--dash-accent);margin-right:7px"></i>Recent checks</h3><p>Drawing validation history and recent UD&amp;MA activity can be displayed here when the module exposes its records.</p><div class="tool-detail-empty"><i class="bi bi-info-circle"></i><span>No UD&amp;MA activity records are currently available in the dashboard.</span></div></div><div class="tool-detail-card"><h3><i class="bi bi-box-arrow-up-right" style="color:var(--dash-accent);margin-right:7px"></i>Open drawing workflow</h3><p>Continue to the UD&amp;MA Smart DCR module to work with your drawings.</p><div class="tool-detail-actions"><button class="primary-btn sm" type="button" onclick="window.open('client/public/features/UDMA/index.html', '_blank', 'noopener,noreferrer')"><i class="bi bi-box-arrow-up-right"></i> New Upload</button></div></div></div>
+      </div>
+      <div class="dash-tab" id="tab-tool-projects">
+        <div class="panel-header"><div><h3>Project Management</h3><p style="font-size:.76rem;opacity:.55;margin-top:4px">Projects, tasks, teams and timelines.</p></div></div>
+        <div class="tool-detail-hero"><span class="tool-detail-icon" style="color:#ffbd66;background:rgba(255,181,77,.13)"><i class="bi bi-kanban"></i></span><div><h2>Project Management</h2><p>Organise project work, coordinate teams, assign tasks and keep timelines visible.</p></div></div>
+        <div class="tool-detail-grid"><div class="tool-detail-card"><h3><i class="bi bi-list-task" style="color:var(--dash-accent);margin-right:7px"></i>Project activity</h3><p>Project summaries, task status and upcoming milestones can be surfaced here when project data is connected.</p><div class="tool-detail-empty"><i class="bi bi-info-circle"></i><span>Project metrics are not currently synced to this dashboard view.</span></div></div><div class="tool-detail-card"><h3><i class="bi bi-folder2-open" style="color:var(--dash-accent);margin-right:7px"></i>Manage projects</h3><p>Open the project workspace to create or manage projects and team tasks.</p><div class="tool-detail-actions"><button class="primary-btn sm" type="button" onclick="window.open('client/public/features/project_management/index.html', '_blank', 'noopener,noreferrer')"><i class="bi bi-box-arrow-up-right"></i> Open Project Workspace</button></div></div></div>
+      </div>
+      <div class="dash-tab" id="tab-tool-reports">
+        <div class="panel-header"><div><h3>Project Status Report</h3><p style="font-size:.76rem;opacity:.55;margin-top:4px">Project progress and delivery reporting.</p></div></div>
+        <div class="tool-detail-hero"><span class="tool-detail-icon" style="color:#f58db6;background:rgba(245,111,164,.13)"><i class="bi bi-graph-up-arrow"></i></span><div><h2>Project Status Report</h2><p>Prepare clear project reports to communicate progress, delivery and key updates.</p></div></div>
+        <div class="tool-detail-grid"><div class="tool-detail-card"><h3><i class="bi bi-file-bar-graph" style="color:var(--dash-accent);margin-right:7px"></i>Recent reports</h3><p>Saved reports and report-generation history can be listed here when report records are connected.</p><div class="tool-detail-empty"><i class="bi bi-info-circle"></i><span>Report history is not currently synced to the dashboard.</span></div></div><div class="tool-detail-card"><h3><i class="bi bi-file-earmark-plus" style="color:var(--dash-accent);margin-right:7px"></i>Create a report</h3><p>Open the report builder to prepare a project status report.</p><div class="tool-detail-actions"><button class="primary-btn sm" type="button" onclick="window.open('client/public/features/project_status_report/Team_Report_Builder.html', '_blank', 'noopener,noreferrer')"><i class="bi bi-box-arrow-up-right"></i> Create Report</button></div></div></div>
       </div>
 
       <!-- ── Tab: KMC Uploads ── -->
@@ -303,9 +355,8 @@
               <h3>KMC Upload History</h3>
               <p style="font-size:.76rem;opacity:.42;margin-top:3px">Files are automatically deleted after 30 days.</p>
             </div>
-            <button class="dash-new-btn" onclick="window.open('client/public/features/data_extraction_kmc/home.html','_blank')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              New Upload
+            <button class="dash-new-btn" onclick="window.cymanGoTab('tool-kmc')">
+              <i class="bi bi-file-earmark-spreadsheet"></i> KMC workspace details
             </button>
           </div>
           <div id="uploadsLoading" style="text-align:center;padding:32px;opacity:.38">
@@ -316,7 +367,7 @@
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.2" opacity=".3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <div style="font-size:.88rem;font-weight:700;margin:12px 0 6px">No uploads yet</div>
             <div style="font-size:.75rem;opacity:.42">Open KMC Data Extraction to upload your first file.</div>
-            <button class="primary-btn sm" style="margin-top:16px;width:auto" onclick="window.open('client/public/features/data_extraction_kmc/home.html','_blank')">Open KMC →</button>
+            <button class="primary-btn sm" style="margin-top:16px;width:auto" onclick="window.cymanGoTab('tool-kmc')">View KMC details →</button>
           </div>
           <div id="uploadsList" style="display:none"></div>
         </div>
@@ -1073,5 +1124,1654 @@
     });
   });
 </script>
+
+<script>
+(function(){
+  const dashboard = document.querySelector('#dashboardOverlay .dashboard');
+  const toggle = document.getElementById('dashThemeToggle');
+  if (!dashboard || !toggle) return;
+  let saved = 'dark';
+  try { saved = localStorage.getItem('cymansquare_dashboard_theme') || 'dark'; } catch(e) {}
+  function applyTheme(theme){
+    const next = theme === 'light' ? 'light' : 'dark';
+    dashboard.setAttribute('data-dash-theme', next);
+    toggle.innerHTML = next === 'dark'
+      ? '<i class="bi bi-sun-fill" aria-hidden="true"></i>'
+      : '<i class="bi bi-moon-stars-fill" aria-hidden="true"></i>';
+    toggle.setAttribute('aria-label', next === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+    toggle.setAttribute('title', next === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+    try { localStorage.setItem('cymansquare_dashboard_theme', next); } catch(e) {}
+  }
+  applyTheme(saved);
+  toggle.addEventListener('click', function(){
+    applyTheme(dashboard.getAttribute('data-dash-theme') === 'dark' ? 'light' : 'dark');
+  });
+})();
+</script>
+
+
+<script id="cymansquare-dashboard-final-behaviour">
+(function(){
+  const root=document.querySelector('#dashboardOverlay .dashboard');
+  if(!root) return;
+  const isTool=n=>/^tool-/.test(n||'');
+
+  // Only toggles classes; never loads data (dashboard.js owns that).
+  function showTab(name){
+    if(!root.querySelector('#tab-'+name)) return;
+    root.querySelectorAll('.dash-tab').forEach(el=>el.classList.toggle('active',el.id==='tab-'+name));
+    root.querySelectorAll('.dash-nav-item[data-tab]').forEach(el=>el.classList.toggle('active',el.dataset.tab===name));
+    const main=root.querySelector('.dash-main'); if(main) main.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  // Used by cards/links. Tool tabs are handled here; original tabs go through the real nav click
+  // so dashboard.js still runs its own loading logic.
+  window.cymanGoTab=function(name){
+    if(isTool(name)){showTab(name);return;}
+    const nav=root.querySelector('.dash-nav-item[data-tab="'+name+'"]');
+    if(nav) nav.click(); else showTab(name);
+  };
+
+  root.querySelectorAll('.dash-nav-item[data-tab]').forEach(item=>{
+    const name=item.dataset.tab;
+    if(isTool(name)){
+      item.addEventListener('click',function(ev){ev.preventDefault();ev.stopImmediatePropagation();showTab(name);},true);
+    }else{
+      // let dashboard.js handle it, then make sure only one tab/nav item is active
+      item.addEventListener('click',function(){
+        if(name==='admin') return;
+        setTimeout(()=>showTab(name),0);
+      });
+    }
+  });
+
+  // Greeting (re-resolves nodes every time and rebuilds if dashboard.js overwrites the heading)
+  function parseFirst(value){
+    if(!value) return '';
+    let raw=String(value).trim();
+    if(!raw||/^(user|member|my account|guest)$/i.test(raw)) return '';
+    if(raw.includes('@')) raw=raw.split('@')[0].replace(/[._-]+/g,' ');
+    raw=raw.replace(/\s*\([^)]*\)\s*$/,'').trim();
+    const first=(raw.split(/\s+/)[0]||'').replace(/[^A-Za-zÀ-ÖØ-öø-ÿ'-]/g,'');
+    return first?first.charAt(0).toLocaleUpperCase()+first.slice(1):'';
+  }
+  function readUserName(){
+    const c=[document.getElementById('dashUserEmail')?.textContent,document.querySelector('.dash-user-name')?.textContent,
+      document.querySelector('#profileName')?.textContent,document.querySelector('[name="displayName"]')?.value,
+      document.querySelector('[name="fullName"]')?.value];
+    for(const v of c){const f=parseFirst(v);if(f)return f;}
+    try{
+      for(const k of ['cymansquare_user','currentUser','user','firebase:authUser']){
+        const raw=localStorage.getItem(k);if(!raw)continue;
+        const d=JSON.parse(raw);
+        const f=parseFirst(d?.displayName||d?.fullName||d?.name||d?.email||d?.user?.displayName||d?.user?.email);
+        if(f)return f;
+      }
+    }catch(e){}
+    try{
+      const a=window.auth||window.firebaseAuth||window.__firebaseAuth;
+      const f=parseFirst(a?.currentUser?.displayName||a?.currentUser?.email);
+      if(f)return f;
+    }catch(e){}
+    return '';
+  }
+  let last='',busy=false;
+  function updateGreeting(force){
+    if(busy) return; busy=true;
+    try{
+      const h=document.getElementById('dashGreeting'); if(!h) return;
+      let rebuilt=false;
+      if(!h.querySelector('#dashGreetingText')||!h.querySelector('#dashGreetingIcon')){
+        h.innerHTML='<span id="dashGreetingText">Good day</span><span id="dashGreetingName" class="dash-greeting-name"></span><span class="greeting-icon morning" id="dashGreetingIcon" aria-hidden="true"><i class="bi bi-sunrise-fill"></i></span>';
+        rebuilt=true;
+      }
+      const hour=new Date().getHours();
+      let period,icon,cls;
+      if(hour>=5&&hour<12){period='Good morning';icon='bi-sunrise-fill';cls='morning';}
+      else if(hour>=12&&hour<18){period='Good afternoon';icon='bi-sun-fill';cls='afternoon';}
+      else{period='Good evening';icon='bi-moon-stars-fill';cls='night';}
+      const first=readUserName();
+      const sig=period+'|'+first;
+      if(!force&&!rebuilt&&sig===last) return;
+      last=sig;
+      document.getElementById('dashGreetingText').textContent=period;
+      const n=document.getElementById('dashGreetingName');
+      n.textContent=first?', '+first:'';
+      const ic=document.getElementById('dashGreetingIcon');
+      ic.className='greeting-icon '+cls;
+      ic.innerHTML='<i class="bi '+icon+'" aria-hidden="true"></i>';
+      ic.setAttribute('aria-label',period);ic.setAttribute('title',period);
+    }finally{busy=false;}
+  }
+  updateGreeting(true);
+  if(window.MutationObserver){
+    const mo=new MutationObserver(()=>updateGreeting(false));
+    const h=document.getElementById('dashGreeting'), u=document.getElementById('dashUserEmail');
+    if(h) mo.observe(h,{childList:true,characterData:true,subtree:false});
+    if(u) mo.observe(u,{subtree:true,childList:true,characterData:true});
+  }
+  window.addEventListener('focus',()=>updateGreeting(true));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateGreeting(true);});
+  let tries=0;const t=setInterval(()=>{updateGreeting(true);if(readUserName()||++tries>30)clearInterval(t);},350);
+})();
+</script>
+
+<style id="cyman-dashboard">
+/* CyMan² dashboard — merged from V1–V21 in original cascade order */
+/* ── cymansquare-dashboard-refresh ── */
+/* CyMan² dashboard refresh — scoped so the public website remains unchanged */
+.dashboard-overlay .dashboard{width:min(1440px,96vw);max-width:1440px;min-height:min(820px,94vh);border:1px solid rgba(117,153,207,.16);box-shadow:0 28px 100px rgba(0,0,0,.48);}
+.dashboard-overlay .dash-sidebar{width:248px;min-width:248px;background:linear-gradient(180deg,#1c2233 0%,#171c2a 100%);border-right:1px solid rgba(128,157,205,.14);padding:25px 16px 18px;}
+.dashboard-overlay .dash-brand{gap:10px;margin:0 8px 42px;font-size:1.08rem;color:#55aaff;}
+.dashboard-overlay .dash-nav-label{font-size:.65rem;letter-spacing:.16em;font-weight:800;color:#78849c;margin:0 10px 12px;text-transform:uppercase;}
+.dashboard-overlay .dash-nav{gap:5px;}
+.dashboard-overlay .dash-nav-item{min-height:42px;border-radius:10px;padding:0 12px;gap:12px;color:#aab4c8;font-weight:600;transition:background .18s ease,color .18s ease,transform .18s ease;}
+.dashboard-overlay .dash-nav-item:hover{background:rgba(70,151,255,.09);color:#eaf3ff;transform:translateX(2px);}
+.dashboard-overlay .dash-nav-item.active{color:#f4f8ff;background:linear-gradient(90deg,rgba(48,145,255,.22),rgba(48,145,255,.07));box-shadow:inset 3px 0 #399cff;}
+.dashboard-overlay .dash-nav-divider{margin:13px 8px;border-color:rgba(145,164,197,.16);}
+.dashboard-overlay .dash-user{background:rgba(255,255,255,.035);border:1px solid rgba(145,164,197,.13);border-radius:13px;padding:10px;}
+.dashboard-overlay .dash-main{padding:32px clamp(20px,3vw,44px) 38px;background:radial-gradient(ellipse at 72% 0%,rgba(31,105,187,.12),transparent 34%),#111520;}
+.dashboard-overlay .dash-topbar{margin-bottom:27px;align-items:center;}
+.dashboard-overlay .dash-greeting{font-size:clamp(1.45rem,2vw,1.9rem);letter-spacing:-.045em;font-weight:800;color:#f2f5fb;}
+.dashboard-overlay .dash-sub{color:#8994aa;font-size:.86rem;margin-top:5px;}
+.dashboard-overlay .dash-close-btn{border:1px solid rgba(148,163,184,.15);background:rgba(255,255,255,.035);border-radius:10px;width:38px;height:38px;}
+.dashboard-overlay .dash-tab.active{animation:cyDashIn .28s ease both;}
+.dashboard-overlay .dash-stats-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:24px;}
+.dashboard-overlay .dash-stat-card{min-height:94px;padding:18px 19px;border:1px solid rgba(124,153,198,.16);border-radius:15px;background:linear-gradient(145deg,#20283a,#1a2131);box-shadow:0 8px 24px rgba(0,0,0,.12);gap:14px;}
+.dashboard-overlay .dsc-icon{width:43px;height:43px;border-radius:12px;display:grid;place-items:center;flex:none;}
+.dashboard-overlay .dsc-val{font-size:1.65rem;font-weight:800;letter-spacing:-.04em;color:#f5f7fc;line-height:1.1;}
+.dashboard-overlay .dsc-lbl{font-size:.7rem;color:#929db2;font-weight:700;letter-spacing:.045em;text-transform:uppercase;margin-top:5px;}
+.dashboard-overlay .dash-panel{border:1px solid rgba(124,153,198,.16);border-radius:16px;background:linear-gradient(145deg,rgba(32,40,58,.96),rgba(25,31,46,.96));box-shadow:0 10px 30px rgba(0,0,0,.13);padding:22px;margin-bottom:18px;}
+.dashboard-overlay .panel-header{margin-bottom:17px;}
+.dashboard-overlay .panel-header h3{font-size:1rem;font-weight:800;letter-spacing:-.02em;color:#edf2fb;}
+.dashboard-overlay .panel-link{color:#55adff;font-weight:700;}
+.dashboard-overlay .workspace-intro{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:2px 0 15px;}
+.dashboard-overlay .workspace-intro h2{font-size:1.22rem;font-weight:800;letter-spacing:-.035em;color:#f1f4fb;margin:0;}
+.dashboard-overlay .workspace-intro p{font-size:.78rem;color:#8d99ae;margin:5px 0 0;}
+.dashboard-overlay .workspace-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:21px;}
+.dashboard-overlay .workspace-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;min-height:174px;padding:19px;border-radius:15px;border:1px solid rgba(105,155,218,.22);background:linear-gradient(145deg,rgba(33,46,68,.94),rgba(26,34,51,.98));color:#eef4ff;text-align:left;text-decoration:none;cursor:pointer;overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease;}
+.dashboard-overlay .workspace-card:before{content:"";position:absolute;width:140px;height:140px;right:-72px;top:-82px;border:1px solid rgba(76,164,255,.17);border-radius:50%;box-shadow:0 0 0 16px rgba(76,164,255,.025),0 0 0 34px rgba(76,164,255,.02);}
+.dashboard-overlay .workspace-card:hover{transform:translateY(-3px);border-color:rgba(70,165,255,.58);background:linear-gradient(145deg,#263955,#1b2639);}
+.dashboard-overlay .workspace-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(49,155,255,.13);color:#51b5ff;margin-bottom:15px;font-size:1.18rem;}
+.dashboard-overlay .workspace-card strong{font-size:.91rem;font-weight:800;line-height:1.3;margin-bottom:6px;}
+.dashboard-overlay .workspace-card small{font-size:.74rem;line-height:1.5;color:#a5b1c6;max-width:95%;}
+.dashboard-overlay .workspace-arrow{position:absolute;right:17px;bottom:17px;color:#83bfff;font-size:1rem;}
+.dashboard-overlay .workspace-card.nkda .workspace-icon{background:rgba(51,211,159,.12);color:#4dd9aa;}
+.dashboard-overlay .workspace-card.udma .workspace-icon{background:rgba(173,133,255,.13);color:#b69aff;}
+.dashboard-overlay .workspace-card.pm .workspace-icon{background:rgba(255,181,77,.12);color:#ffbd66;}
+.dashboard-overlay .workspace-card.report .workspace-icon{background:rgba(245,111,164,.12);color:#f58db6;}
+.dashboard-overlay .overview-lower{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(250px,.85fr);gap:16px;align-items:stretch;}
+.dashboard-overlay .overview-lower .dash-panel{margin-bottom:0;min-width:0;}
+.dashboard-overlay .workspace-note{display:flex;align-items:center;gap:12px;padding:14px 16px;margin-top:17px;border:1px solid rgba(81,166,255,.17);border-radius:13px;background:rgba(48,132,220,.075);color:#b8c8df;font-size:.77rem;line-height:1.5;}
+.dashboard-overlay .workspace-note i{font-size:1.1rem;color:#55b5ff;}
+.dashboard-overlay .qa-btn{border:1px solid rgba(120,153,203,.2);border-radius:11px;background:rgba(255,255,255,.025);color:#dfe8f8;min-height:52px;transition:all .18s ease;}
+.dashboard-overlay .qa-btn:hover{border-color:rgba(70,165,255,.5);background:rgba(48,145,255,.09);transform:translateY(-2px);}
+.dashboard-overlay .dash-new-btn{border-radius:9px;}
+@keyframes cyDashIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1050px){.dashboard-overlay .workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.dashboard-overlay .overview-lower{grid-template-columns:1fr;}}
+@media(max-width:720px){.dashboard-overlay .dash-sidebar{width:210px;min-width:210px}.dashboard-overlay .dash-main{padding:22px 15px 28px}.dashboard-overlay .dash-stats-row{grid-template-columns:1fr;gap:10px}.dashboard-overlay .dash-stat-card{min-height:76px;padding:14px}.dashboard-overlay .workspace-grid{grid-template-columns:1fr 1fr;gap:9px}.dashboard-overlay .workspace-card{min-height:160px;padding:14px}.dashboard-overlay .workspace-card strong{font-size:.8rem}.dashboard-overlay .workspace-card small{font-size:.68rem}.dashboard-overlay .dash-panel{padding:17px}}
+@media(max-width:440px){.dashboard-overlay .workspace-grid{grid-template-columns:1fr}.dashboard-overlay .workspace-card{min-height:135px}.dashboard-overlay .workspace-intro{align-items:flex-start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){.dashboard-overlay .dash-tab.active{animation:none}.dashboard-overlay .workspace-card,.dashboard-overlay .dash-nav-item{transition:none}}
+
+/* ── cymansquare-dashboard-polish ── */
+/* Full-viewport app shell: remove the floating dialog frame and blurred page surround. */
+html:has(#dashboardOverlay), body:has(#dashboardOverlay){min-height:100%;}
+.dashboard-overlay{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;align-items:stretch!important;justify-content:stretch!important;z-index:9999!important;}
+.dashboard-overlay .dashboard{width:100vw!important;max-width:none!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;margin:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;overflow:hidden!important;}
+.dashboard-overlay .dash-sidebar{width:264px;min-width:264px;max-width:264px;box-sizing:border-box;}
+.dashboard-overlay .dash-main{min-width:0;overflow-y:auto;overscroll-behavior:contain;}
+.dashboard-overlay .dash-nav{min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:2px;}
+.dashboard-overlay .dash-nav-subtitle{margin:13px 10px 5px!important;font-size:.59rem!important;letter-spacing:.14em!important;color:#77839a!important;}
+.dashboard-overlay .dash-nav-item{position:relative;min-width:0;white-space:nowrap;font-size:.79rem;}
+.dashboard-overlay .dash-nav-item>i:first-child{width:17px;min-width:17px;text-align:center;font-size:.95rem;}
+.dashboard-overlay .dash-nav-external{margin-left:auto;font-size:.67rem;opacity:.42;}
+.dashboard-overlay .dash-nav-item:hover .dash-nav-external{opacity:.9;}
+.dashboard-overlay .dash-topbar-actions{display:flex;align-items:center;gap:9px;}
+.dashboard-overlay .dash-theme-btn{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 12px;border:1px solid var(--dash-border);border-radius:10px;background:var(--dash-surface);color:var(--dash-text);font-family:inherit;font-size:.75rem;font-weight:600;cursor:pointer;transition:background .18s ease,border-color .18s ease;}
+.dashboard-overlay .dash-theme-btn:hover{border-color:#399cff;background:var(--dash-hover);}
+.dashboard-overlay .dash-theme-btn i{color:var(--dash-accent);font-size:.9rem;}
+.dashboard-overlay .workspace-card{min-height:150px;gap:10px;justify-content:flex-start;padding:17px;}
+.dashboard-overlay .workspace-card-heading{display:flex;align-items:center;gap:12px;position:relative;z-index:1;width:100%;min-width:0;}
+.dashboard-overlay .workspace-icon{width:39px;height:39px;min-width:39px;margin:0!important;border-radius:11px;}
+.dashboard-overlay .workspace-card strong{margin:0!important;min-width:0;}
+.dashboard-overlay .workspace-card small{position:relative;z-index:1;max-width:100%;padding-left:51px;}
+.dashboard-overlay .workspace-arrow{right:15px;bottom:13px;}
+.dashboard-overlay .workspace-card:before{pointer-events:none;}
+.dashboard-overlay .dash-user{margin-top:auto;}
+
+/* Theme tokens */
+.dashboard-overlay .dashboard{--dash-bg:#111520;--dash-sidebar:#1c2233;--dash-surface:#20283a;--dash-surface-2:#1a2131;--dash-card:#202e44;--dash-border:rgba(124,153,198,.2);--dash-text:#f1f4fb;--dash-muted:#9aa7bc;--dash-subtle:#78849c;--dash-accent:#55adff;--dash-hover:rgba(48,145,255,.1);background:var(--dash-bg)!important;color:var(--dash-text)!important;}
+.dashboard-overlay .dashboard .dash-sidebar{background:var(--dash-sidebar)!important;color:var(--dash-text)!important;border-right:1px solid var(--dash-border)!important;}
+.dashboard-overlay .dashboard .dash-main{background:radial-gradient(ellipse at 72% 0%,rgba(31,105,187,.11),transparent 34%),var(--dash-bg)!important;color:var(--dash-text)!important;}
+.dashboard-overlay .dashboard .dash-panel,.dashboard-overlay .dashboard .dash-stat-card{background:linear-gradient(145deg,var(--dash-surface),var(--dash-surface-2))!important;border-color:var(--dash-border)!important;color:var(--dash-text)!important;}
+.dashboard-overlay .dashboard .workspace-card{background:linear-gradient(145deg,var(--dash-card),var(--dash-surface-2))!important;border-color:var(--dash-border)!important;color:var(--dash-text)!important;}
+.dashboard-overlay .dashboard .workspace-card:hover{background:linear-gradient(145deg,#263955,#1b2639)!important;}
+.dashboard-overlay .dashboard .dash-greeting,.dashboard-overlay .dashboard .workspace-intro h2,.dashboard-overlay .dashboard .panel-header h3,.dashboard-overlay .dashboard .workspace-card strong{color:var(--dash-text)!important;}
+.dashboard-overlay .dashboard .dash-sub,.dashboard-overlay .dashboard .workspace-intro p,.dashboard-overlay .dashboard .workspace-card small,.dashboard-overlay .dashboard .dsc-lbl{color:var(--dash-muted)!important;}
+.dashboard-overlay .dashboard .dash-nav-item{color:var(--dash-muted)!important;}
+.dashboard-overlay .dashboard .dash-nav-item:hover,.dashboard-overlay .dashboard .dash-nav-item.active{color:var(--dash-text)!important;}
+.dashboard-overlay .dashboard .dash-user{background:var(--dash-hover)!important;border-color:var(--dash-border)!important;}
+.dashboard-overlay .dashboard .dash-close-btn{background:var(--dash-surface)!important;border-color:var(--dash-border)!important;color:var(--dash-text)!important;}
+.dashboard-overlay .dashboard .dash-theme-btn{border-color:var(--dash-border)!important;background:var(--dash-surface)!important;color:var(--dash-text)!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"]{--dash-bg:#f4f7fc;--dash-sidebar:#ffffff;--dash-surface:#ffffff;--dash-surface-2:#f8faff;--dash-card:#ffffff;--dash-border:#dce4f0;--dash-text:#182338;--dash-muted:#64738a;--dash-subtle:#78869b;--dash-accent:#1677d2;--dash-hover:#edf5ff;background:var(--dash-bg)!important;color:var(--dash-text)!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-main{background:radial-gradient(ellipse at 72% 0%,rgba(43,132,226,.08),transparent 35%),var(--dash-bg)!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-sidebar{background:var(--dash-sidebar)!important;border-right-color:var(--dash-border)!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-panel,.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-stat-card,.dashboard-overlay .dashboard[data-dash-theme="light"] .workspace-card{background:var(--dash-surface)!important;border-color:var(--dash-border)!important;box-shadow:0 5px 18px rgba(25,48,80,.055)!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .workspace-card:hover{background:#f5f9ff!important;border-color:#9bc8f4!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-greeting,.dashboard-overlay .dashboard[data-dash-theme="light"] .workspace-intro h2,.dashboard-overlay .dashboard[data-dash-theme="light"] .panel-header h3,.dashboard-overlay .dashboard[data-dash-theme="light"] .workspace-card strong,.dashboard-overlay .dashboard[data-dash-theme="light"] .dsc-val{color:var(--dash-text)!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-sub,.dashboard-overlay .dashboard[data-dash-theme="light"] .workspace-intro p,.dashboard-overlay .dashboard[data-dash-theme="light"] .workspace-card small,.dashboard-overlay .dashboard[data-dash-theme="light"] .dsc-lbl{color:var(--dash-muted)!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-nav-item{color:#58677e!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-nav-item:hover{background:#f0f6ff!important;color:#1d5f9f!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-nav-item.active{background:#eaf3ff!important;color:#155fa8!important;box-shadow:inset 3px 0 #2589e8!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-nav-label{color:#8794a8!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-user{background:#f5f8fc!important;border-color:var(--dash-border)!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-close-btn,.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-theme-btn{background:#fff!important;color:#26364d!important;border-color:var(--dash-border)!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .workspace-note{background:#edf6ff!important;color:#42617f!important;border-color:#d7eaff!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-empty{color:#64738a!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] input,.dashboard-overlay .dashboard[data-dash-theme="light"] textarea,.dashboard-overlay .dashboard[data-dash-theme="light"] select{background:#fff!important;color:#182338!important;border-color:#d5dfec!important;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-panel [style*="color:#aebbd0"],.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-panel [style*="color: #aebbd0"]{color:#64738a!important;}
+@media(max-width:900px){.dashboard-overlay .dash-sidebar{width:238px;min-width:238px;max-width:238px}.dashboard-overlay .workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:680px){.dashboard-overlay .dashboard{height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important}.dashboard-overlay .dash-sidebar{width:76px;min-width:76px;max-width:76px;padding:18px 8px!important}.dashboard-overlay .dash-brand{justify-content:center;margin:0 0 24px!important}.dashboard-overlay .dash-brand span,.dashboard-overlay .dash-nav-label,.dashboard-overlay .dash-nav-item:not([data-tab="overview"]),.dashboard-overlay .dash-user-info,.dashboard-overlay .dash-logout{display:none!important}.dashboard-overlay .dash-nav-item{justify-content:center;padding:0!important}.dashboard-overlay .dash-nav-item>i:first-child{font-size:1.1rem}.dashboard-overlay .dash-main{padding:20px 14px 28px!important}.dashboard-overlay .workspace-grid{grid-template-columns:1fr;}.dashboard-overlay .dash-stats-row{grid-template-columns:1fr;}.dashboard-overlay .dash-theme-btn span{display:none}.dashboard-overlay .dash-theme-btn{width:38px;justify-content:center;padding:0}.dashboard-overlay .overview-lower{grid-template-columns:1fr;}}
+@media(max-width:420px){.dashboard-overlay .dash-sidebar{width:58px;min-width:58px;max-width:58px}.dashboard-overlay .dash-brand img{height:19px!important}.dashboard-overlay .workspace-card{min-height:126px}.dashboard-overlay .dash-greeting{font-size:1.25rem!important}}
+@media(prefers-reduced-motion:reduce){.dashboard-overlay *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* ── cymansquare-dashboard-popup-v3 ── */
+/* Return the signed-in workspace to a centered modal over the public site. */
+.dashboard-overlay{position:fixed!important;inset:0!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;min-height:100%!important;padding:24px!important;margin:0!important;background:rgba(5,8,15,.70)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;z-index:9999!important;box-sizing:border-box!important;}
+.dashboard-overlay .dashboard{width:min(1152px,94vw)!important;max-width:1152px!important;height:min(782px,90vh)!important;min-height:0!important;max-height:90vh!important;margin:auto!important;border:1px solid rgba(170,190,220,.26)!important;border-radius:20px!important;outline:0!important;box-shadow:0 28px 100px rgba(0,0,0,.52)!important;overflow:hidden!important;}
+.dashboard-overlay .dash-sidebar{flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;}
+.dashboard-overlay .dash-main{min-width:0!important;overflow-y:auto!important;overscroll-behavior:contain!important;}
+.dashboard-overlay .dash-tab{display:none!important;}
+.dashboard-overlay .dash-tab.active{display:block!important;}
+.dashboard-overlay .dash-nav-item{cursor:pointer!important;text-decoration:none!important;}
+.dashboard-overlay .dash-nav-external{display:none!important;}
+.dashboard-overlay .dash-nav-item[data-tab^="tool-"]{white-space:normal!important;}
+.dashboard-overlay .dash-greeting-line{display:flex;align-items:center;gap:11px;flex-wrap:wrap;}
+.dashboard-overlay .greeting-icon{display:inline-grid;place-items:center;width:37px;height:37px;border-radius:12px;font-size:1.15rem;box-shadow:inset 0 1px 0 rgba(255,255,255,.14);}
+.dashboard-overlay .greeting-icon.morning{color:#ffbd55;background:linear-gradient(145deg,rgba(255,188,74,.2),rgba(255,130,55,.12));}
+.dashboard-overlay .greeting-icon.afternoon{color:#ffc34e;background:linear-gradient(145deg,rgba(255,196,76,.22),rgba(255,145,51,.12));}
+.dashboard-overlay .greeting-icon.night{color:#a9b9ff;background:linear-gradient(145deg,rgba(129,151,255,.22),rgba(116,104,220,.13));}
+.dashboard-overlay .tool-detail-hero{display:flex;align-items:center;gap:15px;padding:21px;border:1px solid var(--dash-border);border-radius:16px;background:linear-gradient(135deg,var(--dash-surface),var(--dash-surface-2));margin-bottom:17px;}
+.dashboard-overlay .tool-detail-icon{width:52px;height:52px;flex:none;border-radius:15px;display:grid;place-items:center;background:rgba(55,153,255,.14);color:#55adff;font-size:1.45rem;}
+.dashboard-overlay .tool-detail-hero h2{margin:0 0 5px;font-size:1.12rem;font-weight:800;color:var(--dash-text);}
+.dashboard-overlay .tool-detail-hero p{margin:0;color:var(--dash-muted);font-size:.8rem;line-height:1.55;}
+.dashboard-overlay .tool-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;}
+.dashboard-overlay .tool-detail-card{padding:19px;border:1px solid var(--dash-border);border-radius:15px;background:var(--dash-surface);min-width:0;}
+.dashboard-overlay .tool-detail-card h3{margin:0 0 8px;font-size:.9rem;color:var(--dash-text);}
+.dashboard-overlay .tool-detail-card p{margin:0;color:var(--dash-muted);font-size:.76rem;line-height:1.6;}
+.dashboard-overlay .tool-detail-empty{display:flex;align-items:flex-start;gap:11px;margin-top:13px;padding:13px;border-radius:11px;background:var(--dash-hover);color:var(--dash-muted);font-size:.75rem;line-height:1.5;}
+.dashboard-overlay .tool-detail-empty i{color:var(--dash-accent);font-size:1rem;}
+.dashboard-overlay .tool-detail-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px;}
+.dashboard-overlay .tool-detail-actions .primary-btn,.dashboard-overlay .tool-detail-actions .dash-new-btn{min-height:38px;}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .tool-detail-hero,.dashboard-overlay .dashboard[data-dash-theme="light"] .tool-detail-card{background:#fff;border-color:var(--dash-border);}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .tool-detail-hero h2,.dashboard-overlay .dashboard[data-dash-theme="light"] .tool-detail-card h3{color:var(--dash-text);}
+@media(max-width:760px){.dashboard-overlay{padding:12px!important;}.dashboard-overlay .dashboard{width:96vw!important;height:94vh!important;max-height:94vh!important;border-radius:16px!important;}.dashboard-overlay .dash-sidebar{flex-basis:190px!important;width:190px!important;min-width:190px!important;max-width:190px!important;}}
+@media(max-width:560px){.dashboard-overlay{padding:6px!important;}.dashboard-overlay .dashboard{width:98vw!important;height:96vh!important;max-height:96vh!important;border-radius:13px!important;}.dashboard-overlay .dash-sidebar{flex-basis:62px!important;width:62px!important;min-width:62px!important;max-width:62px!important;padding:14px 6px!important;}.dashboard-overlay .dash-brand span,.dashboard-overlay .dash-nav-label,.dashboard-overlay .dash-user-info,.dashboard-overlay .dash-logout{display:none!important;}.dashboard-overlay .dash-nav-item:not([data-tab="overview"]){display:flex!important;}.dashboard-overlay .dash-nav-item{justify-content:center!important;padding:0!important;font-size:0!important;gap:0!important;}.dashboard-overlay .dash-nav-item>i:first-child{font-size:1rem!important;}.dashboard-overlay .nav-badge{display:none!important;}.dashboard-overlay .dash-main{padding:19px 13px 24px!important;}.dashboard-overlay .tool-detail-grid{grid-template-columns:1fr;}.dashboard-overlay .dash-theme-btn span{display:none;}.dashboard-overlay .dash-theme-btn{width:38px;justify-content:center;padding:0;}}
+
+/* ── cymansquare-dashboard-v4 ── */
+/* V4 — calmer hierarchy, no KPI strip, polished time-aware welcome */
+#dashboardOverlay .dash-stats-row{display:none!important;}
+#dashboardOverlay .dash-main{padding:30px clamp(22px,3.2vw,42px) 34px!important;}
+#dashboardOverlay .dash-topbar{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:30px!important;padding-bottom:21px;border-bottom:1px solid var(--dash-border);}
+#dashboardOverlay .dash-greeting-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0;}
+#dashboardOverlay .dash-greeting{font-size:clamp(1.55rem,2.4vw,2.05rem)!important;line-height:1.18;letter-spacing:-.055em!important;font-weight:800!important;color:var(--dash-text)!important;}
+#dashboardOverlay #dashGreetingText{display:inline;}
+#dashboardOverlay .greeting-icon{width:43px!important;height:43px!important;border-radius:15px!important;display:inline-grid!important;place-items:center!important;font-size:1.28rem!important;box-shadow:0 7px 18px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.28)!important;transform:rotate(-4deg);}
+#dashboardOverlay .greeting-icon.morning{color:#ffbd54!important;background:linear-gradient(145deg,#fff0c7,#ffc15c 62%,#ff9b4b)!important;}
+#dashboardOverlay .greeting-icon.afternoon{color:#fff!important;background:linear-gradient(145deg,#ffe28a,#ffad38 68%,#ff873d)!important;}
+#dashboardOverlay .greeting-icon.night{color:#e7eaff!important;background:linear-gradient(145deg,#6678c8,#384a91 65%,#29396f)!important;}
+#dashboardOverlay .dash-sub{font-size:.82rem!important;margin-top:8px!important;letter-spacing:.005em;}
+#dashboardOverlay .workspace-intro{margin:0 0 17px!important;align-items:center!important;}
+#dashboardOverlay .workspace-intro h2{font-size:1.13rem!important;letter-spacing:-.035em!important;}
+#dashboardOverlay .workspace-intro p{font-size:.79rem!important;margin-top:5px!important;}
+#dashboardOverlay .workspace-grid{gap:14px!important;margin-bottom:22px!important;}
+#dashboardOverlay .workspace-card{min-height:145px!important;padding:17px 18px!important;border-radius:15px!important;background:linear-gradient(145deg,var(--dash-card),var(--dash-surface-2))!important;border-color:var(--dash-border)!important;box-shadow:0 7px 20px rgba(0,0,0,.075)!important;}
+#dashboardOverlay .workspace-card:hover{transform:translateY(-3px)!important;border-color:var(--dash-accent)!important;box-shadow:0 13px 27px rgba(25,105,190,.14)!important;}
+#dashboardOverlay .workspace-card-heading{gap:11px!important;}
+#dashboardOverlay .workspace-icon{width:39px!important;height:39px!important;min-width:39px!important;border-radius:12px!important;font-size:1.06rem!important;}
+#dashboardOverlay .workspace-card strong{font-size:.88rem!important;letter-spacing:-.018em;}
+#dashboardOverlay .workspace-card small{padding-left:50px!important;font-size:.73rem!important;line-height:1.55!important;}
+#dashboardOverlay .workspace-arrow{opacity:.75;transition:transform .18s ease,opacity .18s ease;}
+#dashboardOverlay .workspace-card:hover .workspace-arrow{opacity:1;transform:translate(2px,-2px);}
+#dashboardOverlay .dash-panel{border-radius:15px!important;box-shadow:0 8px 24px rgba(0,0,0,.07)!important;}
+#dashboardOverlay .panel-header h3{font-size:.94rem!important;}
+#dashboardOverlay .overview-lower{gap:14px!important;}
+#dashboardOverlay .workspace-note{border-radius:12px!important;font-size:.74rem!important;}
+#dashboardOverlay .dash-nav-item{min-height:42px!important;border-radius:10px!important;}
+#dashboardOverlay .dash-nav-item.active{font-weight:750!important;}
+#dashboardOverlay .dash-close-btn{transition:background .18s ease,border-color .18s ease,transform .18s ease;}
+#dashboardOverlay .dash-close-btn:hover{background:var(--dash-hover)!important;border-color:var(--dash-accent)!important;transform:rotate(90deg);}
+/* Light mode: clear surfaces and readable contrast across all dashboard areas */
+#dashboardOverlay .dashboard[data-dash-theme="light"] .dash-topbar{border-bottom-color:#e2e8f2;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .workspace-card{background:linear-gradient(145deg,#fff,#f5f8fd)!important;border-color:#dce5f1!important;box-shadow:0 6px 18px rgba(35,61,94,.055)!important;color:#182338!important;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .workspace-card:hover{background:linear-gradient(145deg,#fff,#eef5ff)!important;border-color:#80b9f1!important;box-shadow:0 12px 24px rgba(35,105,175,.12)!important;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .dash-panel{background:linear-gradient(145deg,#fff,#f8faff)!important;border-color:#e0e7f1!important;box-shadow:0 6px 20px rgba(35,61,94,.045)!important;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .workspace-note{background:#edf5ff!important;border-color:#d6e8fb!important;color:#52657e!important;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .dash-nav-item{color:#5d6b80!important;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .dash-nav-item:hover{background:#edf5ff!important;color:#1b5f9f!important;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .dash-nav-item.active{background:linear-gradient(90deg,#e4f1ff,#f2f8ff)!important;color:#145f9f!important;box-shadow:inset 3px 0 #2589df!important;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .dash-user{background:#f7f9fc!important;border-color:#e1e7f0!important;}
+@media(max-width:760px){
+ #dashboardOverlay .dash-main{padding:22px 17px 26px!important;}
+ #dashboardOverlay .dash-topbar{margin-bottom:22px!important;padding-bottom:17px;}
+ #dashboardOverlay .workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}
+ #dashboardOverlay .workspace-card{min-height:145px!important;padding:14px!important;}
+ #dashboardOverlay .workspace-card small{padding-left:0!important;}
+ #dashboardOverlay .overview-lower{grid-template-columns:1fr!important;}
+}
+@media(max-width:520px){
+ #dashboardOverlay .dash-topbar{align-items:flex-start!important;}
+ #dashboardOverlay .dash-greeting{font-size:1.28rem!important;}
+ #dashboardOverlay .greeting-icon{width:36px!important;height:36px!important;border-radius:12px!important;font-size:1.05rem!important;}
+ #dashboardOverlay .workspace-grid{grid-template-columns:1fr!important;}
+ #dashboardOverlay .workspace-card{min-height:116px!important;}
+}
+@media(prefers-reduced-motion:reduce){#dashboardOverlay *{scroll-behavior:auto!important;transition:none!important;}}
+
+/* ── cymansquare-dashboard-final-polish ── */
+/* Final visual pass: keep the centered popup, improve clarity and responsive fit. */
+#dashboardOverlay .dashboard{isolation:isolate;background:var(--dash-bg);}
+#dashboardOverlay .dash-greeting-line{display:flex;align-items:center;gap:10px!important;flex-wrap:wrap;}
+#dashboardOverlay #dashGreetingText{white-space:nowrap;}
+#dashboardOverlay .dash-greeting-name{font:inherit;font-weight:800;color:var(--dash-accent);letter-spacing:inherit;white-space:nowrap;}
+#dashboardOverlay .dash-greeting-name[hidden]{display:none!important;}
+#dashboardOverlay .greeting-icon{flex:none;transition:transform .25s ease,filter .25s ease;}
+#dashboardOverlay .greeting-icon:hover{transform:translateY(-2px) rotate(0deg)!important;filter:drop-shadow(0 5px 9px rgba(255,177,70,.22));}
+#dashboardOverlay .workspace-card{min-width:0;}
+#dashboardOverlay .workspace-card-heading{min-height:39px;}
+#dashboardOverlay .workspace-card strong{overflow-wrap:anywhere;}
+#dashboardOverlay .overview-lower{grid-template-columns:minmax(0,1.5fr) minmax(230px,.9fr);}
+#dashboardOverlay #recentUploadsList{min-width:0;}
+#dashboardOverlay #recentUploadsList>*,#dashboardOverlay #recentUploadsList .upload-item,#dashboardOverlay #recentUploadsList .file-item{max-width:100%;box-sizing:border-box;}
+#dashboardOverlay .dash-empty{color:var(--dash-muted)!important;}
+#dashboardOverlay .panel-header{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+#dashboardOverlay .panel-link{white-space:nowrap;}
+#dashboardOverlay .tool-detail-hero{box-shadow:0 8px 24px rgba(0,0,0,.06);}
+#dashboardOverlay .tool-detail-actions button{cursor:pointer;}
+#dashboardOverlay .dash-nav-item:focus-visible,#dashboardOverlay .workspace-card:focus-visible,#dashboardOverlay button:focus-visible{outline:2px solid var(--dash-accent)!important;outline-offset:2px;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .dash-greeting-name{color:#176fbd;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .greeting-icon{box-shadow:0 5px 14px rgba(30,60,100,.13),inset 0 1px 0 rgba(255,255,255,.65)!important;}
+@media(max-width:760px){
+ #dashboardOverlay .dashboard{width:min(96vw,680px)!important;height:min(92vh,820px)!important;max-height:92vh!important;border-radius:16px!important;}
+ #dashboardOverlay .dash-sidebar{flex-basis:190px!important;width:190px!important;min-width:190px!important;max-width:190px!important;}
+ #dashboardOverlay .dash-main{padding:22px 18px 26px!important;}
+ #dashboardOverlay .overview-lower{grid-template-columns:1fr!important;}
+}
+@media(max-width:560px){
+ #dashboardOverlay .dashboard{width:98vw!important;height:96vh!important;max-height:96vh!important;border-radius:13px!important;}
+ #dashboardOverlay .dash-sidebar{flex-basis:62px!important;width:62px!important;min-width:62px!important;max-width:62px!important;}
+ #dashboardOverlay .dash-main{padding:18px 13px 22px!important;}
+ #dashboardOverlay .dash-greeting{font-size:1.22rem!important;}
+ #dashboardOverlay .greeting-icon{width:34px!important;height:34px!important;border-radius:11px!important;font-size:1rem!important;}
+ #dashboardOverlay .workspace-grid{grid-template-columns:1fr!important;}
+ #dashboardOverlay .workspace-card{min-height:112px!important;}
+}
+
+/* ── cymansquare-dashboard-v6-final-ui ── */
+/* V6: centered dashboard modal, compact hierarchy and consistent upload surfaces */
+#dashboardOverlay{
+  position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
+  padding:clamp(12px,3vh,28px)!important;box-sizing:border-box!important;
+  align-items:center!important;justify-content:center!important;
+  background:rgba(8,11,18,.62)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(.82)!important;backdrop-filter:blur(10px) saturate(.82)!important;
+}
+#dashboardOverlay .dashboard{
+  width:min(1160px,94vw)!important;max-width:1160px!important;
+  height:min(780px,91vh)!important;min-height:0!important;max-height:91vh!important;
+  margin:auto!important;border:1px solid rgba(133,164,211,.24)!important;
+  border-radius:22px!important;outline:0!important;
+  box-shadow:0 32px 100px rgba(0,0,0,.48),0 0 0 1px rgba(255,255,255,.025)!important;
+  overflow:hidden!important;
+}
+#dashboardOverlay .dash-sidebar{width:238px!important;min-width:238px!important;max-width:238px!important;}
+#dashboardOverlay .dash-main{min-width:0!important;overflow-y:auto!important;padding:25px clamp(22px,3vw,38px) 30px!important;}
+#dashboardOverlay .dash-topbar{margin:0 0 14px!important;padding:0 0 15px!important;min-height:0!important;}
+#dashboardOverlay .workspace-intro{margin:0 0 13px!important;}
+#dashboardOverlay .workspace-grid{margin-bottom:17px!important;gap:12px!important;}
+#dashboardOverlay .workspace-card{min-height:137px!important;padding:15px 16px!important;}
+#dashboardOverlay .overview-lower{gap:13px!important;}
+#dashboardOverlay .dash-greeting-line{gap:9px!important;}
+#dashboardOverlay .dash-greeting-name{display:inline!important;visibility:visible!important;}
+#dashboardOverlay .dash-greeting-name[hidden]{display:inline!important;}
+#dashboardOverlay #dashGreetingName:empty{display:none!important;}
+#dashboardOverlay #recentUploadsList{display:grid;gap:9px;}
+#dashboardOverlay #recentUploadsList>:not(.dash-empty),
+#dashboardOverlay #recentUploadsList .upload-item,
+#dashboardOverlay #recentUploadsList .file-item,
+#dashboardOverlay #recentUploadsList [class*="upload"],
+#dashboardOverlay #recentUploadsList [class*="file"]{
+  background:linear-gradient(135deg,var(--dash-surface),var(--dash-surface-2))!important;
+  color:var(--dash-text)!important;border:1px solid var(--dash-border)!important;
+  border-radius:13px!important;box-shadow:0 5px 16px rgba(0,0,0,.08)!important;
+}
+#dashboardOverlay #recentUploadsList>:not(.dash-empty) *{color:inherit;}
+#dashboardOverlay #recentUploadsList small,
+#dashboardOverlay #recentUploadsList time,
+#dashboardOverlay #recentUploadsList .text-muted,
+#dashboardOverlay #recentUploadsList [class*="date"],
+#dashboardOverlay #recentUploadsList [class*="meta"]{color:var(--dash-muted)!important;}
+#dashboardOverlay #recentUploadsList button,
+#dashboardOverlay #recentUploadsList .btn{background:#3698f5!important;color:#fff!important;border:0!important;border-radius:9px!important;}
+#dashboardOverlay .tool-detail-actions{display:flex;flex-wrap:wrap;gap:9px;}
+#dashboardOverlay .tool-detail-actions button{max-width:100%;}
+#dashboardOverlay .dash-nav-item[data-tab="admin"]{color:#e8a83d!important;}
+#dashboardOverlay .dash-nav-item[data-tab="admin"]:hover{background:rgba(232,168,61,.1)!important;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList>:not(.dash-empty),
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList .upload-item,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList .file-item,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList [class*="upload"],
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList [class*="file"]{
+  background:linear-gradient(135deg,#fff,#f4f8fd)!important;color:#1d2b40!important;
+  border-color:#dce5f0!important;box-shadow:0 5px 15px rgba(35,61,94,.06)!important;
+}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList small,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList time,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList .text-muted,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList [class*="date"],
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList [class*="meta"]{color:#718096!important;}
+@media(max-width:760px){
+ #dashboardOverlay{padding:10px!important;}
+ #dashboardOverlay .dashboard{width:96vw!important;height:92vh!important;max-height:92vh!important;border-radius:17px!important;}
+ #dashboardOverlay .dash-sidebar{width:190px!important;min-width:190px!important;max-width:190px!important;}
+ #dashboardOverlay .dash-main{padding:19px 15px 23px!important;}
+ #dashboardOverlay .dash-topbar{margin-bottom:12px!important;padding-bottom:12px!important;}
+}
+@media(max-width:540px){
+ #dashboardOverlay .dashboard{width:97vw!important;height:94vh!important;max-height:94vh!important;border-radius:15px!important;}
+ #dashboardOverlay .dash-sidebar{width:64px!important;min-width:64px!important;max-width:64px!important;padding:14px 6px!important;}
+ #dashboardOverlay .dash-brand{justify-content:center;margin:0 0 20px!important;}
+ #dashboardOverlay .dash-brand span,#dashboardOverlay .dash-nav-label,#dashboardOverlay .dash-user-info,#dashboardOverlay .dash-logout{display:none!important;}
+ #dashboardOverlay .dash-nav-item{justify-content:center!important;padding:0!important;font-size:0!important;gap:0!important;}
+ #dashboardOverlay .dash-nav-item>i:first-child{font-size:1rem!important;}
+ #dashboardOverlay .dash-main{padding:17px 12px 20px!important;}
+ #dashboardOverlay .workspace-grid{grid-template-columns:1fr!important;}
+ #dashboardOverlay .workspace-card{min-height:112px!important;}
+ #dashboardOverlay .dash-greeting{font-size:1.2rem!important;}
+ #dashboardOverlay .greeting-icon{width:32px!important;height:32px!important;}
+}
+@media(prefers-reduced-motion:reduce){#dashboardOverlay *{scroll-behavior:auto!important;transition:none!important;}}
+
+/* ── cymansquare-tool-link-actions ── */
+#dashboardOverlay .tool-detail-actions .primary-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:40px;padding:0 16px;border:1px solid rgba(73,163,255,.42);
+  border-radius:10px;background:linear-gradient(135deg,#238be6,#1769bd);
+  color:#fff;font:600 .78rem 'DM Sans',sans-serif;text-decoration:none;
+  box-shadow:0 7px 18px rgba(25,112,198,.18);
+  transition:transform .18s ease,filter .18s ease,box-shadow .18s ease;
+}
+#dashboardOverlay .tool-detail-actions .primary-btn:hover{
+  transform:translateY(-2px);filter:brightness(1.08);
+  box-shadow:0 10px 22px rgba(25,112,198,.25);
+}
+#dashboardOverlay .tool-detail-actions .dash-new-btn{
+  min-height:40px;padding:0 14px;border-radius:10px;
+}
+
+/* ── cyman-v11-main-redesign ── */
+/* CyMan² V11 — new content layout; original sidebar deliberately untouched */
+.dashboard-overlay .dashboard .dash-main {
+  padding: 30px clamp(22px, 3.2vw, 46px) 34px !important;
+  background:
+    radial-gradient(ellipse at 78% -8%, rgba(42,132,226,.16), transparent 34%),
+    linear-gradient(180deg, #111827 0%, #101521 100%) !important;
+}
+.dashboard-overlay .dashboard .dash-topbar {
+  position:relative;
+  padding: 0 0 23px;
+  margin: 0 0 25px !important;
+  border-bottom: 1px solid rgba(112,157,216,.18);
+}
+.dashboard-overlay .dashboard .dash-greeting {
+  font-size: clamp(1.65rem, 2.4vw, 2.15rem) !important;
+  letter-spacing: -.055em !important;
+  line-height: 1.1 !important;
+}
+.dashboard-overlay .dashboard .dash-sub {
+  margin-top: 8px !important;
+  font-size: .88rem !important;
+  letter-spacing: .005em;
+}
+.dashboard-overlay .dashboard .dash-topbar-actions { gap:10px; }
+.dashboard-overlay .dashboard #tab-overview .dash-stats-row { display:none !important; }
+.dashboard-overlay .dashboard #tab-overview .workspace-intro {
+  align-items:flex-end !important;
+  margin: 0 0 16px !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-intro h2 {
+  font-size:1.28rem !important;
+  letter-spacing:-.04em !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-intro p {
+  margin-top:5px !important;
+  font-size:.82rem !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-grid {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:13px !important;
+  margin:0 0 18px !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-card {
+  min-width:0 !important;
+  min-height:145px !important;
+  padding:19px 20px !important;
+  border-radius:16px !important;
+  border:1px solid rgba(104,157,222,.22) !important;
+  background:
+    linear-gradient(135deg,rgba(36,55,83,.96),rgba(25,35,54,.98)) !important;
+  box-shadow:0 9px 25px rgba(0,0,0,.13), inset 0 1px 0 rgba(255,255,255,.035) !important;
+  transform:translateZ(0);
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-card:before {
+  width:190px !important;height:190px !important;right:-112px !important;top:-125px !important;
+  border-color:rgba(77,166,255,.16) !important;
+  box-shadow:0 0 0 19px rgba(77,166,255,.025),0 0 0 39px rgba(77,166,255,.018) !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-card:first-child {
+  grid-column:1 / -1 !important;
+  min-height:132px !important;
+  padding:20px 23px !important;
+  background:
+    radial-gradient(circle at 88% 12%,rgba(45,151,255,.19),transparent 26%),
+    linear-gradient(112deg,#1d3554 0%,#1b2a43 52%,#172237 100%) !important;
+  border-color:rgba(69,157,255,.38) !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-card-heading {
+  gap:13px !important;
+  align-items:center !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-icon {
+  width:43px !important;height:43px !important;min-width:43px !important;
+  border-radius:13px !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09);
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-card strong {
+  font-size:.94rem !important;
+  letter-spacing:-.025em !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-card small {
+  display:block !important;
+  padding-left:56px !important;
+  margin-top:11px !important;
+  max-width:470px !important;
+  font-size:.78rem !important;
+  line-height:1.55 !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-card:first-child small {
+  max-width:650px !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-arrow {
+  right:19px !important;bottom:17px !important;
+  color:#82c2ff !important;font-size:1.08rem !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-card:hover {
+  transform:translateY(-3px) !important;
+  border-color:rgba(81,173,255,.62) !important;
+  box-shadow:0 15px 32px rgba(0,0,0,.22),0 0 0 1px rgba(65,151,244,.08) !important;
+}
+.dashboard-overlay .dashboard #tab-overview .overview-lower {
+  display:grid !important;
+  grid-template-columns:minmax(0,1.55fr) minmax(235px,.85fr) !important;
+  gap:14px !important;
+  align-items:stretch !important;
+}
+.dashboard-overlay .dashboard #tab-overview .overview-lower .dash-panel {
+  min-width:0 !important;
+  margin:0 !important;
+  padding:19px !important;
+  border-radius:16px !important;
+  border-color:rgba(112,157,216,.19) !important;
+  background:linear-gradient(145deg,rgba(31,42,62,.98),rgba(23,31,47,.98)) !important;
+  box-shadow:0 10px 27px rgba(0,0,0,.12) !important;
+}
+.dashboard-overlay .dashboard #tab-overview .panel-header { margin-bottom:14px !important; }
+.dashboard-overlay .dashboard #tab-overview .panel-header h3 {
+  font-size:.94rem !important;letter-spacing:-.025em !important;
+}
+.dashboard-overlay .dashboard #tab-overview #recentUploadsList > * {
+  border-radius:12px !important;
+}
+.dashboard-overlay .dashboard #tab-overview .workspace-note {
+  margin-top:15px !important;
+  border-radius:12px !important;
+  background:rgba(43,137,231,.075) !important;
+}
+.dashboard-overlay .dashboard[data-dash-theme="light"] .dash-main {
+  background:
+    radial-gradient(ellipse at 78% -8%,rgba(43,132,226,.10),transparent 34%),
+    linear-gradient(180deg,#f6f9ff 0%,#f1f5fb 100%) !important;
+}
+.dashboard-overlay .dashboard[data-dash-theme="light"] #tab-overview .workspace-card {
+  background:linear-gradient(135deg,#ffffff,#f5f8fd) !important;
+  box-shadow:0 8px 22px rgba(26,65,112,.07),inset 0 1px 0 #fff !important;
+}
+.dashboard-overlay .dashboard[data-dash-theme="light"] #tab-overview .workspace-card:first-child {
+  background:
+    radial-gradient(circle at 88% 12%,rgba(45,151,255,.13),transparent 26%),
+    linear-gradient(112deg,#e9f3ff 0%,#f6f9ff 100%) !important;
+}
+.dashboard-overlay .dashboard[data-dash-theme="light"] #tab-overview .overview-lower .dash-panel {
+  background:linear-gradient(145deg,#fff,#f8faff) !important;
+  box-shadow:0 8px 22px rgba(26,65,112,.055) !important;
+}
+@media(max-width:900px) {
+  .dashboard-overlay .dashboard .dash-main {padding:24px 22px 28px !important;}
+  .dashboard-overlay .dashboard #tab-overview .overview-lower {
+    grid-template-columns:1fr !important;
+  }
+}
+@media(max-width:620px) {
+  .dashboard-overlay .dashboard .dash-main {padding:19px 15px 24px !important;}
+  .dashboard-overlay .dashboard #tab-overview .workspace-grid {
+    grid-template-columns:1fr !important;
+  }
+  .dashboard-overlay .dashboard #tab-overview .workspace-card:first-child {
+    grid-column:auto !important;
+  }
+  .dashboard-overlay .dashboard #tab-overview .workspace-card {min-height:126px !important;}
+  .dashboard-overlay .dashboard #tab-overview .overview-lower {grid-template-columns:1fr !important;}
+  .dashboard-overlay .dashboard .dash-greeting {font-size:1.5rem !important;}
+}
+
+/* ── cyman-v12-minimal-layout ── */
+/* CyMan² V12 — compact spacing, equal 3-column tool cards, refined upload row.
+   Sidebar markup and styling remain unchanged. */
+#dashboardOverlay .dash-main{
+  padding:20px 24px 22px!important;
+}
+#dashboardOverlay .dash-topbar{
+  margin:0 0 15px!important;
+  padding:0 0 12px!important;
+  min-height:0!important;
+}
+#dashboardOverlay .dash-greeting{font-size:1.55rem!important;line-height:1.15!important;}
+#dashboardOverlay .dash-sub{font-size:.77rem!important;margin-top:4px!important;}
+#dashboardOverlay #tab-overview .dash-stats-row{display:none!important;}
+#dashboardOverlay #tab-overview .workspace-intro{
+  margin:0 0 10px!important;
+  align-items:center!important;
+}
+#dashboardOverlay #tab-overview .workspace-intro h2{
+  font-size:1.08rem!important;line-height:1.25!important;
+}
+#dashboardOverlay #tab-overview .workspace-intro p{
+  font-size:.73rem!important;margin:3px 0 0!important;
+}
+#dashboardOverlay #tab-overview .workspace-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows: minmax(116px,auto)!important;
+  gap:10px!important;
+  margin:0 0 13px!important;
+}
+#dashboardOverlay #tab-overview .workspace-card,
+#dashboardOverlay #tab-overview .workspace-card:first-child{
+  grid-column:auto!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  align-items:stretch!important;
+  gap:7px!important;
+  min-width:0!important;
+  min-height:116px!important;
+  height:116px!important;
+  padding:12px 13px!important;
+  border-radius:12px!important;
+  border:1px solid var(--dash-border)!important;
+  background:linear-gradient(145deg,var(--dash-card),var(--dash-surface-2))!important;
+  box-shadow:none!important;
+}
+#dashboardOverlay #tab-overview .workspace-card:before{opacity:.45!important;}
+#dashboardOverlay #tab-overview .workspace-card-heading{
+  display:flex!important;align-items:center!important;gap:9px!important;
+  min-height:30px!important;
+}
+#dashboardOverlay #tab-overview .workspace-icon{
+  width:32px!important;height:32px!important;min-width:32px!important;
+  border-radius:9px!important;font-size:.95rem!important;
+}
+#dashboardOverlay #tab-overview .workspace-card strong{
+  font-size:.78rem!important;line-height:1.25!important;
+  letter-spacing:-.02em!important;overflow-wrap:anywhere!important;
+}
+#dashboardOverlay #tab-overview .workspace-card small,
+#dashboardOverlay #tab-overview .workspace-card:first-child small{
+  display:block!important;position:relative!important;z-index:1!important;
+  max-width:100%!important;padding:0!important;margin:0!important;
+  font-size:.67rem!important;line-height:1.4!important;
+}
+#dashboardOverlay #tab-overview .workspace-arrow{
+  right:11px!important;bottom:9px!important;font-size:.83rem!important;
+}
+#dashboardOverlay #tab-overview .workspace-card:hover{
+  transform:translateY(-2px)!important;
+  border-color:var(--dash-accent)!important;
+  box-shadow:0 7px 16px rgba(0,0,0,.10)!important;
+}
+#dashboardOverlay #tab-overview .overview-lower{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.45fr) minmax(220px,.85fr)!important;
+  gap:10px!important;
+  align-items:stretch!important;
+}
+#dashboardOverlay #tab-overview .overview-lower .dash-panel{
+  min-width:0!important;margin:0!important;padding:13px 14px!important;
+  border-radius:12px!important;box-shadow:none!important;
+}
+#dashboardOverlay #tab-overview .panel-header{margin-bottom:9px!important;}
+#dashboardOverlay #tab-overview .panel-header h3{font-size:.82rem!important;}
+#dashboardOverlay #tab-overview .panel-link{font-size:.7rem!important;}
+#dashboardOverlay #recentUploadsList{
+  display:flex!important;flex-direction:column!important;gap:7px!important;
+  min-width:0!important;
+}
+#dashboardOverlay #recentUploadsList>:not(.dash-empty),
+#dashboardOverlay #recentUploadsList .upload-item,
+#dashboardOverlay #recentUploadsList .file-item,
+#dashboardOverlay #recentUploadsList [class*="upload"],
+#dashboardOverlay #recentUploadsList [class*="file"]{
+  min-width:0!important;max-width:100%!important;
+  min-height:54px!important;padding:9px 11px!important;
+  display:flex!important;align-items:center!important;gap:10px!important;
+  border-radius:10px!important;
+  background:rgba(45,113,190,.10)!important;
+  border:1px solid rgba(76,153,232,.20)!important;
+  box-shadow:none!important;
+  color:var(--dash-text)!important;
+}
+#dashboardOverlay #recentUploadsList>:not(.dash-empty) *{color:inherit;}
+#dashboardOverlay #recentUploadsList small,
+#dashboardOverlay #recentUploadsList time,
+#dashboardOverlay #recentUploadsList .text-muted,
+#dashboardOverlay #recentUploadsList [class*="date"],
+#dashboardOverlay #recentUploadsList [class*="meta"]{
+  color:var(--dash-muted)!important;font-size:.66rem!important;
+}
+#dashboardOverlay #recentUploadsList button,
+#dashboardOverlay #recentUploadsList .btn{
+  flex:0 0 auto!important;margin-left:auto!important;
+  min-height:30px!important;padding:5px 11px!important;
+  background:#3698f5!important;color:#fff!important;
+  border:0!important;border-radius:8px!important;font-size:.7rem!important;
+}
+#dashboardOverlay #tab-overview .overview-lower .dash-panel > div[style*="display:flex"]{
+  gap:9px!important;font-size:.72rem!important;line-height:1.45!important;
+}
+#dashboardOverlay #tab-overview .overview-lower .dash-panel > div[style*="display:flex"] span:first-child{
+  width:29px!important;height:29px!important;border-radius:8px!important;
+}
+#dashboardOverlay #tab-overview .overview-lower .panel-link[style*="margin-top"]{
+  margin-top:12px!important;
+}
+#dashboardOverlay #tab-overview .workspace-note{
+  margin-top:10px!important;padding:9px 11px!important;
+  gap:8px!important;border-radius:9px!important;
+  font-size:.67rem!important;line-height:1.4!important;
+}
+#dashboardOverlay .dash-panel{margin-bottom:10px!important;}
+#dashboardOverlay .dash-topbar-actions{gap:8px!important;}
+#dashboardOverlay .dash-theme-btn,
+#dashboardOverlay .dash-close-btn{min-height:34px!important;height:34px!important;}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #tab-overview .workspace-card{
+  background:linear-gradient(145deg,#fff,#f5f8fd)!important;
+  border-color:#dce5f1!important;box-shadow:none!important;
+}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList>:not(.dash-empty),
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList .upload-item,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList .file-item,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList [class*="upload"],
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList [class*="file"]{
+  background:#edf5ff!important;border-color:#d7e8fa!important;
+  color:#1d2b40!important;box-shadow:none!important;
+}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList small,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList time,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList .text-muted,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList [class*="date"],
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList [class*="meta"]{color:#718096!important;}
+@media(max-width:900px){
+  #dashboardOverlay .dash-main{padding:18px 18px 20px!important;}
+  #dashboardOverlay #tab-overview .workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  #dashboardOverlay #tab-overview .overview-lower{grid-template-columns:1fr!important;}
+}
+@media(max-width:560px){
+  #dashboardOverlay .dash-main{padding:15px 11px 18px!important;}
+  #dashboardOverlay #tab-overview .workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;}
+  #dashboardOverlay #tab-overview .workspace-card,
+  #dashboardOverlay #tab-overview .workspace-card:first-child{height:120px!important;min-height:120px!important;padding:10px!important;}
+  #dashboardOverlay #tab-overview .workspace-card strong{font-size:.72rem!important;}
+  #dashboardOverlay #tab-overview .workspace-card small{font-size:.63rem!important;}
+  #dashboardOverlay #tab-overview .overview-lower{grid-template-columns:1fr!important;}
+}
+@media(max-width:370px){
+  #dashboardOverlay #tab-overview .workspace-grid{grid-template-columns:1fr!important;}
+  #dashboardOverlay #tab-overview .workspace-card,
+  #dashboardOverlay #tab-overview .workspace-card:first-child{height:auto!important;min-height:100px!important;}
+}
+
+/* ── cyman-v13-sidebar-upload-refinement ── */
+/* CyMan² V13 refinement: compact original sidebar, restrained hover,
+   classic amber Admin Panel, and a simple single-row upload list. */
+#dashboardOverlay .dash-sidebar{
+  padding:14px 12px 10px!important;
+}
+#dashboardOverlay .dash-brand{
+  margin:0 7px 18px!important;
+  gap:8px!important;
+}
+#dashboardOverlay .dash-brand img{height:20px!important;}
+#dashboardOverlay .dash-nav-label{
+  margin:0 9px 6px!important;
+  font-size:.60rem!important;
+  line-height:1.2!important;
+  letter-spacing:.14em!important;
+}
+#dashboardOverlay .dash-nav{gap:2px!important;}
+#dashboardOverlay .dash-nav-item{
+  min-height:35px!important;
+  padding:0 10px!important;
+  gap:10px!important;
+  border-radius:8px!important;
+  font-size:.77rem!important;
+  transition:background-color .16s ease,color .16s ease,border-color .16s ease!important;
+}
+#dashboardOverlay .dash-nav-item:hover{
+  background:rgba(57,156,255,.10)!important;
+  color:var(--dash-text,#eaf3ff)!important;
+  transform:none!important;
+  box-shadow:inset 2px 0 rgba(75,169,255,.65)!important;
+}
+#dashboardOverlay .dash-nav-item.active{
+  background:rgba(57,156,255,.15)!important;
+  box-shadow:inset 3px 0 #399cff!important;
+}
+#dashboardOverlay .dash-nav-divider{
+  margin:7px 8px!important;
+  border-color:rgba(145,164,197,.13)!important;
+}
+#dashboardOverlay .dash-nav-subtitle{margin-top:2px!important;}
+#dashboardOverlay .dash-user{
+  margin-top:auto!important;
+  padding:7px 8px!important;
+  min-height:48px!important;
+  border-radius:10px!important;
+}
+#dashboardOverlay .dash-avatar{
+  width:32px!important;height:32px!important;min-width:32px!important;
+}
+#dashboardOverlay .dash-user-info{min-width:0!important;}
+#dashboardOverlay .dash-user-name{font-size:.73rem!important;}
+#dashboardOverlay .dash-user-role{font-size:.65rem!important;}
+#dashboardOverlay .dash-logout{width:25px!important;height:25px!important;}
+
+/* Keep the Admin Panel's familiar amber highlight in both themes. */
+#dashboardOverlay #adminNavBtn,
+#dashboardOverlay .dash-nav-item[data-tab="admin"]{
+  color:#e8a23a!important;
+}
+#dashboardOverlay #adminNavBtn:hover,
+#dashboardOverlay .dash-nav-item[data-tab="admin"]:hover{
+  color:#ffc15c!important;
+  background:rgba(232,162,58,.10)!important;
+  box-shadow:inset 2px 0 rgba(232,162,58,.65)!important;
+}
+#dashboardOverlay #adminNavBtn.active,
+#dashboardOverlay .dash-nav-item[data-tab="admin"].active{
+  color:#f3b34d!important;
+  background:rgba(232,162,58,.13)!important;
+  box-shadow:inset 3px 0 #e8a23a!important;
+}
+
+/* Replace the over-decorated nested upload boxes with one quiet file row. */
+#dashboardOverlay #recentUploadsList{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:0!important;
+}
+#dashboardOverlay #recentUploadsList > :not(.dash-empty){
+  display:flex!important;
+  align-items:center!important;
+  gap:11px!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:52px!important;
+  box-sizing:border-box!important;
+  padding:9px 10px!important;
+  margin:0!important;
+  border:1px solid rgba(91,151,218,.16)!important;
+  border-radius:9px!important;
+  background:rgba(61,137,216,.055)!important;
+  box-shadow:none!important;
+  color:var(--dash-text)!important;
+}
+#dashboardOverlay #recentUploadsList > :not(.dash-empty) > *:not(button):not(a){
+  min-width:0!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#dashboardOverlay #recentUploadsList > :not(.dash-empty) [class*="icon"],
+#dashboardOverlay #recentUploadsList > :not(.dash-empty) .bi,
+#dashboardOverlay #recentUploadsList > :not(.dash-empty) svg{
+  flex:0 0 auto!important;
+  color:#399cff!important;
+}
+#dashboardOverlay #recentUploadsList > :not(.dash-empty) button,
+#dashboardOverlay #recentUploadsList > :not(.dash-empty) a{
+  flex:0 0 auto!important;
+  margin-left:auto!important;
+  min-height:30px!important;
+  padding:5px 11px!important;
+  border:1px solid rgba(57,156,255,.24)!important;
+  border-radius:7px!important;
+  background:rgba(57,156,255,.10)!important;
+  color:#399cff!important;
+  box-shadow:none!important;
+  font-size:.70rem!important;
+  text-decoration:none!important;
+}
+#dashboardOverlay #recentUploadsList > :not(.dash-empty) button:hover,
+#dashboardOverlay #recentUploadsList > :not(.dash-empty) a:hover{
+  background:#399cff!important;
+  color:#fff!important;
+}
+#dashboardOverlay #recentUploadsList small,
+#dashboardOverlay #recentUploadsList time,
+#dashboardOverlay #recentUploadsList [class*="date"],
+#dashboardOverlay #recentUploadsList [class*="meta"]{
+  color:var(--dash-muted)!important;
+  font-size:.66rem!important;
+}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList > :not(.dash-empty){
+  background:#f7faff!important;
+  border-color:#e1eaf5!important;
+  color:#26364c!important;
+}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList > :not(.dash-empty) button,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList > :not(.dash-empty) a{
+  background:#edf5ff!important;
+  border-color:#d6e8fb!important;
+  color:#2587e8!important;
+}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList > :not(.dash-empty) button:hover,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #recentUploadsList > :not(.dash-empty) a:hover{
+  background:#399cff!important;color:#fff!important;
+}
+@media(max-height:760px){
+  #dashboardOverlay .dash-sidebar{padding-top:10px!important;padding-bottom:8px!important;}
+  #dashboardOverlay .dash-brand{margin-bottom:12px!important;}
+  #dashboardOverlay .dash-nav-item{min-height:32px!important;}
+  #dashboardOverlay .dash-nav-divider{margin:5px 8px!important;}
+}
+@media(max-width:680px){
+  #dashboardOverlay .dash-sidebar{padding:10px 9px 8px!important;}
+  #dashboardOverlay .dash-brand{margin-bottom:12px!important;}
+  #dashboardOverlay .dash-nav-item{min-height:33px!important;padding:0 8px!important;gap:8px!important;}
+}
+
+/* ── cyman-v14-dm-sans-hover ── */
+/* CyMan² V14 — DM Sans typography and understated interaction polish */
+#dashboardOverlay,
+#dashboardOverlay *,
+#dashboardOverlay *::before,
+#dashboardOverlay *::after {
+  font-family:'DM Sans',sans-serif !important;
+}
+#dashboardOverlay button,
+#dashboardOverlay input,
+#dashboardOverlay select,
+#dashboardOverlay textarea { font:inherit; }
+
+/* Restrained hover: subtle tint, border and shadow, without bouncing. */
+#dashboardOverlay .dash-nav-item,
+#dashboardOverlay .workspace-card,
+#dashboardOverlay .dash-panel,
+#dashboardOverlay .dash-theme-btn,
+#dashboardOverlay .dash-close-btn,
+#dashboardOverlay .panel-link,
+#dashboardOverlay button,
+#dashboardOverlay a {
+  transition:background-color .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease !important;
+}
+#dashboardOverlay .workspace-card:hover {
+  transform:none !important;
+  border-color:rgba(67,157,245,.48) !important;
+  box-shadow:0 5px 14px rgba(16,75,135,.10) !important;
+}
+#dashboardOverlay .dash-nav-item:hover {
+  transform:none !important;
+  background:rgba(57,156,255,.075) !important;
+}
+#dashboardOverlay .dash-nav-item.active:hover { background:rgba(57,156,255,.16) !important; }
+#dashboardOverlay .dash-panel:hover {
+  transform:none !important;
+  border-color:rgba(89,151,218,.30) !important;
+}
+#dashboardOverlay .panel-link:hover,
+#dashboardOverlay a:hover { color:#65b4ff !important; }
+#dashboardOverlay button:hover { filter:brightness(1.035); }
+#dashboardOverlay button:active { filter:brightness(.98); }
+#dashboardOverlay :focus-visible {
+  outline:2px solid rgba(57,156,255,.72) !important;
+  outline-offset:2px !important;
+}
+@media(prefers-reduced-motion:reduce) {
+  #dashboardOverlay *,#dashboardOverlay *::before,#dashboardOverlay *::after {
+    transition:none !important;animation:none !important;scroll-behavior:auto !important;
+  }
+}
+
+/* ── cyman-v15-preserve-sidebar-icons ── */
+/* CyMan² V15 — preserve Bootstrap sidebar icons and keep hover understated. */
+/* DM Sans applies to dashboard text; icon glyphs keep their own icon font. */
+#dashboardOverlay,
+#dashboardOverlay *:not(.bi):not([class^="bi-"]):not([class*=" bi-"]) {
+  font-family:'DM Sans',sans-serif !important;
+}
+/* Bootstrap Icons must retain their bundled font or glyphs disappear. */
+#dashboardOverlay i.bi,
+#dashboardOverlay .bi,
+#dashboardOverlay [class^="bi-"],
+#dashboardOverlay [class*=" bi-"] {
+  font-family:"bootstrap-icons" !important;
+  font-style:normal !important;
+  font-weight:normal !important;
+  speak:none;
+}
+
+/* Simple hover: slight tint and text colour only; no movement or glow. */
+#dashboardOverlay .dash-nav-item,
+#dashboardOverlay .workspace-card,
+#dashboardOverlay .dash-panel,
+#dashboardOverlay .dash-theme-btn,
+#dashboardOverlay .dash-close-btn,
+#dashboardOverlay .panel-link,
+#dashboardOverlay button,
+#dashboardOverlay a {
+  transition:background-color .16s ease,border-color .16s ease,color .16s ease !important;
+}
+#dashboardOverlay .dash-nav-item:hover {
+  transform:none !important;
+  background:rgba(57,156,255,.07) !important;
+  color:inherit !important;
+  box-shadow:none !important;
+}
+#dashboardOverlay .dash-nav-item.active:hover {
+  background:rgba(57,156,255,.13) !important;
+  color:inherit !important;
+}
+#dashboardOverlay .workspace-card:hover {
+  transform:none !important;
+  border-color:rgba(67,157,245,.38) !important;
+  box-shadow:none !important;
+}
+#dashboardOverlay .dash-panel:hover {
+  transform:none !important;
+  border-color:rgba(89,151,218,.22) !important;
+  box-shadow:none !important;
+}
+#dashboardOverlay button:hover,
+#dashboardOverlay a:hover {
+  filter:none !important;
+}
+#dashboardOverlay .dash-nav-item:hover i.bi,
+#dashboardOverlay .dash-nav-item.active i.bi {
+  color:inherit !important;
+}
+
+/* ── cyman-v16-bootstrap-icons-verified ── */
+/* V16 safeguard: retain the original Bootstrap Icons markup and glyph font. */
+#dashboardOverlay .dash-sidebar i.bi,
+#dashboardOverlay .dash-sidebar i[class^="bi-"],
+#dashboardOverlay .dash-sidebar i[class*=" bi-"] {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex:0 0 16px !important;
+  width:16px !important;
+  min-width:16px !important;
+  font-family:"bootstrap-icons" !important;
+  font-style:normal !important;
+  font-weight:normal !important;
+  line-height:1 !important;
+  speak:none;
+}
+#dashboardOverlay .dash-sidebar i.bi::before,
+#dashboardOverlay .dash-sidebar i[class^="bi-"]::before,
+#dashboardOverlay .dash-sidebar i[class*=" bi-"]::before {
+  font-family:"bootstrap-icons" !important;
+  font-style:normal !important;
+  font-weight:normal !important;
+  line-height:1 !important;
+}
+/* DM Sans is for interface text only; icon glyphs are excluded. */
+#dashboardOverlay .dash-sidebar .dash-nav-item {
+  font-family:"DM Sans",sans-serif !important;
+}
+#dashboardOverlay .dash-sidebar .dash-nav-item:hover {
+  background:rgba(57,156,255,.07) !important;
+  color:inherit !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+
+/* ── cyman-v17-all-bootstrap-icons ── */
+/* V17: apply Bootstrap Icons to every icon in the dashboard, not only sidebar.
+   Keep the original bi bi-* classes untouched. */
+#dashboardOverlay i.bi,
+#dashboardOverlay i[class^="bi-"],
+#dashboardOverlay i[class*=" bi-"],
+#dashboardOverlay .bi,
+#dashboardOverlay [class^="bi-"],
+#dashboardOverlay [class*=" bi-"] {
+  font-family:"bootstrap-icons" !important;
+  font-style:normal !important;
+  font-weight:normal !important;
+  font-variant:normal !important;
+  text-transform:none !important;
+  line-height:1 !important;
+  speak:none;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+#dashboardOverlay i.bi::before,
+#dashboardOverlay i[class^="bi-"]::before,
+#dashboardOverlay i[class*=" bi-"]::before,
+#dashboardOverlay .bi::before,
+#dashboardOverlay [class^="bi-"]::before,
+#dashboardOverlay [class*=" bi-"]::before {
+  font-family:"bootstrap-icons" !important;
+  font-style:normal !important;
+  font-weight:normal !important;
+  line-height:1 !important;
+}
+/* Explicit coverage for the places shown as missing in the screenshot. */
+#dashboardOverlay .workspace-card .workspace-icon i.bi,
+#dashboardOverlay .workspace-card .workspace-arrow i.bi,
+#dashboardOverlay .panel-link i.bi,
+#dashboardOverlay .greeting-icon i.bi,
+#dashboardOverlay .workspace-note i.bi,
+#dashboardOverlay .overview-lower i.bi {
+  display:inline-block !important;
+  font-family:"bootstrap-icons" !important;
+  font-size:inherit !important;
+  color:inherit;
+  line-height:1 !important;
+}
+
+/* ── cyman-v18-gradient-card-hover ── */
+/* V18 — supplied animated conic-gradient border, scoped to workspace tool cards. */
+@property --cyman-card-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+#dashboardOverlay .workspace-card {
+  color:var(--dash-text,#e0e0e0);
+  border-radius:12px;
+  background:var(--dash-card-bg,#141c2c);
+  position:relative;
+  isolation:isolate;
+  z-index:0;
+  --cyman-card-angle:0deg;
+  overflow:visible;
+  transition:background-color .2s ease,border-color .2s ease !important;
+}
+
+/* Keep card contents above the decorative border. */
+#dashboardOverlay .workspace-card > * {
+  position:relative;
+  z-index:1;
+}
+
+/* Gradient border stays hidden until hover. */
+#dashboardOverlay .workspace-card::before {
+  content:'';
+  position:absolute;
+  inset:-2px;
+  border-radius:14px;
+  background:conic-gradient(
+    from var(--cyman-card-angle),
+    #ff006e,#fb5607,#ffbe0b,#8338ec,#3a86ff,#ff006e
+  );
+  z-index:0;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease;
+}
+
+/* Inner surface masks the centre, leaving only a fine gradient rim. */
+#dashboardOverlay .workspace-card::after {
+  content:'';
+  position:absolute;
+  inset:1px;
+  border-radius:10px;
+  background:var(--dash-card-bg,#141c2c);
+  z-index:0;
+  pointer-events:none;
+}
+
+#dashboardOverlay .workspace-card:hover::before {
+  opacity:1;
+  animation:cyman-card-border-spin 2.8s linear infinite;
+}
+
+@keyframes cyman-card-border-spin {
+  to { --cyman-card-angle:360deg; }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  #dashboardOverlay .workspace-card:hover::before {
+    animation:none !important;
+  }
+}
+
+/* ── cyman-v19-gradient-border-clipping-fix ── */
+/* V19 FIX — keep the animated gradient strictly clipped to the card border.
+   The previous oversized pseudo-element could paint outside the card. */
+@property --cyman-card-angle {
+  syntax:'<angle>';
+  initial-value:0deg;
+  inherits:false;
+}
+#dashboardOverlay .workspace-card {
+  position:relative !important;
+  isolation:isolate !important;
+  overflow:hidden !important;
+  border:1px solid rgba(105,155,218,.22) !important;
+  border-radius:15px !important;
+  background:linear-gradient(145deg,rgba(33,46,68,.94),rgba(26,34,51,.98)) !important;
+  z-index:0 !important;
+  --cyman-card-angle:0deg;
+}
+/* Only the 1.5px perimeter is painted; no full-card gradient block. */
+#dashboardOverlay .workspace-card::before {
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  width:auto !important;
+  height:auto !important;
+  top:0 !important;
+  right:0 !important;
+  padding:1.5px !important;
+  box-sizing:border-box !important;
+  border:0 !important;
+  border-radius:inherit !important;
+  background:conic-gradient(
+    from var(--cyman-card-angle),
+    #ff006e,#fb5607,#ffbe0b,#8338ec,#3a86ff,#ff006e
+  ) !important;
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0) !important;
+  -webkit-mask-composite:xor !important;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0) !important;
+  mask-composite:exclude !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+  z-index:2 !important;
+  transition:opacity .22s ease !important;
+  box-shadow:none !important;
+}
+#dashboardOverlay .workspace-card::after {
+  content:none !important;
+  display:none !important;
+}
+#dashboardOverlay .workspace-card > * {
+  position:relative;
+  z-index:1;
+}
+#dashboardOverlay .workspace-card:hover {
+  transform:none !important;
+  border-color:transparent !important;
+}
+#dashboardOverlay .workspace-card:hover::before {
+  opacity:1 !important;
+  animation:cyman-card-border-spin-fixed 2.8s linear infinite !important;
+}
+@keyframes cyman-card-border-spin-fixed {
+  to { --cyman-card-angle:360deg; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #dashboardOverlay .workspace-card:hover::before {
+    animation:none !important;
+  }
+}
+
+/* ── cyman-v20-card-gradient-background-border ── */
+/* V20 — robust gradient border drawn on the card itself (no pseudo-element mask). */
+@property --cyman-card-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+#dashboardOverlay .workspace-card {
+  --cyman-card-angle: 0deg;
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(105,155,218,.22) !important;
+  border-radius: 15px !important;
+  background: linear-gradient(145deg,rgba(33,46,68,.94),rgba(26,34,51,.98)) padding-box !important;
+  transition: border-color .2s ease, background-color .2s ease !important;
+  transform: none !important;
+}
+
+/* Disable both decorative/gradient pseudo-elements: the border is now a
+   background layer, so nothing can spill into the card content or outside it. */
+#dashboardOverlay .workspace-card::before,
+#dashboardOverlay .workspace-card::after {
+  content: none !important;
+  display: none !important;
+}
+
+#dashboardOverlay .workspace-card:hover {
+  border: 1.5px solid transparent !important;
+  background:
+    linear-gradient(145deg,rgba(33,46,68,.97),rgba(26,34,51,.99)) padding-box,
+    conic-gradient(
+      from var(--cyman-card-angle),
+      #ff006e,#fb5607,#ffbe0b,#8338ec,#3a86ff,#ff006e
+    ) border-box !important;
+  animation: cyman-card-gradient-rotate 2.8s linear infinite !important;
+  box-shadow: none !important;
+}
+
+@keyframes cyman-card-gradient-rotate {
+  to { --cyman-card-angle: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #dashboardOverlay .workspace-card:hover {
+    animation: none !important;
+  }
+}
+
+/* ── cymansquare-dashboard-v21-refinements ── */
+/* ==========================================================
+   CyMan² Dashboard V21 — compact sidebar, clean cards & forms
+   ========================================================== */
+
+/* Use the requested typeface consistently within the dashboard. */
+#dashboardOverlay .dashboard,
+#dashboardOverlay .dashboard button,
+#dashboardOverlay .dashboard input,
+#dashboardOverlay .dashboard textarea,
+#dashboardOverlay .dashboard select {
+  font-family:'DM Sans',sans-serif !important;
+}
+
+/* Sidebar: retain every existing menu and Bootstrap icon, but use
+   the compact grouped-navigation treatment from the reference. */
+#dashboardOverlay .dash-sidebar {
+  padding:22px 15px 22px !important;
+  gap:0 !important;
+}
+#dashboardOverlay .dash-brand {
+  margin:0 8px 26px !important;
+}
+#dashboardOverlay .dash-nav {
+  gap:3px !important;
+  padding:0 1px 8px !important;
+}
+#dashboardOverlay .dash-nav-label,
+#dashboardOverlay .dash-nav-subtitle {
+  display:block !important;
+  margin:15px 10px 7px !important;
+  color:#78849a !important;
+  font-size:9px !important;
+  font-weight:600 !important;
+  letter-spacing:.16em !important;
+  line-height:1.4 !important;
+  text-transform:uppercase !important;
+}
+#dashboardOverlay .dash-nav-item {
+  min-height:37px !important;
+  padding:0 10px !important;
+  gap:10px !important;
+  border-radius:8px !important;
+  color:#aab5c8 !important;
+  font-size:12px !important;
+  font-weight:500 !important;
+  letter-spacing:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  transform:none !important;
+  transition:background-color .16s ease,color .16s ease,border-color .16s ease !important;
+}
+#dashboardOverlay .dash-nav-item > i:first-child {
+  width:16px !important;
+  min-width:16px !important;
+  font-size:14px !important;
+  opacity:.86;
+}
+#dashboardOverlay .dash-nav-item:hover {
+  color:#eaf3ff !important;
+  background:rgba(77,151,239,.09) !important;
+  transform:none !important;
+}
+#dashboardOverlay .dash-nav-item.active {
+  color:#f4f8ff !important;
+  font-weight:600 !important;
+  background:rgba(55,139,231,.15) !important;
+  box-shadow:inset 2px 0 #399cff !important;
+}
+#dashboardOverlay .dash-nav-divider {
+  margin:9px 8px !important;
+  border-color:rgba(139,160,193,.12) !important;
+}
+#dashboardOverlay #adminNavBtn,
+#dashboardOverlay #adminNavBtn:hover {
+  color:#d99136 !important;
+}
+#dashboardOverlay #adminNavBtn > i:first-child {
+  color:#d99136 !important;
+}
+#dashboardOverlay .dash-user {
+  margin-top:auto !important;
+  margin-bottom:0 !important;
+}
+
+/* Theme control: icon only, with a compact hit target. */
+#dashboardOverlay .dash-theme-btn {
+  width:38px !important;
+  min-width:38px !important;
+  height:38px !important;
+  min-height:38px !important;
+  padding:0 !important;
+  display:inline-grid !important;
+  place-items:center !important;
+  gap:0 !important;
+  border-radius:10px !important;
+  font-size:0 !important;
+}
+#dashboardOverlay .dash-theme-btn i {
+  margin:0 !important;
+  font-size:15px !important;
+  line-height:1 !important;
+}
+#dashboardOverlay .dash-theme-btn:hover {
+  transform:translateY(-1px);
+}
+
+/* Close: restrained red hover feedback. */
+#dashboardOverlay .dash-close-btn {
+  transition:background-color .18s ease,border-color .18s ease,color .18s ease,transform .18s ease !important;
+}
+#dashboardOverlay .dash-close-btn:hover {
+  color:#fff !important;
+  background:#dc3545 !important;
+  border-color:#dc3545 !important;
+  transform:rotate(90deg) !important;
+}
+#dashboardOverlay .dashboard[data-dash-theme="light"] .dash-close-btn:hover {
+  color:#fff !important;
+  background:#dc3545 !important;
+  border-color:#dc3545 !important;
+}
+
+/* Tool cards: consistent, polished hover without external-link arrows
+   or pseudo-elements spilling outside the card. */
+#dashboardOverlay .workspace-card {
+  position:relative !important;
+  isolation:isolate !important;
+  overflow:hidden !important;
+  border:1px solid rgba(105,155,218,.23) !important;
+  border-radius:14px !important;
+  transform:translateY(0) !important;
+  transition:
+    transform .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease,
+    background .2s ease !important;
+  box-shadow:0 2px 8px rgba(0,0,0,.06) !important;
+}
+#dashboardOverlay .workspace-card::before,
+#dashboardOverlay .workspace-card::after {
+  content:none !important;
+  display:none !important;
+}
+#dashboardOverlay .workspace-card:hover {
+  transform:translateY(-3px) !important;
+  border:1px solid transparent !important;
+  background:
+    linear-gradient(145deg,#263750,#1b2639) padding-box,
+    linear-gradient(115deg,#3a86ff,#36c5d8,#8b5cf6) border-box !important;
+  box-shadow:0 9px 24px rgba(0,0,0,.18),0 0 0 1px rgba(75,155,255,.08) !important;
+}
+#dashboardOverlay .workspace-card:focus-visible {
+  outline:2px solid #55adff !important;
+  outline-offset:3px !important;
+}
+#dashboardOverlay .workspace-card-heading,
+#dashboardOverlay .workspace-card small {
+  position:relative !important;
+  z-index:1 !important;
+}
+#dashboardOverlay .workspace-card .workspace-icon {
+  transition:transform .2s ease,box-shadow .2s ease !important;
+}
+#dashboardOverlay .workspace-card:hover .workspace-icon {
+  transform:translateY(-1px) scale(1.04) !important;
+  box-shadow:0 4px 12px rgba(0,0,0,.12) !important;
+}
+#dashboardOverlay .workspace-arrow {
+  display:none !important;
+}
+
+/* Light theme card hover keeps the same restrained blue accent. */
+#dashboardOverlay .dashboard[data-dash-theme="light"] .workspace-card:hover {
+  background:
+    linear-gradient(145deg,#fff,#f5f9ff) padding-box,
+    linear-gradient(115deg,#3a86ff,#36c5d8,#8b5cf6) border-box !important;
+  box-shadow:0 8px 22px rgba(43,91,155,.12) !important;
+}
+
+/* Profile fields: clear labels, consistent height, proper focus ring,
+   and enough contrast in both themes. */
+#dashboardOverlay #tab-profile .field-group {
+  margin-bottom:16px !important;
+}
+#dashboardOverlay #tab-profile .field-group > label {
+  display:block !important;
+  margin:0 0 7px !important;
+  color:var(--dash-text,#eaf0fa) !important;
+  font-size:12px !important;
+  font-weight:600 !important;
+  letter-spacing:.01em !important;
+}
+#dashboardOverlay #tab-profile .input-wrap {
+  min-height:46px !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:11px !important;
+  padding:0 13px !important;
+  border:1px solid var(--dash-border,rgba(124,153,198,.22)) !important;
+  border-radius:10px !important;
+  background:var(--dash-surface-2,#171f2e) !important;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.04) !important;
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease !important;
+}
+#dashboardOverlay #tab-profile .input-wrap > svg {
+  flex:0 0 15px !important;
+  width:15px !important;
+  height:15px !important;
+  color:var(--dash-muted,#9aa7bc) !important;
+  opacity:.9 !important;
+}
+#dashboardOverlay #tab-profile .input-wrap input,
+#dashboardOverlay #tab-profile .input-wrap textarea,
+#dashboardOverlay #tab-profile .input-wrap select {
+  width:100% !important;
+  min-width:0 !important;
+  min-height:42px !important;
+  padding:9px 0 !important;
+  border:0 !important;
+  outline:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  color:var(--dash-text,#f1f4fb) !important;
+  font-family:'DM Sans',sans-serif !important;
+  font-size:13px !important;
+  font-weight:500 !important;
+}
+#dashboardOverlay #tab-profile .input-wrap input::placeholder,
+#dashboardOverlay #tab-profile .input-wrap textarea::placeholder {
+  color:var(--dash-muted,#9aa7bc) !important;
+  opacity:.72 !important;
+}
+#dashboardOverlay #tab-profile .input-wrap:focus-within {
+  border-color:#459cff !important;
+  box-shadow:0 0 0 3px rgba(69,156,255,.14) !important;
+}
+#dashboardOverlay #tab-profile .input-wrap:has(input:disabled) {
+  opacity:.65 !important;
+  cursor:not-allowed !important;
+}
+#dashboardOverlay #tab-profile .input-wrap input:disabled {
+  cursor:not-allowed !important;
+  -webkit-text-fill-color:var(--dash-muted,#9aa7bc) !important;
+}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #tab-profile .input-wrap {
+  background:#fff !important;
+  border-color:#d8e2ef !important;
+  box-shadow:0 1px 2px rgba(20,40,70,.025) !important;
+}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #tab-profile .input-wrap input,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #tab-profile .input-wrap textarea,
+#dashboardOverlay .dashboard[data-dash-theme="light"] #tab-profile .input-wrap select {
+  color:#1d2b42 !important;
+}
+#dashboardOverlay .dashboard[data-dash-theme="light"] #tab-profile .input-wrap:focus-within {
+  border-color:#2788e8 !important;
+  box-shadow:0 0 0 3px rgba(39,136,232,.12) !important;
+}
+
+/* Preserve the compact shell and give the sidebar a little breathing room. */
+@media (max-width:760px) {
+  #dashboardOverlay .dash-sidebar {
+    padding:17px 10px 16px !important;
+  }
+  #dashboardOverlay .dash-nav-item {
+    min-height:36px !important;
+    font-size:11px !important;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  #dashboardOverlay .workspace-card,
+  #dashboardOverlay .workspace-card .workspace-icon,
+  #dashboardOverlay .dash-nav-item,
+  #dashboardOverlay .dash-close-btn {
+    transition:none !important;
+  }
+}
+</style>
+
 </body>
 </html>
